@@ -21,6 +21,7 @@ public:
                     ~IntVector();
 
    void              push(int val);
+   int               pop();
    void              clear();
    int               get(int i) const;
    void              set(int i,int val);
@@ -83,6 +84,16 @@ void IntVector::push(int val)
    int size=size();
    resize(size+1);
    m_a[size]=val;
+  }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+int IntVector::pop()
+  {
+   int size=size();
+   int val=m_a[size-1];
+   resize(size-1);
+   return val;
   }
 //+------------------------------------------------------------------+
 //|                                                                  |

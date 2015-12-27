@@ -9,7 +9,7 @@
 
 #define MAGIC_START 10000
 #include <Object.mqh>
-#include <LiDing/IntVector.mqh>
+#include <LiDing/Collection/IntVector.mqh>
 
 //+------------------------------------------------------------------+
 //| Base class of all EAs by Li Ding                                 |
@@ -103,7 +103,7 @@ bool CBaseEA::GetAllOrders(IntVector &vec)
         }
       if(OrderSymbol()==Symbol() && OrderMagicNumber()==m_magic)
         {
-         vec.Push(OrderTicket());
+         vec.push(OrderTicket());
         }
      }
    return true;
@@ -118,15 +118,15 @@ void CBaseEA::UpdateOrders(void)
    m_pendbuys=0;
    m_pendsells=0;
 
-   m_orders.Clear();
+   m_orders.clear();
 
    GetAllOrders(m_orders);
 
-   int total=m_orders.Size();
+   int total=m_orders.size();
 
    for(int i=0;i<total;i++)
      {
-      if(OrderSelect(m_orders.Get(i),SELECT_BY_TICKET))
+      if(OrderSelect(m_orders.get(i),SELECT_BY_TICKET))
         {
          if(IsNewBar())
            {
@@ -363,10 +363,10 @@ void CBaseEA::CloseAllOrders(int type)
       return;
      }
 
-   int total=v.Size();
+   int total=v.size();
    for(int i=0;i<total;i++)
      {
-      if(OrderSelect(v.Get(i),SELECT_BY_TICKET) && OrderType()==type)
+      if(OrderSelect(v.get(i),SELECT_BY_TICKET) && OrderType()==type)
         {
          CloseCurrentOrder();
         }
@@ -384,10 +384,10 @@ void CBaseEA::CloseAllOrders()
       return;
      }
 
-   int total=v.Size();
+   int total=v.size();
    for(int i=0;i<total;i++)
      {
-      if(OrderSelect(v.Get(i),SELECT_BY_TICKET))
+      if(OrderSelect(v.get(i),SELECT_BY_TICKET))
         {
          CloseCurrentOrder();
         }
