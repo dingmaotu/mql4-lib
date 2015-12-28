@@ -8,6 +8,7 @@
 #property strict
 
 #include <stdlib.mqh>
+#include <LiDing/Collection/IntVector.mqh>
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
@@ -37,8 +38,13 @@ public:
    int               pendBuy(double price,double lots,int stoploss,int takeprofit) {return pendBuy(price,lots,subPoints(price,stoploss),addPoints(price,takeprofit));}
    int               pendSell(double price,double lots,int stoploss,int takeprofit) {return pendSell(price,lots,addPoints(price,stoploss),subPoints(price,takeprofit));}
 
-   bool              close(int ticket);
+   bool              getOrders(IntVector &v,int type=-1);
+   bool              select(int ticket);
+
    bool              closeCurrent();
+   bool              close(int ticket);
+   void              closeByType(int type);
+   void              closeAll();
   };
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -124,10 +130,28 @@ int OrderManager::pendSell(double price,double lots,double stoploss,double takep
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-bool OrderManager::close(int ticket)
+bool OrderManager::getOrders(IntVector &v,int type)
   {
-   if(!OrderSelect(ticket,SELECT_BY_TICKET)) {return false;}
-   return closeCurrent();
+   int total=OrdersTotal();
+   for(int i=0;i<total;i++)
+     {
+      if(OrderSelect(i,SELECT_BY_POS,MODE_TRADES)==false)
+        {
+         return false;
+        }
+      if(OrderSymbol()==m_symbol && OrderMagicNumber()==m_magic && (type==-1 || OrderType()==type))
+        {
+         v.push(OrderTicket());
+        }
+     }
+   return true;
+  }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+bool OrderManager::select(int ticket)
+  {
+   return OrderSelect(ticket,SELECT_BY_TICKET);
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -161,47 +185,37 @@ bool OrderManager::closeCurrent(void)
      }
    return true;
   }
-/*
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-bool Order::doTakeProfit(void)
+bool OrderManager::close(int ticket)
   {
-   if(isBuy())
-     {
-      if(!(Bid<takeProfit))
-        {
-         return close();
-        }
-     }
-   if(isSell())
-     {
-      if(!(Ask>takeProfit))
-        {
-         return close();
-        }
-     }
-   return false;
+   if(!select(ticket)) {return false;}
+   return closeCurrent();
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-bool Order::doStopLoss(void)
+void OrderManager::closeByType(int type)
   {
-   if(isBuy())
+   IntVector v;
+   if(!getOrders(v,type))
      {
-      if(!(Bid>stopLoss))
-        {
-         return close();
-        }
+      Print(__FUNCTION__,": Getting orders failed");
+      return;
      }
-   if(isSell())
+
+   int total=v.size();
+   for(int i=0;i<total;i++)
      {
-      if(!(Ask<stopLoss))
-        {
-         return close();
-        }
+      close(v.get(i));
      }
-   return false;
-  }*/
+  }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+void OrderManager::closeAll()
+  {
+   closeByType(-1);
+  }
 //+------------------------------------------------------------------+
