@@ -9,14 +9,14 @@
 
 #include <LiDing/Lang/Object.mqh>
 
-#define PARAM(ParamName, ParamValue) app.set##ParamName((ParamValue));
+#define PARAM(ParamName, ParamValue) __app__.set##ParamName((ParamValue));
 
 #define DECLARE_APP(AppClass,PARAM_SECTION) \
-AppClass app;\
+AppClass __app__;\
 int OnInit(){\
 PARAM_SECTION\
-return app.onInit();}\
-void OnDeinit(const int reason) {app.onDeinit(reason);}
+return __app__.onInit();}\
+void OnDeinit(const int reason) {__app__.onDeinit(reason);}
 
 //+------------------------------------------------------------------+
 //| Base class for a MQL Application                                 |

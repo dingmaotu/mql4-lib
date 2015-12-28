@@ -11,8 +11,8 @@
 
 #define DECLARE_EVENT_APP(AppClass,PARAM_SECTION) \
 DECLARE_APP(AppClass,PARAM_SECTION)\
-void OnTimer() {app.onTimer();}\
-void OnChartEvent(const int id,const long &lparam,const double &dparam,const string &sparam) {app.onChartEvent(id,lparam,dparam,sparam);}
+void OnTimer() {__app__.onTimer();}\
+void OnChartEvent(const int id,const long &lparam,const double &dparam,const string &sparam) {__app__.onChartEvent(id,lparam,dparam,sparam);}
 
 //+------------------------------------------------------------------+
 //| Base class for a MQL Application that can receive events         |

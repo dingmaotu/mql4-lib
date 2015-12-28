@@ -11,7 +11,7 @@
 
 #define DECLARE_SCRIPT(AppClass,PARAM_SECTION) \
 DECLARE_APP(AppClass,PARAM_SECTION)\
-void OnStart() {app.main();}
+void OnStart() {__app__.main();}
 
 //+------------------------------------------------------------------+
 //| Base class for a MQL Script                                      |

@@ -12,7 +12,7 @@
 #define DECLARE_INDICATOR(AppClass,PARAM_SECTION) \
 DECLARE_EVENT_APP(AppClass,PARAM_SCECTION)\
 int OnCalculate(const int rates_total,const int prev_calculated,const datetime &time[],const double &open[],const double &high[],const double &low[],const double &close[],const long &tickVolume[],const long &volume[],const int &spread[])\
-  {return app.main(rates_total,prev_calculated,time,open,high,low,close,tickVolume,volume,spread);}
+  {return __app__.main(rates_total,prev_calculated,time,open,high,low,close,tickVolume,volume,spread);}
 
 //+------------------------------------------------------------------+
 //| Base class for a MQL Indicator                                   |

@@ -10,9 +10,9 @@
 #include <LiDing/Lang/EventApp.mqh>
 
 #define DECLARE_EA(AppClass,PARAM_SECTION) \
-DECLARE_EVENT_APP(AppClass,PARAM_SCECTION)\
-double OnTester() {return app.onTester();}\
-void OnTick() {app.main();}
+DECLARE_EVENT_APP(AppClass,PARAM_SECTION)\
+double OnTester() {return __app__.onTester();}\
+void OnTick() {__app__.main();}
 
 //+------------------------------------------------------------------+
 //| Base class for a MQL Expert Advisor                              |
