@@ -22,6 +22,7 @@ public:
 
    void              push(int val);
    int               pop();
+   int               peek();
    void              clear();
    int               get(int i) const;
    void              set(int i,int val);
@@ -91,9 +92,31 @@ void IntVector::push(int val)
 int IntVector::pop()
   {
    int size=size();
-   int val=m_a[size-1];
-   resize(size-1);
-   return val;
+   if(size>0)
+     {
+      int val=m_a[size-1];
+      resize(size-1);
+      return val;
+     }
+   else
+     {
+      return NULL;
+     }
+  }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+int IntVector::peek()
+  {
+   int size=size();
+   if(size>0)
+     {
+      return m_a[size()-1];
+     }
+   else
+     {
+      return NULL;
+     }
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
