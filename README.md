@@ -9,14 +9,14 @@ let alone reuable and elegant component based design and programming.
 
 mql4-lib is a simple library that tries to make MQL4 programming pleasant with a more object oriented 
 approach and a coding style like Java, and encourages writing reusable components. This library has the
- ambition to substitute the current Foundation Library.
+ ambition to become the de facto Foundation Library for MQL4.
 
 ## Installation
 Just copy the library to your MQL4 Data Folder's `Include` directory, with the root directory name of `LiDing`,
 like <MQL4Data>\Include\LiDing\<mql4-lib content>.
 
 ## Usage
-This library is in its early stage. Currently, only the `Lang` component is usable.
+This library is in its early stage. Currently, only the `Lang` and `Collection` component is usable.
  I am still working on other components. In `Lang`, I abstract three Program types
  to three base classes that you can inherit.
 
@@ -30,6 +30,7 @@ input double InpBaseLot = 0.1;
 
 class MyEa: public ExpertAdvisor
 {
+private:
   string m_name;
   double m_baseLot;
 public:
