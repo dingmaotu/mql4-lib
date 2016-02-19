@@ -18,7 +18,7 @@ private:
    ChartFile         m_file;
    datetime          currentTime;
 public:
-                     RenkoChart(string symbol,int period,int barSize);
+                     RenkoChart(string symbol,int period,int barSize,bool std=false);
                     ~RenkoChart() {}
    string            getSymbol() const {return m_file.getSymbol();}
    int               getPeriod() const {return m_file.getPeriod();}
@@ -32,8 +32,8 @@ public:
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-RenkoChart::RenkoChart(string symbol,int period,int barSize)
-   :Renko(barSize*Point),m_file(symbol,period)
+RenkoChart::RenkoChart(string symbol,int period,int barSize,bool std)
+   :Renko(barSize*Point,std),m_file(symbol,period)
   {
    if(m_file.getNumberOfRecords()==0)
      {

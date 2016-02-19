@@ -15,6 +15,7 @@ class Renko
   {
 private:
    int               m_bars;
+   bool              m_std;
 
    double            m_open[];
    double            m_high[];
@@ -31,7 +32,7 @@ protected:
    int               moveByRate(MqlRates &r);
 public:
    double const      BAR_SIZE;
-                     Renko(double barSize):BAR_SIZE(barSize),m_bars(0) {}
+                     Renko(double barSize,bool std=false):BAR_SIZE(barSize),m_bars(0),m_std(std) {}
    virtual          ~Renko() {}
 
    int               getBars() const {return m_bars;}
@@ -112,8 +113,27 @@ int Renko::move(double p,long vol)
       m_volume[0]=vol;
       return 0;
      }
-   if(p > m_high[m_bars-1]) m_high[m_bars-1] = p;
-   if(p < m_low[m_bars-1] ) m_low[m_bars-1]  = p;
+
+   if(m_std)
+     {
+      if(p>m_open[m_bars-1])
+        {
+         m_high[m_bars-1]= p;
+         m_low[m_bars-1] = m_open[m_bars-1];
+        }
+
+      if(p<m_open[m_bars-1])
+        {
+         m_low[m_bars-1]=p;
+         m_high[m_bars-1]=m_open[m_bars-1];
+        }
+     }
+   else
+     {
+      if(p>m_high[m_bars-1]) m_high[m_bars-1]=p;
+      if(p<m_low[m_bars-1]) m_low[m_bars-1]=p;
+     }
+
    if(m_high[m_bars-1]-m_low[m_bars-1]>BAR_SIZE)
      {
       return newBar(p, vol);

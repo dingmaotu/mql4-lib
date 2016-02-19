@@ -18,3 +18,4 @@ public:
    virtual string    toString() const {return StringFormat("[Object #%d]",hash());}
    virtual long      hash() const {return 1;}
   };
+//+------------------------------------------------------------------+
