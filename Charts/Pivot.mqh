@@ -45,9 +45,16 @@ LabeledLine::~LabeledLine(void)
 //+------------------------------------------------------------------+
 void LabeledLine::draw(double value,datetime labelTime)
   {
-   ObjectCreate(m_lineId,OBJ_HLINE,0,0,value);
-   ObjectSet(m_lineId,OBJPROP_COLOR,m_lineColor);
-   ObjectSet(m_lineId,OBJPROP_STYLE,m_lineStyle);
+   if(ObjectFind(m_lineId)!=0)
+     {
+      ObjectCreate(m_lineId,OBJ_HLINE,0,0,value);
+      ObjectSet(m_lineId,OBJPROP_COLOR,m_lineColor);
+      ObjectSet(m_lineId,OBJPROP_STYLE,m_lineStyle);
+     }
+   else
+     {
+      ObjectMove(m_lineId,0,0,value);
+     }
 
    if(ObjectFind(m_labelId)!=0)
      {
