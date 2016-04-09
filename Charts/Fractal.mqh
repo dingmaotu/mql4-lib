@@ -103,7 +103,7 @@ public:
      }
 
    template<typename T>
-   static void orders(const T &array[],int &left[],int &right[],int shift=0)
+   static void partialOrders(const T &array[],int &left[],int &right[],int shift=0)
      {
       int size=ArraySize(array);
       if(size>0)
@@ -125,5 +125,30 @@ public:
            }
         }
      }
+   static void fullOrders(const int &left[], const int &right[], int &order[])
+   {
+      int leftSize=ArraySize(left);
+      int rightSize=ArraySize(right);
+      int targetSize=ArraySize(order);
+      
+      if(leftSize == rightSize && rightSize == targetSize && targetSize > 0)
+      {
+         for(int i=0; i<targetSize; i++)
+         {
+            if(left[i] > 0 && right[i]>0)
+            {
+               order[i] = Math::min(left[i],right[i]);
+            }
+            else if(left[i] < 0 && right[i] < 0)
+            {
+               order[i] = Math::max(left[i],right[i]);
+            }
+            else
+            {
+               order[i] = 0;
+            }
+         }
+      }
+   }
   };
 //+------------------------------------------------------------------+

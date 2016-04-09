@@ -9,7 +9,7 @@
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-bool parseToPositiveIntegers(string s,long &target[])
+bool parseToPositiveIntegers(string s,int &target[])
   {
    string t[];
    StringSplit(s,StringGetCharacter(",",0),t);
@@ -25,7 +25,7 @@ bool parseToPositiveIntegers(string s,long &target[])
    ArrayResize(target,size);
    for(int i=0; i<size; i++)
      {
-      target[i]=StringToInteger(t[i]);
+      target[i]=(int)StringToInteger(t[i]);
       if(target[i]<=0)
         {
          Print(t[i]+" is not positive!");
