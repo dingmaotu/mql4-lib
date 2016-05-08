@@ -7,7 +7,7 @@
 #property link      "dingmaotu@126.com"
 #property strict
 
-#include <LiDing/Renko.mqh>
+#include <LiDing/Charts/Renko.mqh>
 #include <MovingAverages.mqh>
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -24,8 +24,8 @@ private:
 public:
                      RenkoMa10(int period,int barSize);
                     ~RenkoMa10() {}
-   void              onNewBar(int total,int pBars,double const &pOpen[],double const &pHigh[],
-                              double const &pLow[],double const &pClose[],long const &pVolumne[]);
+   void              onNewBar(int total,int bars,double const &open[],double const &high[],
+                              double const &low[],double const &close[],long const &volumne[]);
 
    double            getMaValue(int shift);
 
@@ -58,19 +58,17 @@ void RenkoMa10::onNewBar(int total,int pBars,const double &pOpen[],const double 
 
    if(pBars>0)
      {
-      Print("new bars is ",pBars);
-      Print("total is ",total);
-
       maNum=SimpleMAOnBuffer(total,maNum,0,periodMa,pLow,ma);
 
       bool hasCross=false;
-      
-      int barStart = total-pBars-1;
-      
-      if(barStart < 1) {
-         barStart = 1;
-      }
-      
+
+      int barStart=total-pBars-1;
+
+      if(barStart<1) 
+        {
+         barStart=1;
+        }
+
       for(int i=total-2;i>=barStart;i--)
         {
          if(ma[i]>pHigh[i] && ma[i-1]<pHigh[i-1])

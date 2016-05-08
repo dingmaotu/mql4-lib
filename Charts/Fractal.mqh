@@ -150,5 +150,21 @@ public:
          }
       }
    }
+   template<typename T>
+   static void fullOrders(const T &array[], int &orders[])
+   {
+      int size = ArraySize(array);
+      int leftTemp[];
+      int rightTemp[];
+   
+      ArrayResize(leftTemp, size);
+      ArrayResize(rightTemp, size);
+      
+      Fractal::partialOrders(array,leftTemp,rightTemp);
+      Fractal::fullOrders(leftTemp,rightTemp,orders);
+      
+      ArrayFree(leftTemp);
+      ArrayFree(rightTemp);
+   }
   };
 //+------------------------------------------------------------------+

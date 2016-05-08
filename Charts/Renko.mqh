@@ -44,7 +44,7 @@ public:
    long              getVolume(int shift) {return m_volume[m_bars-1-shift];}
 
    virtual void      onNewBar(int total,int bars,double const &open[],double const &high[],
-                              double const &kow[],double const &close[],long const &volume[]);
+                              double const &low[],double const &close[],long const &volume[]);
 
    //--- Feed data by normal candle bars
    void              updateByRates(MqlRates &r[],int shift,int size);
