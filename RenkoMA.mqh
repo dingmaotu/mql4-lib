@@ -53,7 +53,7 @@ RenkoMA::RenkoMA(int barSize, int eaType)
    MqlRates rs[];
    int barsToCopy=Bars;
    CopyRates(Symbol(),1,0,barsToCopy,rs);
-   renkoIndicator.loadRates(rs,0,barsToCopy);
+   renkoIndicator.updateByRates(rs,0,barsToCopy);
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -98,7 +98,7 @@ void RenkoMA::UpdateOrdersSellHook(void)
 //+------------------------------------------------------------------+
 RenkoMA::UpdateIndicators(void)
   {
-   renkoIndicator.moveTo(Close[0]);
+   renkoIndicator.update(Close[0],0);
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
