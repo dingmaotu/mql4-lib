@@ -7,6 +7,7 @@
 #property link      "http://dingmaotu.com"
 #property strict
 
+#include "Integer.mqh"
 //+------------------------------------------------------------------+
 //| Base class for all complicated objects in this library           |
 //+------------------------------------------------------------------+
@@ -16,6 +17,22 @@ public:
                      Object() {}
    virtual          ~Object() {}
    virtual string    toString() const {return StringFormat("[Object #%d]",hash());}
-   virtual long      hash() const {return 1;}
+   virtual int       hash() const;
   };
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+struct ObjectPointer
+  {
+   Object           *pointer;
+  };
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+int Object::hash(void) const
+  {
+   ObjectPointer p;
+   p.pointer=(Object*)GetPointer(this);
+   return ((LargeInt)p).lowPart;
+  }
 //+------------------------------------------------------------------+
