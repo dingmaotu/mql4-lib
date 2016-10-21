@@ -7,7 +7,7 @@
 #property link      "http://dingmaotu.com"
 #property strict
 
-#include <LiDing/Lang/EventApp.mqh>
+#include "EventApp.mqh"
 
 #define DECLARE_EA(AppClass,PARAM_SECTION) \
 DECLARE_EVENT_APP(AppClass,PARAM_SECTION)\

@@ -7,7 +7,7 @@
 #property link      "http://dingmaotu.com"
 #property strict
 
-#include <LiDing/Lang/Object.mqh>
+#include "Object.mqh"
 
 #define PARAM(ParamName, ParamValue) __app__.set##ParamName((ParamValue));
 
