@@ -7,8 +7,8 @@
 #property link      "dingmaotu@126.com"
 #property strict
 
-#include <LiDing/Charts/LabeledLine.mqh>
-#include <LiDing/Charts/Pivot.mqh>
+#include "LabeledLine.mqh"
+#include "Pivot.mqh"
 
 //+------------------------------------------------------------------+
 //|                                                                  |

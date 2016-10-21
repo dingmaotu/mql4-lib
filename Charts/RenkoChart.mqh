@@ -7,7 +7,7 @@
 #property link      "dingmaotu@126.com"
 #property strict
 
-#include <LiDing/Charts/Renko.mqh>
+#include "Renko.mqh"
 #include <LiDing/Utils/ChartFile.mqh>
 //+------------------------------------------------------------------+
 //|                                                                  |

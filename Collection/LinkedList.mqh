@@ -7,7 +7,7 @@
 #property link      "http://dingmaotu.com"
 #property strict
 
-#include <LiDing/Collection/LinkedNode.mqh>
+#include "LinkedNode.mqh"
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+

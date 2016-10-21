@@ -8,7 +8,7 @@
 #property strict
 
 #include <stdlib.mqh>
-#include <LiDing/Trade/FxSymbol.mqh>
+#include "FxSymbol.mqh"
 #include <LiDing/Collection/IntVector.mqh>
 //+------------------------------------------------------------------+
 //|                                                                  |
