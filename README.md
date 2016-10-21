@@ -32,8 +32,8 @@ stable and can be used in production. Here are the main components:
 4. `Trade` directory contains useful abstractions for trading
 5. `Utils` directory contains various utilities
 
-In `Lang`, I abstract three Program types to three base
- classes that you can inherit.
+In `Lang`, I abstract three Program types (Script, Indicator, and
+ Expert Advisor) to three base classes that you can inherit.
 
 The general usage is as below:
 
@@ -67,10 +67,11 @@ arguments for macros.
 The `PARAM` macro injects parameters to the EA by its setters. Just
 follow the Java Beans(TM) convention.
 
-For Indicators and Scripts you can just check the source code.  I used
-some tricky macro hacks to work around limits of MQL4.
+For Indicators and Scripts you can find their usage by reading the
+source code. I used some macro tricks to work around limits of MQL4. I
+will document the library in detail when I have the time.
 
 With this approach, you can write reusable EAs, Scripts, or
 Indicators.  You do not need to worry about the OnInit, OnDeinit,
 OnStart, OnTick, etc.  You never use a input parameter directly in
-your EA. You can write a base EA, and extend on that easily.
+your EA. You can write a base EA, and extend it easily.
