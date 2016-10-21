@@ -12,8 +12,8 @@
 class Order
   {
 private:
-   int const         magic;
-   string const      symbol;
+   int               magic;
+   string            symbol;
 
    int               ticket;
 
@@ -36,10 +36,7 @@ private:
    datetime          expiration;
 
 public:
-                     Order(int magic,string symbol);
-                    ~Order();
-
-   bool              select();
+   bool              select(int ticket);
 
    int               getTicket() const {return ticket;}
    int               getMagic() const {return magic;}
@@ -69,20 +66,7 @@ public:
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-Order::Order(int pMagic=0,string pSymbol="") :magic(pMagic),symbol(pSymbol==""?Symbol():pSymbol)
-  {
-   ticket=-1;
-  }
-//+------------------------------------------------------------------+
-//|                                                                  |
-//+------------------------------------------------------------------+
-Order::~Order()
-  {
-  }
-//+------------------------------------------------------------------+
-//|                                                                  |
-//+------------------------------------------------------------------+
-bool Order::select(void)
+bool Order::select(int ticket)
   {
    if(!OrderSelect(ticket,SELECT_BY_TICKET))
      {
