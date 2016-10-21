@@ -19,7 +19,7 @@ ambition to become the de facto Foundation Library for MQL4.
 
 Just copy the library to your MQL4 Data Folder's `Include` directory,
 with the root directory name of your choice, for example:
-<MQL4Data>\Include\ *MQL4* \<mql4-lib content>.
+`<MQL4Data>\Include\MQL4\<mql4-lib content>`.
 
 ## Usage
 
