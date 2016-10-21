@@ -8,6 +8,7 @@
 #property strict
 
 #include <stdlib.mqh>
+#include <LiDing/Trade/FxSymbol.mqh>
 #include <LiDing/Collection/IntVector.mqh>
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -15,16 +16,27 @@
 class OrderManager
   {
 private:
-   string            m_symbol;
+   FxSymbol          m_symbol;
    int               m_magic;
+
+   int const         M_DIGITS;
+   double const      M_POINT;
+   double const      M_MINLOT;
+
 protected:
-   static int        getOrderType(bool buyOrSell,double requestPrice);
-   static double     normalizeLots(double lots);
-   static double     normalizePrice(double price) {return NormalizeDouble(price,Digits);}
-   static double     addPoints(double price,int points) {return points > 0 ? NormalizeDouble(price+points*Point,Digits) : 0;}
-   static double     subPoints(double price,int points) {return points > 0 ? NormalizeDouble(price-points*Point,Digits) : 0;}
+   int               getOrderType(bool buyOrSell,double requestPrice);
+   
+   double            ask() {return m_symbol.getAsk();}
+   double            bid() {return m_symbol.getBid();}
+   
+   double            normalizeLots(double lots);
+   
+   double            normalizePrice(double price) {return NormalizeDouble(price,M_DIGITS);}
+   double            addPoints(double price,int points) {return points > 0 ? NormalizeDouble(price+points*M_POINT,M_DIGITS) : 0;}
+   double            subPoints(double price,int points) {return points > 0 ? NormalizeDouble(price-points*M_POINT,M_DIGITS) : 0;}
+
 public:
-                     OrderManager(string symbol,int magic):m_symbol(symbol),m_magic(magic) {}
+                     OrderManager(string symbol="",int magic=0);
 
    int               send(int cmd,double lots,double price,double stoploss,double takeprofit);
 
@@ -33,8 +45,8 @@ public:
    int               pendBuy(double price,double lots,double stoploss,double takeprofit);
    int               pendSell(double price,double lots,double stoploss,double takeprofit);
 
-   int               buy(double lots,int stoploss,int takeprofit) {return buy(lots,subPoints(Ask,stoploss),addPoints(Ask,takeprofit));}
-   int               sell(double lots,int stoploss,int takeprofit) {return sell(lots,addPoints(Bid,stoploss),subPoints(Bid,takeprofit));}
+   int               buy(double lots,int stoploss,int takeprofit) {return buy(lots,subPoints(ask(),stoploss),addPoints(ask(),takeprofit));}
+   int               sell(double lots,int stoploss,int takeprofit) {return sell(lots,addPoints(bid(),stoploss),subPoints(bid(),takeprofit));}
    int               pendBuy(double price,double lots,int stoploss,int takeprofit) {return pendBuy(price,lots,subPoints(price,stoploss),addPoints(price,takeprofit));}
    int               pendSell(double price,double lots,int stoploss,int takeprofit) {return pendSell(price,lots,addPoints(price,stoploss),subPoints(price,takeprofit));}
 
@@ -49,22 +61,32 @@ public:
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
+OrderManager::OrderManager(string symbol,int magic)
+   :m_symbol(symbol),
+     m_magic(magic),
+     M_POINT(m_symbol.getPoint()),
+     M_DIGITS(m_symbol.getDigits()),
+     M_MINLOT(m_symbol.getMinLot())
+  {
+  }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
 double OrderManager::normalizeLots(double lots)
   {
-   double minLot=MarketInfo(Symbol(),MODE_MINLOT);
-// double lotStep=MarketInfo(Symbol(),MODE_LOTSTEP);
-   return lots > minLot ? lots : minLot;
+   return lots > M_MINLOT ? lots : M_MINLOT;
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
 int OrderManager::getOrderType(bool buyOrSell,double normalizedPrice)
   {
-   double marketPrice=buyOrSell ? Ask : Bid;
+   double marketPrice=buyOrSell ? ask() : bid();
 
-   double stopLevel=MarketInfo(Symbol(),MODE_STOPLEVEL);
-   double minPrice = NormalizeDouble(marketPrice - stopLevel*Point, Digits);
-   double maxPrice = NormalizeDouble(marketPrice + stopLevel*Point, Digits);
+   int stopLevel=m_symbol.getStopLevel();
+
+   double minPrice = NormalizeDouble(marketPrice - stopLevel*M_POINT, M_DIGITS);
+   double maxPrice = NormalizeDouble(marketPrice + stopLevel*M_POINT, M_DIGITS);
 
    int cmd;
    if(normalizedPrice<minPrice)
@@ -86,7 +108,7 @@ int OrderManager::getOrderType(bool buyOrSell,double normalizedPrice)
 //+------------------------------------------------------------------+
 int OrderManager::send(int cmd,double lots,double price,double stoploss,double takeprofit)
   {
-   int ticket=OrderSend(m_symbol,cmd,lots,price,3,stoploss,takeprofit,"",m_magic,0,cmd%2==0?Blue:Red);
+   int ticket=OrderSend(m_symbol.getName(),cmd,lots,price,3,stoploss,takeprofit,"",m_magic,0,cmd%2==0?Blue:Red);
 
    if(ticket<0)
      {
@@ -100,14 +122,14 @@ int OrderManager::send(int cmd,double lots,double price,double stoploss,double t
 //+------------------------------------------------------------------+
 int OrderManager::buy(double lots,double stoploss,double takeprofit)
   {
-   return send(OP_BUY, normalizeLots(lots), Ask, normalizePrice(stoploss), normalizePrice(takeprofit));
+   return send(OP_BUY, normalizeLots(lots), ask(), normalizePrice(stoploss), normalizePrice(takeprofit));
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
 int OrderManager::sell(double lots,double stoploss,double takeprofit)
   {
-   return send(OP_SELL, normalizeLots(lots), Bid, normalizePrice(stoploss), normalizePrice(takeprofit));
+   return send(OP_SELL, normalizeLots(lots), bid(), normalizePrice(stoploss), normalizePrice(takeprofit));
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -139,7 +161,7 @@ bool OrderManager::getOrders(IntVector &v,int type)
         {
          return false;
         }
-      if(OrderSymbol()==m_symbol && OrderMagicNumber()==m_magic && (type==-1 || OrderType()==type))
+      if(OrderSymbol()==m_symbol.getName() && OrderMagicNumber()==m_magic && (type==-1 || OrderType()==type))
         {
          v.push(OrderTicket());
         }
@@ -163,8 +185,8 @@ bool OrderManager::closeCurrent(void)
    double lots=OrderLots();
    double p;
 
-   if(type==OP_SELL) p=Ask;
-   else if(type==OP_BUY) p=Bid;
+   if(type==OP_SELL) p=ask();
+   else if(type==OP_BUY) p=bid();
    else p=-1;
 
    if(p>0)
