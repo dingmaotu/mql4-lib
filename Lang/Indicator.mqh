@@ -1,10 +1,8 @@
 //+------------------------------------------------------------------+
-//|                                                    Indicator.mqh |
-//|                                          Copyright 2015, Li Ding |
-//|                                             http://dingmaotu.com |
+//|                                               Lang/Indicator.mqh |
 //+------------------------------------------------------------------+
-#property copyright "Copyright 2015, Li Ding"
-#property link      "http://dingmaotu.com"
+#property copyright "Copyright 2015-2016, Li Ding"
+#property link      "dingmaotu@hotmail.com"
 #property strict
 
 #include "EventApp.mqh"
@@ -13,7 +11,6 @@
 DECLARE_EVENT_APP(AppClass,PARAM_SCECTION)\
 int OnCalculate(const int rates_total,const int prev_calculated,const datetime &time[],const double &open[],const double &high[],const double &low[],const double &close[],const long &tickVolume[],const long &volume[],const int &spread[])\
   {return __app__.main(rates_total,prev_calculated,time,open,high,low,close,tickVolume,volume,spread);}
-
 //+------------------------------------------------------------------+
 //| Base class for a MQL Indicator                                   |
 //+------------------------------------------------------------------+

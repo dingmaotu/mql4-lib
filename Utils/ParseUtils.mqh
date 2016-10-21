@@ -1,10 +1,8 @@
 //+------------------------------------------------------------------+
-//|                                                   ParseUtils.mqh |
-//|                                          Copyright 2015, Li Ding |
-//|                                             http://dingmaotu.com |
+//|                                             Utils/ParseUtils.mqh |
 //+------------------------------------------------------------------+
-#property copyright "Copyright 2015, Li Ding"
-#property link      "http://dingmaotu.com"
+#property copyright "Copyright 2015-2016, Li Ding"
+#property link      "dingmaotu@hotmail.com"
 #property strict
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -35,7 +33,9 @@ bool parseToPositiveIntegers(string s,int &target[])
    ArraySetAsSeries(target,isSeries);
    return true;
   }
-  
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
 bool parseToPositiveDoubles(string s,double &target[])
   {
    string t[];

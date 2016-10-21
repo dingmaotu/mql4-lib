@@ -1,7 +1,5 @@
 //+------------------------------------------------------------------+
-//|                                                      Runtime.mqh |
-//|                                          Copyright 2016, Li Ding |
-//|                                            dingmaotu@hotmail.com |
+//|                                                 Lang/Runtime.mqh |
 //+------------------------------------------------------------------+
 #property copyright "Copyright 2016, Li Ding"
 #property link      "dingmaotu@hotmail.com"
@@ -73,12 +71,12 @@ bool Runtime::notify(string msg)
 
    if(isNotificationsEnabled() && hasMetaQuotesId())
      {
-      bool success = SendNotification(msg);
+      bool success=SendNotification(msg);
       if(!success)
-      {
+        {
          Print("ERROR: [",__FUNCTION__,"] ",getErrorMessage(getLastError()));
-      }
-      
+        }
+
       return success;
      }
    else

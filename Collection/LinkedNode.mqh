@@ -1,13 +1,11 @@
 //+------------------------------------------------------------------+
-//|                                                   LinkedNode.mqh |
-//|                                          Copyright 2015, Li Ding |
-//|                                             http://dingmaotu.com |
+//|                                        Collection/LinkedNode.mqh |
 //+------------------------------------------------------------------+
-#property copyright "Copyright 2015, Li Ding"
-#property link      "http://dingmaotu.com"
+#property copyright "Copyright 2015-2016, Li Ding"
+#property link      "dingmaotu@hotmail.com"
 #property strict
 
-#include <LiDing/Lang/Object.mqh>
+#include "../Lang/Object.mqh"
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+

@@ -1,10 +1,8 @@
 //+------------------------------------------------------------------+
-//|                                                   LinkedList.mqh |
-//|                                          Copyright 2015, Li Ding |
-//|                                             http://dingmaotu.com |
+//|                                        Collection/LinkedList.mqh |
 //+------------------------------------------------------------------+
-#property copyright "Copyright 2015, Li Ding"
-#property link      "http://dingmaotu.com"
+#property copyright "Copyright 2015-2016, Li Ding"
+#property link      "dingmaotu@hotmail.com"
 #property strict
 
 #include "LinkedNode.mqh"

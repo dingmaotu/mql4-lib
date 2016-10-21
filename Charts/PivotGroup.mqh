@@ -1,15 +1,12 @@
 //+------------------------------------------------------------------+
-//|                                                   PivotGroup.mqh |
-//|                                      Copyright 2015,2016 Li Ding |
-//|                                                dingmaotu@126.com |
+//|                                            Charts/PivotGroup.mqh |
 //+------------------------------------------------------------------+
-#property copyright "Copyright 2015,2016 Li Ding"
-#property link      "dingmaotu@126.com"
+#property copyright "Copyright 2015-2016 Li Ding"
+#property link      "dingmaotu@hotmail.com"
 #property strict
 
 #include "LabeledLine.mqh"
 #include "Pivot.mqh"
-
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+

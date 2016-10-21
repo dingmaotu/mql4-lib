@@ -1,13 +1,11 @@
 //+------------------------------------------------------------------+
-//|                                                      Fractal.mqh |
-//|                                          Copyright 2016, Li Ding |
-//|                                                dingmaotu@126.com |
+//|                                               Charts/Fractal.mqh |
 //+------------------------------------------------------------------+
 #property copyright "Copyright 2016, Li Ding"
-#property link      "dingmaotu@126.com"
+#property link      "dingmaotu@hotmail.com"
 #property strict
 
-#include <LiDing/Utils/Math.mqh>
+#include "../Utils/Math.mqh"
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+

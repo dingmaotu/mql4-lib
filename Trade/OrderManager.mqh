@@ -1,15 +1,13 @@
 //+------------------------------------------------------------------+
-//|                                                 OrderManager.mqh |
-//|                                          Copyright 2015, Li Ding |
-//|                                                dingmaotu@126.com |
+//|                                           Trade/OrderManager.mqh |
 //+------------------------------------------------------------------+
-#property copyright "Copyright 2015, Li Ding"
-#property link      "dingmaotu@126.com"
+#property copyright "Copyright 2015-2016, Li Ding"
+#property link      "dingmaotu@hotmail.com"
 #property strict
 
 #include <stdlib.mqh>
 #include "FxSymbol.mqh"
-#include <LiDing/Collection/IntVector.mqh>
+#include "../Collection/IntVector.mqh"
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
@@ -25,12 +23,12 @@ private:
 
 protected:
    int               getOrderType(bool buyOrSell,double requestPrice);
-   
+
    double            ask() {return m_symbol.getAsk();}
    double            bid() {return m_symbol.getBid();}
-   
+
    double            normalizeLots(double lots);
-   
+
    double            normalizePrice(double price) {return NormalizeDouble(price,M_DIGITS);}
    double            addPoints(double price,int points) {return points > 0 ? NormalizeDouble(price+points*M_POINT,M_DIGITS) : 0;}
    double            subPoints(double price,int points) {return points > 0 ? NormalizeDouble(price-points*M_POINT,M_DIGITS) : 0;}

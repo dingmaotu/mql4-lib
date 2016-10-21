@@ -1,10 +1,8 @@
 //+------------------------------------------------------------------+
-//|                                                 DataProvider.mqh |
-//|                                          Copyright 2015, Li Ding |
-//|                                                dingmaotu@126.com |
+//|                                           Trade/DataProvider.mqh |
 //+------------------------------------------------------------------+
-#property copyright "Copyright 2015, Li Ding"
-#property link      "dingmaotu@126.com"
+#property copyright "Copyright 2015-2016, Li Ding"
+#property link      "dingmaotu@hotmail.com"
 #property strict
 //+------------------------------------------------------------------+
 //| DataProvider interface

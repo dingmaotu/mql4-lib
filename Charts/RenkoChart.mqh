@@ -1,14 +1,12 @@
 //+------------------------------------------------------------------+
-//|                                                   RenkoChart.mqh |
-//|                                          Copyright 2015, Li Ding |
-//|                                                dingmaotu@126.com |
+//|                                            Charts/RenkoChart.mqh |
 //+------------------------------------------------------------------+
-#property copyright "Copyright 2015, Li Ding"
-#property link      "dingmaotu@126.com"
+#property copyright "Copyright 2015-2016, Li Ding"
+#property link      "dingmaotu@hotmail.com"
 #property strict
 
 #include "Renko.mqh"
-#include <LiDing/Utils/ChartFile.mqh>
+#include "../Utils/ChartFile.mqh"
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
@@ -78,7 +76,7 @@ void RenkoChart::loadHistory(MqlRates &rs[])
            {
             for(int j=newBars; j>0; j--)
               {
-               MqlRates r = getRate(j);
+               MqlRates r=getRate(j);
                m_file.writeRecord(getRate(j));
                currentTime++;
               }

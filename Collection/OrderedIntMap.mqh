@@ -1,10 +1,8 @@
 //+------------------------------------------------------------------+
-//|                                                OrderedIntMap.mqh |
-//|                                          Copyright 2016, Li Ding |
-//|                                                dingmaotu@126.com |
+//|                                     Collection/OrderedIntMap.mqh |
 //+------------------------------------------------------------------+
 #property copyright "Copyright 2016, Li Ding"
-#property link      "dingmaotu@126.com"
+#property link      "dingmaotu@hotmail.com"
 #property strict
 //+------------------------------------------------------------------+
 //|                                                                  |

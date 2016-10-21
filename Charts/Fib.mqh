@@ -1,12 +1,12 @@
 //+------------------------------------------------------------------+
-//|                                                          Fib.mqh |
-//|                                          Copyright 2015, Li Ding |
-//|                                                dingmaotu@126.com |
+//|                                                   Charts/Fib.mqh |
 //+------------------------------------------------------------------+
-#property copyright "Copyright 2015, Li Ding"
-#property link      "dingmaotu@126.com"
+#property copyright "Copyright 2015-2016, Li Ding"
+#property link      "dingmaotu@hotmail.com"
 #property strict
-
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
 class Fib
   {
 private:
@@ -27,11 +27,11 @@ public:
 //+------------------------------------------------------------------+
 void Fib::calc(double begin,double end)
   {
-   double r = end - begin;
-   p0 = begin;
-   p100 = end;
-   
-   p50= begin + 0.5 * r;
+   double r=end-begin;
+   p0=begin;
+   p100=end;
+
+   p50=begin+0.5*r;
    p38_2 = begin + 0.382 * r;
    p61_8 = begin + 0.618 * r;
   }

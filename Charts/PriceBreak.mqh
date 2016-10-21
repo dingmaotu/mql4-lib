@@ -1,10 +1,8 @@
 //+------------------------------------------------------------------+
-//|                                                   PriceBreak.mqh |
-//|                                          Copyright 2015, Li Ding |
-//|                                             http://dingmaotu.com |
+//|                                            Charts/PriceBreak.mqh |
 //+------------------------------------------------------------------+
-#property copyright "Copyright 2015, Li Ding"
-#property link      "http://dingmaotu.com"
+#property copyright "Copyright 2015-2016, Li Ding"
+#property link      "dingmaotu@hotmail.com"
 #property strict
 
 #define DEFAULT_BUFFER_SIZE 1000

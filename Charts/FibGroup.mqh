@@ -1,15 +1,12 @@
 //+------------------------------------------------------------------+
-//|                                                     FibGroup.mqh |
-//|                                          Copyright 2016, Li Ding |
-//|                                                dingmaotu@126.com |
+//|                                              Charts/FibGroup.mqh |
 //+------------------------------------------------------------------+
 #property copyright "Copyright 2016, Li Ding"
-#property link      "dingmaotu@126.com"
+#property link      "dingmaotu@hotmail.com"
 #property strict
 
 #include "LabeledLine.mqh"
 #include "Fib.mqh"
-
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
@@ -20,7 +17,7 @@ private:
    bool              m_fractionalLevelsEnabled;
 
 public:
-                     FibGroup(string idPrefix, string labelPrefix,color fColor);
+                     FibGroup(string idPrefix,string labelPrefix,color fColor);
                     ~FibGroup();
 
    void              draw(const Fib &fib,datetime labelTime);
