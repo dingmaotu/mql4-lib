@@ -12,8 +12,8 @@ approach and a coding style like Java, and encourages writing reusable component
  ambition to become the de facto Foundation Library for MQL4.
 
 ## Installation
-Just copy the library to your MQL4 Data Folder's `Include` directory, with the root directory name of `LiDing`,
-like <MQL4Data>\Include\LiDing\<mql4-lib content>.
+Just copy the library to your MQL4 Data Folder's `Include` directory, with the root directory name of your choice, for example:
+<MQL4Data>\Include\`MQL4`\<mql4-lib content>.
 
 ## Usage
 This library is in its early stage. Currently, only the `Lang` and `Collection` component is usable.
@@ -26,7 +26,7 @@ The general usage is as below:
 input string InpEaName = "My EA";
 input double InpBaseLot = 0.1;
 
-#include <LiDing/Lang/ExpertAdvisor.mqh>
+#include <MQL4/Lang/ExpertAdvisor.mqh>
 
 class MyEa: public ExpertAdvisor
 {
