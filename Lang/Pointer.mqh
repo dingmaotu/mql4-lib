@@ -1,7 +1,5 @@
 //+------------------------------------------------------------------+
-//|                                                      Pointer.mqh |
-//|                                          Copyright 2016, Li Ding |
-//|                                            dingmaotu@hotmail.com |
+//|                                                 Lang/Pointer.mqh |
 //+------------------------------------------------------------------+
 #property copyright "Copyright 2016, Li Ding"
 #property link      "dingmaotu@hotmail.com"
@@ -18,7 +16,7 @@ void SafeDelete(T *pointer)
      }
   }
 //+------------------------------------------------------------------+
-//|                                                                  |
+//| Generic pointer check                                            |
 //+------------------------------------------------------------------+
 template<typename T>
 bool Invalid(T *pointer)
