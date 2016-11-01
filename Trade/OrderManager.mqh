@@ -36,6 +36,7 @@ protected:
 public:
                      OrderManager(string symbol="",int magic=0);
 
+   // Order opening
    int               send(int cmd,double lots,double price,double stoploss,double takeprofit);
 
    int               buy(double lots,double stoploss,double takeprofit);
@@ -48,11 +49,25 @@ public:
    int               pendBuy(double price,double lots,int stoploss,int takeprofit) {return pendBuy(price,lots,subPoints(price,stoploss),addPoints(price,takeprofit));}
    int               pendSell(double price,double lots,int stoploss,int takeprofit) {return pendSell(price,lots,addPoints(price,stoploss),subPoints(price,takeprofit));}
 
+   // Order selecting
    bool              getOrders(IntVector &v,int type=-1);
    bool              select(int ticket);
 
+   // Market order modify (current order)
+/*
+   bool              modify(double stoploss, double takeprofit);
+   bool              modify(int stoploss, int takeprofit);
+   bool              stoploss(double price);
+   bool              takeprofit(double price);
+*/
+
+   // Order closing
    bool              closeCurrent();
    bool              close(int ticket);
+
+   bool              closeCurrentBy(int other);
+   bool              closeBy(int ticket,int other);
+
    void              closeByType(int type);
    void              closeAll();
   };
@@ -106,7 +121,7 @@ int OrderManager::getOrderType(bool buyOrSell,double normalizedPrice)
 //+------------------------------------------------------------------+
 int OrderManager::send(int cmd,double lots,double price,double stoploss,double takeprofit)
   {
-   int ticket=OrderSend(m_symbol.getName(),cmd,lots,price,3,stoploss,takeprofit,"",m_magic,0,cmd%2==0?Blue:Red);
+   int ticket=OrderSend(m_symbol.getName(),cmd,lots,price,3,stoploss,takeprofit,"",m_magic,0,cmd%2==0?clrBlue:clrRed);
 
    if(ticket<0)
      {
@@ -212,6 +227,20 @@ bool OrderManager::close(int ticket)
   {
    if(!select(ticket)) {return false;}
    return closeCurrent();
+  }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+bool OrderManager::closeBy(int ticket,int other)
+  {
+   return OrderCloseBy(ticket, other, clrYellow);
+  }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+bool OrderManager::closeCurrentBy(int other)
+  {
+   return OrderCloseBy(OrderTicket(), other, clrYellow);
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
