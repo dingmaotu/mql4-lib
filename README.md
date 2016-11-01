@@ -32,6 +32,8 @@ stable and can be used in production. Here are the main components:
 4. `Trade` directory contains useful abstractions for trading
 5. `Utils` directory contains various utilities
 
+### Basic programs
+
 In `Lang`, I abstract three Program types (Script, Indicator, and
  Expert Advisor) to three base classes that you can inherit.
 
@@ -75,3 +77,61 @@ With this approach, you can write reusable EAs, Scripts, or
 Indicators.  You do not need to worry about the OnInit, OnDeinit,
 OnStart, OnTick, etc.  You never use a input parameter directly in
 your EA. You can write a base EA, and extend it easily.
+
+### LinkedList
+
+In advanced MQL4 programs, you have to use more sophisticated
+collection types for your order management.  In Collection/LinkedList
+module, I implement a linked list base class, and provide a macro (yes
+a macro, because you do not have class templates in MQL4) to generate
+a version for any type (types that can be `new`ed).
+
+Here is a simple example:
+
+```
+//+------------------------------------------------------------------+
+//|                                                TestOrderPool.mq4 |
+//+------------------------------------------------------------------+
+#property copyright "Copyright 2016, Li Ding"
+#property link      "dingmaotu@hotmail.com"
+#property version   "1.00"
+#property strict
+
+#include <MQL4/Trade/Order.mqh>
+#include <MQL4/Trade/OrderPool.mqh>
+#include <MQL4/Collection/LinkedList.mqh>
+
+//+------------------------------------------------------------------+
+//| define OrderList (as you can not use LinkedList directly)        |
+//| the name of the generated list type will be TypeName##List       |
+//| this macro also generates underlying OrderNode (which you are    |
+//| not supposed to care) and OrderIterator to iterate through a     |
+//| OrderList                                                        |
+//| Notice the ending semicolon: it is needed.                       |
+//+------------------------------------------------------------------+
+LINKED_LIST(Order);
+
+// for simplicity, I will not use the Lang/Script class
+void OnStart()
+  {
+   OrderList list;
+   int total= TradingPool::total();
+   for(int i=0; i<total; i++)
+     {
+      if(TradingPool::select(i))
+        {
+         OrderPrint(); // to compare with Order.toString
+         list.push(new Order());
+        }
+     }
+
+   PrintFormat("There are %d orders. ",list.size());
+
+   for(OrderIterator iter(list); !iter.end(); iter.next())
+     {
+      Order*o=iter.get();
+      Print(o.toString());
+     }
+  }
+//+------------------------------------------------------------------+
+```
