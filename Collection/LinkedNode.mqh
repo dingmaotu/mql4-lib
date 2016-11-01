@@ -5,7 +5,6 @@
 #property link      "dingmaotu@hotmail.com"
 #property strict
 
-#include "../Lang/Object.mqh"
 //+------------------------------------------------------------------+
 //| LinkedNode implementation as a base class for specific           |
 //| node types.                                                      |

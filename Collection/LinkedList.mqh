@@ -5,6 +5,7 @@
 #property link      "dingmaotu@hotmail.com"
 #property strict
 
+#include "../Lang/Pointer.mqh"
 #include "LinkedNode.mqh"
 //+------------------------------------------------------------------+
 //| LinkedList implementation as a base class for specific           |
@@ -26,7 +27,8 @@ protected:
    bool              inRange(int i) const {return i>=0 && i<m_size;}
 
 public:
-   // for iterating purpose
+   // For iterating purpose. Should be protected but there are
+   // no `friend` like C++, so we have to use this to implement an iterator
    LinkedNode       *getHead() const {return m_head;}
 
    int               size() const {return m_size;}
@@ -116,5 +118,43 @@ LinkedNode *LinkedList::at(int i) const
       while(node!=NULL && node.next()!=NULL && j!=i) {node=node.next(); j++;}
       return node;
      }
+  }
+//| -----------------------------------------------------------------|
+//| This macro creates a version of LinkedList for a specific type   |
+//| -----------------------------------------------------------------|
+#define LINKED_LIST(TypeName) \
+class TypeName##Node: public LinkedNode\
+  {\
+private:\
+   TypeName          *m_data;\
+public:\
+                     TypeName##Node(TypeName *o):m_data(o){}\
+   virtual          ~TypeName##Node(){SafeDelete(m_data);}\
+   TypeName         *getData() {return m_data;}\
+   void              setData(TypeName *o) {m_data=o;}\
+  };\
+class TypeName##List: public LinkedList\
+  {\
+protected:\
+   TypeName         *getAndDetach(TypeName##Node *n){TypeName *o=n.getData();n.setData(NULL);detach(n);return o;}\
+public:\
+   TypeName         *get(int i) const {if(inRange(i)) {TypeName##Node *on=at(i);return on.getData();} else {return NULL;}}\
+   void              set(int i,Object *o) {if(inRange(i)) {TypeName##Node *on=at(i);on.setData(o);}}\
+   void              insert(int i,Object *o) {if(inRange(i)) {attach(at(i),new TypeName##Node(o));}}\
+   void              remove(int i) {if(inRange(i)) {detach(at(i));}}\
+   void              push(TypeName *o) {attach(last(),new TypeName##Node(o));}\
+   TypeName         *pop() {TypeName##Node *n=last(); return getAndDetach(n);}\
+   void              unshift(TypeName *o) {attach(NULL,new TypeName##Node(o));}\
+   TypeName         *shift() {TypeName##Node *n=getHead(); return getAndDetach(n);}\
+  };\
+class TypeName##Iterator\
+  {\
+private:\
+   TypeName##Node    *m_p;\
+public:\
+                     TypeName##Iterator(const TypeName##List &list):m_p(list.getHead()){}\
+   bool              end() {return m_p==NULL;}\
+   void              next() {if(!end()){m_p=m_p.next();}}\
+   TypeName         *get() {return m_p.getData();}\
   }
 //+------------------------------------------------------------------+
