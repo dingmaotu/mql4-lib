@@ -6,7 +6,7 @@ MQL4 Foundation Library For Professional Developers
 
 MQL4 programming language provided by MetaQuotes is a very limited
 version of C++, and its standard library is a clone of the (ugly) MFC,
-both of which I am very uncomfortable of.  Most MQL4 programs have not
+both of which I am very uncomfortable with. Most MQL4 programs have not
 adapted to the MQL5 (Object Oriented) style yet, let alone reuable and
 elegant component based design and programming.
 
