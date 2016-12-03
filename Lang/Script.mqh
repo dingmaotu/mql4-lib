@@ -16,6 +16,9 @@ void OnStart() {__app__.main();}
 class Script: public App
   {
 public:
-   virtual void      main(void) {}
+   virtual void      main(void)=0;
+
+   //--- default for App
+   virtual int       onInit() {return INIT_SUCCEEDED;}
   };
 //+------------------------------------------------------------------+

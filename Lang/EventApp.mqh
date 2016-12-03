@@ -12,12 +12,12 @@ DECLARE_APP(AppClass,PARAM_SECTION)\
 void OnTimer() {__app__.onTimer();}\
 void OnChartEvent(const int id,const long &lparam,const double &dparam,const string &sparam) {__app__.onChartEvent(id,lparam,dparam,sparam);}
 //+------------------------------------------------------------------+
-//| Base class for a MQL Application that can receive events         |
+//| Abstract base class for a MQL Application that can receive events|
 //+------------------------------------------------------------------+
 class EventApp: public App
   {
 public:
-   virtual void      onTimer() {}
-   virtual void      onChartEvent(const int id,const long &lparam,const double &dparam,const string &sparam) {}
+   virtual void      onTimer()=0;
+   virtual void      onChartEvent(const int id,const long &lparam,const double &dparam,const string &sparam)=0;
   };
 //+------------------------------------------------------------------+

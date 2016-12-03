@@ -6,24 +6,33 @@
 #property strict
 
 #include "Object.mqh"
+#include "Pointer.mqh"
 
 #define PARAM(ParamName, ParamValue) __app__.set##ParamName((ParamValue));
 
 #define DECLARE_APP(AppClass,PARAM_SECTION) \
-AppClass __app__;\
+AppClass *__app__;\
 int OnInit(){\
+__app__=new AppClass();\
+__app__.setRuntimeControlled(true);\
 PARAM_SECTION\
 return __app__.onInit();}\
-void OnDeinit(const int reason) {__app__.onDeinit(reason);}
+void OnDeinit(const int reason) {SafeDelete(__app__);}
 //+------------------------------------------------------------------+
-//| Base class for a MQL Application                                 |
+//| Abstract base class for a MQL Application                        |
 //+------------------------------------------------------------------+
 class App: public Object
   {
+private:
+   bool              mRuntimeControlled;
+protected:
+   bool              isRuntimeControlled() const {return mRuntimeControlled;}
+   int               getDeinitReason() const {return UninitializeReason();}
 public:
-                     App(){}
-   virtual          ~App(){}
-   virtual int       onInit(void) {return INIT_SUCCEEDED;}
-   virtual void      onDeinit(const int reason) {}
+   //--- This method is not intended for public use
+   void              setRuntimeControlled(bool value) {mRuntimeControlled=value;}
+                     App():mRuntimeControlled(false){}
+
+   virtual int       onInit(void)=0;
   };
 //+------------------------------------------------------------------+

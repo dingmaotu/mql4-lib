@@ -26,7 +26,11 @@ public:
                           const double &close[],
                           const long &tickVolume[],
                           const long &volume[],
-                          const int &spread[])
-     {return total;}
+                          const int &spread[])=0;
+   //--- default for App
+   virtual int       onInit() {return INIT_SUCCEEDED;}
+//--- default for EventApp
+   virtual void      onTimer() {}
+   virtual void      onChartEvent(const int id,const long &lparam,const double &dparam,const string &sparam) {}
   };
 //+------------------------------------------------------------------+
