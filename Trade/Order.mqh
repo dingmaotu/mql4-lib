@@ -6,6 +6,7 @@
 #property strict
 
 #include "../Lang/Object.mqh"
+#include "../Collection/LinkedList.mqh"
 
 const string OrderTypeString[]={"buy","sell","buy limit","sell simit","buy stop","sell stop"};
 //+------------------------------------------------------------------+
@@ -139,4 +140,6 @@ int Order::hash(void) const
   {
    return ticket;
   }
+
+LINKED_LIST(Order*, Order, true);
 //+------------------------------------------------------------------+
