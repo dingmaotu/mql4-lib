@@ -6,18 +6,36 @@
 #property strict
 
 #include "../Lang/Pointer.mqh"
-#include "LinkedNode.mqh"
+//+------------------------------------------------------------------+
+//| LinkedNode implementation as a base class for specific           |
+//| node types.                                                      |
+//+------------------------------------------------------------------+
+class LinkedNode
+  {
+private:
+   LinkedNode       *m_prev;
+   LinkedNode       *m_next;
+
+public:
+                     LinkedNode():m_prev(NULL),m_next(NULL){}
+   virtual          ~LinkedNode(){}
+
+   LinkedNode       *prev() const {return m_prev;}
+   void              prev(LinkedNode *node) {m_prev=node;}
+   LinkedNode       *next() const {return m_next;}
+   void              next(LinkedNode *node) {m_next=node;}
+  };
 //+------------------------------------------------------------------+
 //| LinkedList implementation as a base class for specific           |
 //| collections.                                                     |
 //+------------------------------------------------------------------+
 class LinkedList
   {
-private:
+protected:
    LinkedNode       *m_head;
    int               m_size;
-protected:
-                     LinkedList():m_size(0),m_head(NULL) {}
+
+                     LinkedList():m_size(0),m_head(new LinkedNode()) {}
    virtual          ~LinkedList();
 
    void              detach(LinkedNode *node);
@@ -29,22 +47,24 @@ protected:
 public:
    // For iterating purpose. Should be protected but there are
    // no `friend` like C++, so we have to use this to implement an iterator
-   LinkedNode       *getHead() const {return m_head;}
+   const LinkedNode *__head() const {return m_head;}
 
    int               size() const {return m_size;}
+   void              clear();
   };
 //+------------------------------------------------------------------+
 //| release all memory used by the list                              |
 //+------------------------------------------------------------------+
 LinkedList::~LinkedList()
   {
-   LinkedNode*n=m_head;
+   LinkedNode*n=m_head.next();
    while(n!=NULL)
      {
       LinkedNode *tempNode=n.next();
-      delete n;
+      SafeDelete(n);
       n=tempNode;
      }
+   SafeDelete(m_head);
   }
 //+------------------------------------------------------------------+
 //| detach node from list                                            |
@@ -54,13 +74,7 @@ void LinkedList::detach(LinkedNode *node)
    if(CheckPointer(node) != POINTER_DYNAMIC) return;
    if(node.prev()!=NULL) {node.prev().next(node.next());}
    if(node.next()!=NULL) {node.next().prev(node.prev());}
-
-   if(node==m_head)
-     {
-      m_head=node.next();
-     }
-
-   delete node;
+   SafeDelete(node);
    m_size--;
   }
 //+------------------------------------------------------------------+
@@ -69,27 +83,15 @@ void LinkedList::detach(LinkedNode *node)
 void LinkedList::attach(LinkedNode *prev,LinkedNode *node)
   {
    if(CheckPointer(node) != POINTER_DYNAMIC) return;
-   if(prev==NULL)
-     {
-      //--- insert before head
-      node.next(m_head);
-      if(m_head!=NULL)
-        {
-         m_head.prev(node);
-        }
-      m_head=node;
-     }
-   else
-     {
-      node.prev(prev);
-      node.next(prev.next());
+// prev will always be a valid pointer (not NULL)
+   node.prev(prev);
+   node.next(prev.next());
 
-      prev.next(node);
+   prev.next(node);
 
-      if(node.next()!=NULL)
-        {
-         node.next().prev(node);
-        }
+   if(node.next()!=NULL)
+     {
+      node.next().prev(node);
      }
    m_size++;
   }
@@ -99,62 +101,78 @@ void LinkedList::attach(LinkedNode *prev,LinkedNode *node)
 LinkedNode *LinkedList::last() const
   {
    LinkedNode *node=m_head;
-   while(node!=NULL && node.next()!=NULL) {node=node.next();}
+   while(node.next()!=NULL) {node=node.next();}
    return node;
   }
 //+------------------------------------------------------------------+
-//| ith node of the list                                             |
+//| ith insersion point of the list                                  |
+//| ith node is at(i).next()                                         |
+//| always return a valid node for insersion                         |
+//| i.e. if i<0, then return m_head; if i>=m_size, return last valid |
+//| node                                                             |
 //+------------------------------------------------------------------+
 LinkedNode *LinkedList::at(int i) const
   {
-   if(i<0 || i>m_size-1)
-     {
-      return NULL;
-     }
-   else
-     {
-      int j=0;
-      LinkedNode *node=m_head;
-      while(node!=NULL && node.next()!=NULL && j!=i) {node=node.next(); j++;}
-      return node;
-     }
+   int j=0;
+   LinkedNode *node=m_head;
+   while(node.next()!=NULL && j<i) {node=node.next(); j++;}
+   return node;
   }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+LinkedList::clear(void)
+  {
+   LinkedNode *node=m_head.next();
+   while(node!=NULL)
+     {
+      LinkedNode *tempNode=node.next();
+      SafeDelete(node);
+      node=tempNode;
+     }
+   m_head.next(NULL);
+   m_size=0;
+  }
+ 
+#define _LINKEDLIST_POINTER_DELETE_true SafeDelete(m_data);
+#define _LINKEDLIST_POINTER_DELETE_false
 //| -----------------------------------------------------------------|
 //| This macro creates a version of LinkedList for a specific type   |
 //| -----------------------------------------------------------------|
-#define LINKED_LIST(TypeName) \
-class TypeName##Node: public LinkedNode\
+#define LINKED_LIST(TypeName, ClassPrefix, IsPointerElement) \
+class ClassPrefix##Node: public LinkedNode\
   {\
 private:\
-   TypeName          *m_data;\
+   TypeName          m_data;\
 public:\
-                     TypeName##Node(TypeName *o):m_data(o){}\
-   virtual          ~TypeName##Node(){SafeDelete(m_data);}\
-   TypeName         *getData() {return m_data;}\
-   void              setData(TypeName *o) {m_data=o;}\
+                     ClassPrefix##Node(TypeName o):m_data(o){}\
+   virtual          ~ClassPrefix##Node(){_LINKEDLIST_POINTER_DELETE_##IsPointerElement}\
+   TypeName          getData() {return m_data;}\
+   void              setData(TypeName o) {m_data=o;}\
   };\
-class TypeName##List: public LinkedList\
+class ClassPrefix##List: public LinkedList\
   {\
 protected:\
-   TypeName         *getAndDetach(TypeName##Node *n){TypeName *o=n.getData();n.setData(NULL);detach(n);return o;}\
+   TypeName          getAndDetach(ClassPrefix##Node *n){if(n==NULL){return NULL;}TypeName o=n.getData();n.setData(NULL);detach(n);return o;}\
 public:\
-   TypeName         *get(int i) const {if(inRange(i)) {TypeName##Node *on=at(i);return on.getData();} else {return NULL;}}\
-   void              set(int i,Object *o) {if(inRange(i)) {TypeName##Node *on=at(i);on.setData(o);}}\
-   void              insert(int i,Object *o) {if(inRange(i)) {attach(at(i),new TypeName##Node(o));}}\
-   void              remove(int i) {if(inRange(i)) {detach(at(i));}}\
-   void              push(TypeName *o) {attach(last(),new TypeName##Node(o));}\
-   TypeName         *pop() {TypeName##Node *n=last(); return getAndDetach(n);}\
-   void              unshift(TypeName *o) {attach(NULL,new TypeName##Node(o));}\
-   TypeName         *shift() {TypeName##Node *n=getHead(); return getAndDetach(n);}\
+   TypeName          get(int i) const {ClassPrefix##Node *on=at(i).next();return on==NULL?NULL:on.getData();}\
+   void              set(int i,TypeName o) {ClassPrefix##Node *on=at(i).next();if(on!=NULL){on.setData(o);}}\
+   void              insert(int i,TypeName o) {attach(at(i),new ClassPrefix##Node(o));}\
+   void              remove(int i) {detach(at(i).next());}\
+   void              push(TypeName o) {attach(last(),new ClassPrefix##Node(o));}\
+   TypeName          pop() {ClassPrefix##Node *n=last(); return n==m_head?NULL:getAndDetach(n);}\
+   TypeName          peek() {ClassPrefix##Node *n=last(); return n==m_head?NULL:n.getData();}\
+   void              unshift(TypeName o) {attach(m_head,new ClassPrefix##Node(o));}\
+   TypeName          shift() {ClassPrefix##Node *n=m_head.next(); return getAndDetach(n);}\
   };\
-class TypeName##Iterator\
+class ClassPrefix##ListIterator\
   {\
 private:\
-   TypeName##Node    *m_p;\
+   ClassPrefix##Node*m_p;\
 public:\
-                     TypeName##Iterator(const TypeName##List &list):m_p(list.getHead()){}\
-   bool              end() {return m_p==NULL;}\
+                     ClassPrefix##ListIterator(const ClassPrefix##List &list):m_p(list.__head().next()){}\
+   bool              end() const {return m_p==NULL;}\
    void              next() {if(!end()){m_p=m_p.next();}}\
-   TypeName         *get() {return m_p.getData();}\
+   TypeName          get() {return m_p.getData();}\
   }
 //+------------------------------------------------------------------+
