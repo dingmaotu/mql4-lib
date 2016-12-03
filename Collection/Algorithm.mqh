@@ -19,6 +19,20 @@ void ArrayInsert(T &array[],int index,T value)
    array[index]=value;
   }
 //+------------------------------------------------------------------+
+//| Generic array delete                                             |
+//+------------------------------------------------------------------+
+template<typename T>
+void ArrayDelete(T &array[],int index)
+  {
+   int size=ArraySize(array);
+
+   for(int i=index; i<size-1; i++)
+     {
+      array[i]=array[i+1];
+     }
+   ArrayResize(array,size-1,10);
+  }
+//+------------------------------------------------------------------+
 //| Generic binary search                                            |
 //+------------------------------------------------------------------+
 template<typename T>
