@@ -83,13 +83,13 @@ your EA. You can write a base EA, and extend it easily.
 In advanced MQL4 programs, you have to use more sophisticated
 collection types for your order management.
 
-It is planned to add common collection type to the lib, including
+It is planned to add common collection types to the lib, including
 lists, hash maps, trees, and others.
 
 Currently there are two list types:
 
 1. Collection/LinkedList is a Linked List implementation
-2. Collection/Vector is a array based implementation
+2. Collection/Vector is an array based implementation
 
 Since there is no `class template` in MQL4, I provide a macro for each
 collection types. These macros can generate a collection class for any
