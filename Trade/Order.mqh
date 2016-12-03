@@ -140,6 +140,4 @@ int Order::hash(void) const
   {
    return ticket;
   }
-
-LINKED_LIST(Order*, Order, true);
 //+------------------------------------------------------------------+
