@@ -78,13 +78,37 @@ Indicators.  You do not need to worry about the OnInit, OnDeinit,
 OnStart, OnTick, etc.  You never use a input parameter directly in
 your EA. You can write a base EA, and extend it easily.
 
-### LinkedList
+### Collections
 
 In advanced MQL4 programs, you have to use more sophisticated
-collection types for your order management.  In Collection/LinkedList
-module, I implement a linked list base class, and provide a macro (yes
-a macro, because you do not have class templates in MQL4) to generate
-a version for any type (types that can be `new`ed).
+collection types for your order management.
+
+It is planned to add common collection type to the lib, including
+lists, hash maps, trees, and others.
+
+Currently there are two list types:
+
+1. Collection/LinkedList is a Linked List implementation
+2. Collection/Vector is a array based implementation
+
+Since there is no `class template` in MQL4, I provide a macro for each
+collection types. These macros can generate a collection class for any
+type, be it elementary types or object pointers (types that can be
+`new`ed).
+
+The general usage is as follows:
+
+```
+LINKED_LIST(Order*, Order, true); // defines OrderList and OrderListIterator
+LINKED_LIST(int, Int, false); // defines IntList and IntListIterator
+VECTOR(Order*, Order, true); // defines OrderVector and OrderVectorIterator
+VECTOR(int, Int, false); // defines IntVector and IntVectorIterator
+```
+
+The last parameter is a boolean value, true for object pointer types
+(it means when the collection class is destructed, whether its
+elements should be destructed, too), and false for elementary
+(integer) types.
 
 Here is a simple example:
 
@@ -105,11 +129,11 @@ Here is a simple example:
 //| define OrderList (as you can not use LinkedList directly)        |
 //| the name of the generated list type will be TypeName##List       |
 //| this macro also generates underlying OrderNode (which you are    |
-//| not supposed to care) and OrderIterator to iterate through a     |
+//| not supposed to care) and OrderListIterator to iterate through a |
 //| OrderList                                                        |
 //| Notice the ending semicolon: it is needed.                       |
 //+------------------------------------------------------------------+
-LINKED_LIST(Order);
+LINKED_LIST(Order*, Order, true);
 
 // for simplicity, I will not use the Lang/Script class
 void OnStart()
@@ -127,7 +151,7 @@ void OnStart()
 
    PrintFormat("There are %d orders. ",list.size());
 
-   for(OrderIterator iter(list); !iter.end(); iter.next())
+   for(OrderListIterator iter(list); !iter.end(); iter.next())
      {
       Order*o=iter.get();
       Print(o.toString());
