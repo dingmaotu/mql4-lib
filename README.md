@@ -203,19 +203,17 @@ process it, without polling in OnTimer, or creating pipe/sockets in
 OnTick, which is the way most API wrappers work.
 
 Using OnTimer is not a good idea. First it can not receive any
-parameters from the MQL side. You at least needs an idenfier for the
+parameters from the MQL side. You at least needs an identifier for the
 event. Second, WM_TIMER events are very crowded in the main
 thread. Even on weekends where there are no data coming in, WM_TIMER
 is constantly sent to the main thread. This makes more instructions
 executed to decide if it is a valid event for the program.
 
-*WARNING*:
-
-    This is a temporary solution. The best way to handle asynchronous
-    events is to find out how ChartEventCustom is implemented and
-    implement that in C/C++, which is extremely hard as it is not
-    implemented by win32 messages, and you can not look into it
-    because of very strong anti-debugging measures.
+*WARNING*: This is a temporary solution. The best way to handle asynchronous
+events is to find out how ChartEventCustom is implemented and
+implement that in C/C++, which is extremely hard as it is not
+implemented by win32 messages, and you can not look into it
+because of very strong anti-debugging measures.
 
 Inside MetaTrader terminal, you better use ChartEventCustom to
 send custom events.
