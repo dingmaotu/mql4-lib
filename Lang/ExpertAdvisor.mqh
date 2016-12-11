@@ -23,6 +23,7 @@ public:
    virtual int       onInit() {return INIT_SUCCEEDED;}
 //--- default for EventApp
    virtual void      onTimer() {}
+   virtual void      onAppEvent(const ushort event, const uint param) {} 
    virtual void      onChartEvent(const int id,const long &lparam,const double &dparam,const string &sparam) {}
 //--- default for EA Tester
    virtual double    onTester() {return 0.0;}
