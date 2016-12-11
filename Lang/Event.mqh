@@ -27,7 +27,7 @@ In OnChartEvent handler, EventApp checks if KeyDown event is actually
 a custom app event from another source (not a real key down). If it is,
 then EventApp calls its onAppEvent method.
 
-This mechnism has certain limitations: the parameter is only a integer (32bit),
+This mechnism has certain limitations: the parameter is only an integer (32bit),
 due to how WM_KEYDOWN is processed in MetaTrader terminal. And this solution
 may not work in 64bit MetaTrader5.
 
@@ -46,7 +46,7 @@ WARNING:
 This is a temporary solution. The best way to handle asynchronous events
 is to find out how ChartEventCustom is implemented and implement that in C/C++,
 which is extremely hard as it is not implemented by win32 messages, and you
-can not look into it because the very strong anti-debugging measure.
+can not look into it because of very strong anti-debugging measures.
 
 Inside MetaTrader terminal, you better use ChartEventCustom to
 send custom events.
