@@ -2,6 +2,13 @@
 
 MQL4 Foundation Library For Professional Developers
 
+* [1. Introduction](#introduction)
+* [2. Installation](#installation)
+* [3. Usage](#usage)
+  * [3.1 Basic Programs](#basic-programs)
+  * [3.2 Collections](#collections)
+  * [3.3 Asynchronous Events](#asynchronous-events)
+
 ## Introduction
 
 MQL4 programming language provided by MetaQuotes is a very limited
@@ -32,7 +39,7 @@ stable and can be used in production. Here are the main components:
 4. `Trade` directory contains useful abstractions for trading
 5. `Utils` directory contains various utilities
 
-### Basic programs
+### Basic Programs
 
 In `Lang`, I abstract three Program types (Script, Indicator, and
  Expert Advisor) to three base classes that you can inherit.
