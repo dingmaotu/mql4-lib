@@ -8,7 +8,7 @@
 #include "EventApp.mqh"
 
 #define DECLARE_INDICATOR(AppClass,PARAM_SECTION) \
-DECLARE_EVENT_APP(AppClass,PARAM_SCECTION)\
+DECLARE_EVENT_APP(AppClass,PARAM_SECTION)\
 int OnCalculate(const int rates_total,const int prev_calculated,const datetime &time[],const double &open[],const double &high[],const double &low[],const double &close[],const long &tickVolume[],const long &volume[],const int &spread[])\
   {return __app__.main(rates_total,prev_calculated,time,open,high,low,close,tickVolume,volume,spread);}
 //+------------------------------------------------------------------+
@@ -28,9 +28,10 @@ public:
                           const long &volume[],
                           const int &spread[])=0;
    //--- default for App
-   virtual int       onInit() {return INIT_SUCCEEDED;}
-//--- default for EventApp
+   virtual int       onInit(void) {return INIT_SUCCEEDED;}
+   //--- default for EventApp
    virtual void      onTimer() {}
    virtual void      onChartEvent(const int id,const long &lparam,const double &dparam,const string &sparam) {}
+   virtual void      onAppEvent(const ushort event,const uint param) {}
   };
 //+------------------------------------------------------------------+
