@@ -98,24 +98,35 @@ Currently there are two list types:
 1. Collection/LinkedList is a Linked List implementation
 2. Collection/Vector is an array based implementation
 
-Since there is no `class template` in MQL4, I provide a macro for each
-collection types. These macros can generate a collection class for any
-type, be it elementary types or object pointers (types that can be
-`new`ed).
+First I want to point out that MQL4 has some extremely useful undocumented
+features:
+
+1. class templates(!)
+2. typedef function pointers(!)
+3. template function overloading
+
+Though inheriting multiple interfaces is not possible now, I think this will be
+possible in the future.
+ 
+Among these features, `class template` is the most important because we can
+greatly simplify Collection code. I think these features are used by MetaQuotes
+to port .Net Regular Expression library to MQL.
+
+With class templates and inheritance, I implemented a hierarchy:
+
+    Iterable -> Collection -> LinkeList and Vector
 
 The general usage is as follows:
 
-```
-LINKED_LIST(Order*, Order, true); // defines OrderList and OrderListIterator
-LINKED_LIST(int, Int, false); // defines IntList and IntListIterator
-VECTOR(Order*, Order, true); // defines OrderVector and OrderVectorIterator
-VECTOR(int, Int, false); // defines IntVector and IntVectorIterator
+```c++
+LinkedList<Order*> orderList; // linked list based implementation, faster insert/remove
+LinkedList<int> intList; //  yes it supports primary types as well
+Vector<Order*>; orderVector // array based implementation, faster random access
+Vector<int> intVector;
 ```
 
-The last parameter is a boolean value, true for object pointer types
-(it means when the collection class is destructed, whether its
-elements should be destructed, too), and false for elementary
-(integer) types.
+To iterate through a collection, use its iterator, as iterators know what is
+the most efficient way to iterating.
 
 Here is a simple example:
 
@@ -123,7 +134,7 @@ Here is a simple example:
 //+------------------------------------------------------------------+
 //|                                                TestOrderPool.mq4 |
 //+------------------------------------------------------------------+
-#property copyright "Copyright 2016, Li Ding"
+#property copyright "Copyright 2016-2017, Li Ding"
 #property link      "dingmaotu@hotmail.com"
 #property version   "1.00"
 #property strict
@@ -132,20 +143,10 @@ Here is a simple example:
 #include <MQL4/Trade/OrderPool.mqh>
 #include <MQL4/Collection/LinkedList.mqh>
 
-//+------------------------------------------------------------------+
-//| define OrderList (as you can not use LinkedList directly)        |
-//| the name of the generated list type will be TypeName##List       |
-//| this macro also generates underlying OrderNode (which you are    |
-//| not supposed to care) and OrderListIterator to iterate through a |
-//| OrderList                                                        |
-//| Notice the ending semicolon: it is needed.                       |
-//+------------------------------------------------------------------+
-LINKED_LIST(Order*, Order, true);
-
 // for simplicity, I will not use the Lang/Script class
 void OnStart()
   {
-   OrderList list;
+   OrderList<Order*> list;
    int total= TradingPool::total();
    for(int i=0; i<total; i++)
      {
@@ -158,9 +159,9 @@ void OnStart()
 
    PrintFormat("There are %d orders. ",list.size());
 
-   for(OrderListIterator iter(list); !iter.end(); iter.next())
+   for(Iter<Order*> iter(list); !iter.end(); iter.next())
      {
-      Order*o=iter.get();
+      Order*o=iter.current();
       Print(o.toString());
      }
   }
