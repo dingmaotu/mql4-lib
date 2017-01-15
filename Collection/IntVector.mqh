@@ -7,5 +7,5 @@
 
 #include "Vector.mqh"
 
-VECTOR(int,Int,false);
+#define IntVector Vector<int>
 //+------------------------------------------------------------------+

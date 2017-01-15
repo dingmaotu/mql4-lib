@@ -8,10 +8,10 @@
 //| Generic array insert                                             |
 //+------------------------------------------------------------------+
 template<typename T>
-void ArrayInsert(T &array[],int index,T value)
+void ArrayInsert(T &array[],int index,T value,int extraBuffer=10)
   {
    int size=ArraySize(array);
-   ArrayResize(array,size+1,10);
+   ArrayResize(array,size+1,extraBuffer);
    for(int i=size; i>index; i--)
      {
       array[i]=array[i-1];
@@ -30,7 +30,7 @@ void ArrayDelete(T &array[],int index)
      {
       array[i]=array[i+1];
      }
-   ArrayResize(array,size-1,10);
+   ArrayResize(array,size-1);
   }
 //+------------------------------------------------------------------+
 //| Generic binary search                                            |

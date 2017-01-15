@@ -5,49 +5,93 @@
 #property link      "dingmaotu@hotmail.com"
 #property strict
 
-#include "Algorithm.mqh"
+#include "Array.mqh"
 #include "../Lang/Pointer.mqh"
-
-#define _VECTOR_BUFFER 50
-
-#define _VECTOR_POINTER_DELETE_true int s=ArraySize(array);for(int i=0;i<s;i++){SafeDelete(array[i]);}
-#define _VECTOR_POINTER_DELETE_false
+#include "Collection.mqh"
 //+------------------------------------------------------------------+
 //| Generic Vector                                                   |
 //+------------------------------------------------------------------+
-#define VECTOR(TypeName, ClassName, IsPointerElement) \
-class ClassName##Vector\
-  {\
-private:\
-   TypeName          array[];\
-protected:\
-   void              resize(int size) {ArrayResize(array,size,_VECTOR_BUFFER);}\
-public:\
-                     ClassName##Vector() {resize(0);}\
-   virtual          ~ClassName##Vector() {_VECTOR_POINTER_DELETE_##IsPointerElement ArrayFree(array);}\
-   void              push(TypeName val) {int size=size();resize(size+1);array[size]=val;}\
-   TypeName          pop() {int size=size();TypeName val=array[size-1];resize(size-1);return val;}\
-   TypeName          peek() const {int size=size();return array[size()-1];}\
-   void              clear() {_VECTOR_POINTER_DELETE_##IsPointerElement resize(0);}\
-   void              insert(int i,TypeName val) {ArrayInsert(array,i,val);}\
-   TypeName          remove(int i) {TypeName val=array[i];ArrayDelete(array,i);return val;}\
-   void              unshift(TypeName val) {insert(0, val);}\
-   TypeName          shift() {return remove(0);}\
-   TypeName          get(int i) const {return array[i];}\
-   void              set(int i,TypeName val) {array[i]=val;}\
-   int               size() const {return ArraySize(array);}\
-  };\
-class ClassName##VectorIterator\
-  {\
-private:\
-   int                      m_index;\
-   const int                m_size;\
-   const ClassName##Vector *m_vector;\
-public:\
-                     ClassName##VectorIterator(const ClassName##Vector &v)\
-                     :m_index(0),m_size(v.size()),m_vector(GetPointer(v)){}\
-   bool              end() const {return m_index>=m_size;}\
-   void              next() {if(!end()){m_index++;}}\
-   TypeName          get() {return m_vector.get(m_index);}\
+template<typename T>
+class Vector: public Collection<T>
+  {
+private:
+   Array<T>m_array;
+public:
+                     Vector(int extraBuffer=50):m_array(extraBuffer) {}
+
+   // Iterator interface
+   Iterator<T>*iterator() const {return new VectorIterator<T>(this);}
+
+   // Collection interface
+   void              clear() {m_array.clear();}
+   int               size() const {return m_array.size();}
+   bool              add(T value) {push(value); return true;}
+   bool              remove(const T value);
+
+   // Sequence interface
+   void              insertAt(int i,T val) {m_array.insertAt(i,val);}
+   T                 removeAt(int i) {T val=m_array[i];m_array.removeAt(i);return val;}
+   T                 get(int i) const {return m_array[i];}
+   void              set(int i,T val) {m_array.set(i,val);}
+
+   // Stack and Queue interface: alias for Sequence interface
+   void              push(T val) {insertAt(size(),val);}
+   T                 pop() {return removeAt(size()-1);}
+   T                 peek() const {return get(size()-1);}
+   void              unshift(T val) {insertAt(0,val);}
+   T                 shift() {return removeAt(0);}
+  };
+//+------------------------------------------------------------------+
+//| Deallocate any resources associated with the underlying array    |
+//+------------------------------------------------------------------+
+template<typename T>
+void Vector::clearArray()
+  {
+   int s=ArraySize(array);
+   if(s>0)
+     {
+      for(int i=0;i<s;i++){SafeDelete(array[i]);}
+     }
   }
+//+------------------------------------------------------------------+
+//| Remove the first element that is equal to value                  |
+//+------------------------------------------------------------------+
+template<typename T>
+bool Vector::remove(const T value)
+  {
+   int s=size();
+   int index=-1;
+   for(int i=0; i<s; i++)
+     {
+      if(IsEqual(value,array[i]))
+        {
+         index=i;
+         break;
+        }
+     }
+   if(index>=0)
+     {
+      SafeDelete(array[index]);
+      ArrayDelete(array,index);
+      return true;
+     }
+   else
+      return false;
+  }
+//+------------------------------------------------------------------+
+//| Iterator implementation for Vector                               |
+//+------------------------------------------------------------------+
+template<typename T>
+class VectorIterator: public Iterator<T>
+  {
+private:
+   int               m_index;
+   const int         m_size;
+   const             Vector<T>*m_vector;
+public:
+                     VectorIterator(const Vector<T>&v):m_index(0),m_size(v.size()),m_vector(GetPointer(v)) {}
+   bool              end() const {return m_index>=m_size;}
+   void              next() {if(!end()){m_index++;}}
+   T                 current() const {return m_vector.get(m_index);}
+  };
 //+------------------------------------------------------------------+

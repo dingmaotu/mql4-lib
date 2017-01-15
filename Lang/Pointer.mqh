@@ -16,10 +16,25 @@ void SafeDelete(T *pointer)
      }
   }
 //+------------------------------------------------------------------+
+//| If pointer is actually a value type                              |
+//+------------------------------------------------------------------+
+template<typename T>
+void SafeDelete(T pointer) {}
+//+------------------------------------------------------------------+
+//| Check if the value is a pointer type                             |
+//+------------------------------------------------------------------+
+template<typename T>
+bool IsPointer(const T &value)
+  {
+   string tn=typename(value);
+// Note that a typename is at least of length > 0
+   return StringGetCharacter(tn, StringLen(tn) - 1) == '*';
+  }
+//+------------------------------------------------------------------+
 //| Generic pointer check                                            |
 //+------------------------------------------------------------------+
 template<typename T>
-bool Invalid(T *pointer)
+bool IsInvalid(T *pointer)
   {
    return CheckPointer(pointer)==POINTER_INVALID;
   }
