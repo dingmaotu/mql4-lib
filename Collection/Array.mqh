@@ -76,6 +76,25 @@ int ArrayFind(const T *&array[],const T *value)
    return index;
   }
 //+------------------------------------------------------------------+
+//| Remove all elements that are marked as NULL                      |
+//+------------------------------------------------------------------+
+template<typename T>
+void ArrayCompact(T &array[])
+  {
+   int s=ArraySize(array);
+   int i=0;
+   for(; i<s; i++)
+     {
+      if(array[i]!=NULL) continue;
+      int j=i+1;
+      while(j<s && array[j]==NULL) {j++;}
+      if(j==s) break;
+      array[i] = array[j];
+      array[j] = NULL;
+     }
+   ArrayResize(array,i);
+  }
+//+------------------------------------------------------------------+
 //| Generic binary search                                            |
 //+------------------------------------------------------------------+
 template<typename T>
@@ -142,6 +161,8 @@ public:
    void              removeAt(int index) {ArrayDelete(m_array,index);}
 
    int               index(const T value) {return ArrayFind(m_array,value);}
+
+   void              compact() {ArrayCompact(m_array);}
   };
 //+------------------------------------------------------------------+
 //| Deallocate array elements if necessary                           |

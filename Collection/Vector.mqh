@@ -33,6 +33,7 @@ public:
    T                 removeAt(int i) {T val=m_array[i];m_array.removeAt(i);return val;}
    T                 get(int i) const {return m_array[i];}
    void              set(int i,T val) {m_array.set(i,val);}
+   void              compact() {m_array.compact();}
 
    // Stack and Queue interface: alias for Sequence interface
    void              push(T val) {insertAt(size(),val);}
@@ -41,18 +42,6 @@ public:
    void              unshift(T val) {insertAt(0,val);}
    T                 shift() {return removeAt(0);}
   };
-//+------------------------------------------------------------------+
-//| Deallocate any resources associated with the underlying array    |
-//+------------------------------------------------------------------+
-template<typename T>
-void Vector::clearArray()
-  {
-   int s=ArraySize(array);
-   if(s>0)
-     {
-      for(int i=0;i<s;i++){SafeDelete(array[i]);}
-     }
-  }
 //+------------------------------------------------------------------+
 //| Remove the first element that is equal to value                  |
 //+------------------------------------------------------------------+
@@ -63,7 +52,7 @@ bool Vector::remove(const T value)
    int index=-1;
    for(int i=0; i<s; i++)
      {
-      if(IsEqual(value,array[i]))
+      if(IsEqual(value,m_array[i]))
         {
          index=i;
          break;
@@ -71,8 +60,8 @@ bool Vector::remove(const T value)
      }
    if(index>=0)
      {
-      SafeDelete(array[index]);
-      ArrayDelete(array,index);
+      SafeDelete(m_array[index]);
+      m_array.removeAt(index);
       return true;
      }
    else
