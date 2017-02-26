@@ -5,9 +5,9 @@
 #property link      "dingmaotu@hotmail.com"
 #property strict
 
-#include <stdlib.mqh>
+#include "../Lang/Runtime.mqh"
 #include "FxSymbol.mqh"
-#include "../Collection/IntVector.mqh"
+#include "../Collection/Vector.mqh"
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
@@ -50,7 +50,7 @@ public:
    int               pendSell(double price,double lots,int stoploss,int takeprofit) {return pendSell(price,lots,addPoints(price,stoploss),subPoints(price,takeprofit));}
 
    // Order selecting
-   bool              getOrders(IntVector &v,int type=-1);
+   bool              getOrders(Vector<int> &v,int type=-1);
    bool              select(int ticket);
 
    // Market order modify (current order)
@@ -87,7 +87,8 @@ OrderManager::OrderManager(string symbol,int magic)
 //+------------------------------------------------------------------+
 double OrderManager::normalizeLots(double lots)
   {
-   return lots > M_MINLOT ? lots : M_MINLOT;
+   double r=MathMod(lots,M_MINLOT);
+   return Runtime::isEqual(r,0.0) ? lots : (lots -r + M_MINLOT);
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -165,7 +166,7 @@ int OrderManager::pendSell(double price,double lots,double stoploss,double takep
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-bool OrderManager::getOrders(IntVector &v,int type)
+bool OrderManager::getOrders(Vector<int> &v,int type)
   {
    int total=OrdersTotal();
    for(int i=0;i<total;i++)
@@ -247,7 +248,7 @@ bool OrderManager::closeCurrentBy(int other)
 //+------------------------------------------------------------------+
 void OrderManager::closeByType(int type)
   {
-   IntVector v;
+   Vector<int> v;
    if(!getOrders(v,type))
      {
       Print(__FUNCTION__,": Getting orders failed");
