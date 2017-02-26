@@ -4,10 +4,12 @@
 #property copyright "Copyright 2016, Li Ding"
 #property link      "dingmaotu@hotmail.com"
 #property strict
+
+#define StringContains(str, substr) (StringFind(str, substr, 0)!=-1)
 //+------------------------------------------------------------------+
 //| Note: if both strings are empty, this function returns true      |
 //+------------------------------------------------------------------+
-bool StringStartsWith(const string str,const string strStart)
+bool StringStartsWith(string str,string strStart)
   {
    int len=StringLen(str);
    int lenStart=StringLen(strStart);
@@ -29,7 +31,7 @@ bool StringStartsWith(const string str,const string strStart)
 //+------------------------------------------------------------------+
 //| Note: if both strings are empty, this function returns true      |
 //+------------------------------------------------------------------+
-bool StringEndsWith(const string str,const string strEnd)
+bool StringEndsWith(string str,string strEnd)
   {
    int len=StringLen(str);
    int lenEnd=StringLen(strEnd);
@@ -51,7 +53,7 @@ bool StringEndsWith(const string str,const string strEnd)
 //+------------------------------------------------------------------+
 //| Join a string array                                              |
 //+------------------------------------------------------------------+
-string StringJoin(const string &a[],const string sep=" ")
+string StringJoin(const string &a[],string sep=" ")
   {
    int size=ArraySize(a);
    string res="";
@@ -75,7 +77,7 @@ string StringJoin(const string &a[],const string sep=" ")
 //|   result = "a:1, b:2, c:3"                                       |
 //+------------------------------------------------------------------+
 string StringPairJoin(const string &keys[],const string &values[],
-                      const string sep=" ",const string psep=" ")
+                      string sep=" ",string psep=" ")
   {
    int keySize=ArraySize(keys);
    int valueSize=ArraySize(values);

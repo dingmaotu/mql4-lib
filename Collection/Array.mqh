@@ -7,7 +7,6 @@
 #property link      "dingmaotu@hotmail.com"
 #property strict
 
-#include "../Lang/Object.mqh" // for IsEqual
 #include "../Lang/Pointer.mqh"
 //+------------------------------------------------------------------+
 //| Generic array insert                                             |
@@ -49,25 +48,7 @@ int ArrayFind(const T &array[],const T value)
    int index=-1;
    for(int i=0; i<s; i++)
      {
-      if(IsEqual(value,array[i]))
-        {
-         index=i;
-         break;
-        }
-     }
-   return index;
-  }
-//+------------------------------------------------------------------+
-//| For pointers                                                     |
-//+------------------------------------------------------------------+
-template<typename T>
-int ArrayFind(const T *&array[],const T *value)
-  {
-   int s=ArraySize(array);
-   int index=-1;
-   for(int i=0; i<s; i++)
-     {
-      if(IsEqual(value,array[i]))
+      if(value==array[i])
         {
          index=i;
          break;
@@ -160,7 +141,7 @@ public:
    void              insertAt(int index,T value) {ArrayInsert(m_array,index,value,m_extraBuffer);}
    void              removeAt(int index) {ArrayDelete(m_array,index);}
 
-   int               index(const T value) {return ArrayFind(m_array,value);}
+   int               index(const T value) const;
 
    void              compact() {ArrayCompact(m_array);}
   };
@@ -175,5 +156,23 @@ void Array::clearArray()
      {
       for(int i=0;i<s;i++){SafeDelete(m_array[i]);}
      }
+  }
+//+------------------------------------------------------------------+
+//| call ArrayFind will not compile because of template error        |
+//+------------------------------------------------------------------+
+template<typename T>
+int Array::index(const T value) const
+  {
+   int s=ArraySize(m_array);
+   int index=-1;
+   for(int i=0; i<s; i++)
+     {
+      if(value==m_array[i])
+        {
+         index=i;
+         break;
+        }
+     }
+   return index;
   }
 //+------------------------------------------------------------------+
