@@ -7,7 +7,7 @@
 #property link      "dingmaotu@hotmail.com"
 #property strict
 
-#include "../Lang/Pointer.mqh"
+#include "Pointer.mqh"
 //+------------------------------------------------------------------+
 //| Generic array insert                                             |
 //+------------------------------------------------------------------+
