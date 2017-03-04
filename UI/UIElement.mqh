@@ -6,33 +6,21 @@
 #property strict
 
 #include "../Lang/String.mqh"
-#include "../Collection/Array.mqh"
+#include "../Collection/Set.mqh"
 //+------------------------------------------------------------------+
 //| Form a heirarchy for elements                                    |
 //+------------------------------------------------------------------+
-class UIElement
+class UIElement: public Set<UIElement*>
   {
 private:
    UIElement        *m_parent;
    string            m_name;
-   Array<UIElement*>m_children;
 public:
                      UIElement(UIElement *parent,string name)
    :m_parent(parent),m_name(m_parent==NULL?name:m_parent.getName()+"."+name){}
 
    string            getName() const {return m_name;}
    UIElement        *getParent() const {return m_parent;}
-
-   virtual void      addChild(UIElement *element) {m_children.insertAt(size(),element);}
-   virtual void      removeChild(UIElement *element) {int i=m_children.index(element); if(i>=0){m_children.removeAt(i);}}
-   virtual void      deleteChild(UIElement *element) {int i=m_children.index(element); if(i>=0){m_children.removeAt(i);SafeDelete(element);}}
-
-   bool              exists(UIElement *element) const {return m_children.index(element);}
-
-   //--- deconstruct children
-   virtual void      deleteAll() {m_children.clear();}
-
-   int               size() const {return m_children.size();}
 
    virtual UIElement *findByName(string name,bool recursive=false,bool prefix=true);
 
@@ -56,19 +44,20 @@ public:
 UIElement *UIElement::findByName(string name,bool recursive,bool prefix)
   {
    UIElement *result=NULL;
-   int size=m_children.size();
    string search=prefix?(getName()+"."+name):name;
-   for(int i=0; i<size; i++)
+
+   for(Iter<UIElement*>it(this); !it.end(); it.next())
      {
-      if(m_children[i].getName()==search)
+      UIElement *e=it.current();
+      if(e.getName()==search)
         {
-         result=m_children[i];
+         result=e;
          break;
         }
-      else if(recursive)
+      else if(recursive && e.size()>0)
         {
-         UIElement *r=m_children[i].findByName(name,true,false);
-         if(CheckPointer(r)!=NULL)
+         UIElement *r=e.findByName(name,true,false);
+         if(CheckPointer(r)!=POINTER_INVALID)
            {
             result=r;
             break;
