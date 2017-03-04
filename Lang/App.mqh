@@ -5,9 +5,6 @@
 #property link      "dingmaotu@hotmail.com"
 #property strict
 
-#include "Object.mqh"
-#include "Pointer.mqh"
-
 #define PARAM(ParamName, ParamValue) __app__.set##ParamName((ParamValue));
 
 #define DECLARE_APP(AppClass,PARAM_SECTION) \
@@ -21,7 +18,7 @@ void OnDeinit(const int reason) {SafeDelete(__app__);}
 //+------------------------------------------------------------------+
 //| Abstract base class for a MQL Application                        |
 //+------------------------------------------------------------------+
-class App: public Object
+class App
   {
 private:
    bool              mRuntimeControlled;
