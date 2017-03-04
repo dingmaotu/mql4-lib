@@ -5,8 +5,7 @@
 #property link      "dingmaotu@hotmail.com"
 #property strict
 
-#include "Array.mqh"
-#include "../Lang/Pointer.mqh"
+#include "../Lang/Array.mqh"
 #include "Collection.mqh"
 //+------------------------------------------------------------------+
 //| Generic Vector                                                   |
@@ -48,16 +47,7 @@ public:
 template<typename T>
 bool Vector::remove(const T value)
   {
-   int s=size();
-   int index=-1;
-   for(int i=0; i<s; i++)
-     {
-      if(IsEqual(value,m_array[i]))
-        {
-         index=i;
-         break;
-        }
-     }
+   int index=m_array.index(value);
    if(index>=0)
      {
       SafeDelete(m_array[index]);

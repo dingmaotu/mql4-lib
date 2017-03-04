@@ -39,6 +39,14 @@ bool IsInvalid(T *pointer)
    return CheckPointer(pointer)==POINTER_INVALID;
   }
 //+------------------------------------------------------------------+
+//| Generic pointer check                                            |
+//+------------------------------------------------------------------+
+template<typename T>
+bool IsValid(T *pointer)
+  {
+   return CheckPointer(pointer)!=POINTER_INVALID;
+  }
+//+------------------------------------------------------------------+
 //| Wraps a pointer that owns a resource                             |
 //+------------------------------------------------------------------+
 template<typename T>
@@ -50,7 +58,7 @@ public:
                      Ptr(T *raw=NULL):m_ref(raw){}
                      Ptr(Ptr &other):m_ref(other.m_ref){other.m_ref=NULL;}
                      Ptr(const Ref<T>&other):m_ref(other.r()){}
-                    ~Ptr() {if(CheckPointer(m_ref)==POINTER_DYNAMIC) delete m_ref;}
+                    ~Ptr() {if(IsValid(m_ref)) delete m_ref;}
 
    T                *operator=(T *other)
      {
