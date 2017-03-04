@@ -1,15 +1,15 @@
 //+------------------------------------------------------------------+
-//|                                                 Lang/Runtime.mqh |
+//|                                               Trade/Terminal.mqh |
 //+------------------------------------------------------------------+
 #property copyright "Copyright 2016, Li Ding"
 #property link      "dingmaotu@hotmail.com"
 #property strict
 
-#include "Mql.mqh"
+#include "../Lang/Mql.mqh"
 //+------------------------------------------------------------------+
-//| Wrapper of runtime environment functions                         |
+//| Wrapper of terminal info functions                               |
 //+------------------------------------------------------------------+
-class Runtime
+class Terminal
   {
 public:
    static bool       isStopped() {return IsStopped();}
@@ -48,7 +48,7 @@ public:
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-bool Runtime::notify(string msg)
+bool Terminal::notify(string msg)
   {
    int len=StringLen(msg);
 
