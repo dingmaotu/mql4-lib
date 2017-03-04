@@ -4,7 +4,6 @@
 #property copyright "Copyright 2016, Li Ding"
 #property link      "dingmaotu@hotmail.com"
 #property strict
-#include "../Lang/Object.mqh"
 //+------------------------------------------------------------------+
 //| Standard Iterator for all collections                            |
 //+------------------------------------------------------------------+
@@ -70,7 +69,7 @@ bool Collection::contains(const T value) const
   {
    for(Iter<T>iter(this);!iter.end();iter.next())
      {
-      if(IsEqual(iter.current(),value)) return true;
+      if(iter.current()==value) return true;
      }
    return false;
   }
