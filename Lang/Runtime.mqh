@@ -5,13 +5,7 @@
 #property link      "dingmaotu@hotmail.com"
 #property strict
 
-#import "stdlib.ex4"
-string ErrorDescription(int error_code);
-int    RGB(int red_value,int green_value,int blue_value);
-bool   CompareDoubles(double number1,double number2);
-string DoubleToStrMorePrecision(double number,int precision);
-string IntegerToHexString(int integer_number);
-#import
+#include "Mql.mqh"
 //+------------------------------------------------------------------+
 //| Wrapper of runtime environment functions                         |
 //+------------------------------------------------------------------+
@@ -50,11 +44,6 @@ public:
    static bool       isNotificationsEnabled() {return TerminalInfoInteger(TERMINAL_NOTIFICATIONS_ENABLED);}
    static bool       hasMetaQuotesId() {return TerminalInfoInteger(TERMINAL_MQID);}
    static bool       notify(string msg);
-
-   static int        getLastError() {return GetLastError();}
-   static string     getErrorMessage(int errorCode) {return ErrorDescription(errorCode);}
-
-   static bool       isEqual(double a,double b) {return CompareDoubles(a,b);}
   };
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -65,7 +54,7 @@ bool Runtime::notify(string msg)
 
    if(len==0 || len>255)
      {
-      Print("ERROR: [",__FUNCTION__,"] Notification message is empty or are larger than 255 characters.");
+      Alert("ERROR: [",__FUNCTION__,"] Notification message is empty or larger than 255 characters.");
       return false;
      }
 
@@ -74,14 +63,13 @@ bool Runtime::notify(string msg)
       bool success=SendNotification(msg);
       if(!success)
         {
-         Print("ERROR: [",__FUNCTION__,"] ",getErrorMessage(getLastError()));
+         Alert("ERROR: [",__FUNCTION__,"] ",Mql::getErrorMessage(Mql::getLastError()));
         }
-
       return success;
      }
    else
      {
-      Print("ERROR: [",__FUNCTION__,"] Notification is not enabled or MetaQuotes ID is not set.");
+      Alert("ERROR: [",__FUNCTION__,"] Notification is not enabled or MetaQuotes ID is not set.");
       return false;
      }
   }
