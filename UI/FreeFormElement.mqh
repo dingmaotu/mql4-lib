@@ -70,8 +70,8 @@ public:
      {
       setText(text);
      }
-   bool              setWidth() {return false;}  // read only, thus do nothing
-   bool              setHeight() {return false;}  // read only, thus do nothing
+   bool              setWidth(int value) {return false;}  // read only, thus do nothing
+   bool              setHeight(int value) {return false;}  // read only, thus do nothing
   };
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -82,8 +82,8 @@ class Bitmap: public FreeFormElement
    :FreeFormElement(parent,name,OBJ_BITMAP_LABEL)
      {}
 
-   bool              setWidth() {return false;}  // read only, thus do nothing
-   bool              setHeight() {return false;}  // read only, thus do nothing
+   bool              setWidth(int value) {return false;}  // read only, thus do nothing
+   bool              setHeight(int value) {return false;}  // read only, thus do nothing
   };
 //+------------------------------------------------------------------+
 //|                                                                  |
