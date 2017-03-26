@@ -11,9 +11,9 @@
 //+------------------------------------------------------------------+
 interface Trigger
   {
-   bool isActivated();
-   bool isLong();
-   bool isShort();
+   bool isActivated() const;
+   bool isLong() const;
+   bool isShort() const;
   };
 //+------------------------------------------------------------------+
 //| Implements the default methods                                   |
@@ -21,8 +21,8 @@ interface Trigger
 class TriggerAdapter: public Trigger
   {
 public:
-   virtual bool isActivated() {return isLong() || isShort(); }
-   virtual bool isLong() {return false;}
-   virtual bool isShort() {return false;}
+   virtual bool isActivated() const {return isLong() || isShort(); }
+   virtual bool isLong() const {return false;}
+   virtual bool isShort() const {return false;}
   };
 //+------------------------------------------------------------------+

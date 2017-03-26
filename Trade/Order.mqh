@@ -6,7 +6,13 @@
 #property strict
 
 #include "../Lang/Object.mqh"
-#include "../Collection/LinkedList.mqh"
+//+------------------------------------------------------------------+
+//| if current order matches                                         |
+//+------------------------------------------------------------------+
+interface OrderMatcher
+  {
+   bool match();
+  };
 
 const string OrderTypeString[]={"buy","sell","buy limit","sell simit","buy stop","sell stop"};
 //+------------------------------------------------------------------+
@@ -46,6 +52,33 @@ public:
    string            toString() const;
    int               hash() const;
 
+   //--- static wrappers for getting order properties
+   //--- this is necessary if you want to use these functions as function pointers
+   static int        Ticket() { return OrderTicket();}
+
+   static string     Symbol() { return OrderSymbol();}
+   static int        Type() { return OrderType();}
+   static double     Lots() { return OrderLots();}
+
+   static double     OpenPrice() { return OrderOpenPrice();}
+   static datetime   OpenTime() { return OrderOpenTime();}
+   static double     ClosePrice() { return OrderClosePrice();}
+   static datetime   CloseTime() { return OrderCloseTime();}
+
+   static double     TakeProfit() { return OrderTakeProfit();}
+   static double     StopLoss() { return OrderStopLoss();}
+
+   static datetime   Expiration() { return OrderExpiration();}
+
+   static int        MagicNumber() { return OrderMagicNumber();}
+   static string     Comment() { return OrderComment();}
+
+   static double     Commission() { return OrderCommission();}
+
+   static double     Profit() { return OrderProfit();}
+   static double     Swap() { return OrderSwap();}
+
+   //--- instance methods
    int               getTicket() const { return ticket;}
 
    string            getSymbol() const { return symbol;}
@@ -75,29 +108,29 @@ public:
 //+------------------------------------------------------------------+
 Order::Order(void)
   {
-   ticket=OrderTicket();
+   ticket=Order::Ticket();
 
-   symbol=OrderSymbol();
-   type=OrderType();
-   lots=OrderLots();
+   symbol=Order::Symbol();
+   type=Order::Type();
+   lots=Order::Lots();
 
-   openPrice=OrderOpenPrice();
-   openTime=OrderOpenTime();
-   closePrice=OrderClosePrice();
-   closeTime=OrderCloseTime();
+   openPrice=Order::OpenPrice();
+   openTime=Order::OpenTime();
+   closePrice=Order::ClosePrice();
+   closeTime=Order::CloseTime();
 
-   takeProfit=OrderTakeProfit();
-   stopLoss=OrderStopLoss();
+   takeProfit=Order::TakeProfit();
+   stopLoss=Order::StopLoss();
 
-   expiration=OrderExpiration();
+   expiration=Order::Expiration();
 
-   magicNumber=OrderMagicNumber();
-   comment=OrderComment();
+   magicNumber=Order::MagicNumber();
+   comment=Order::Comment();
 
-   commission=OrderCommission();
+   commission=Order::Commission();
 
-   profit=OrderProfit();
-   swap=OrderSwap();
+   profit=Order::Profit();
+   swap=Order::Swap();
   }
 //+------------------------------------------------------------------+
 //| mimic OrderPrint but return a string instead                     |

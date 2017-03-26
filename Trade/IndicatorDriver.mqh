@@ -5,8 +5,8 @@
 #property link      "dingmaotu@hotmail.com"
 #property strict
 
-#include <LiDing/Collection/Array.mqh>
-#include <LiDing/Lang/Indicator.mqh>
+#include "../Lang/Array.mqh"
+#include "../Lang/Indicator.mqh"
 //+------------------------------------------------------------------+
 //| drives indicators                                                |
 //+------------------------------------------------------------------+

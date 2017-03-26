@@ -5,91 +5,82 @@
 #property link      "dingmaotu@hotmail.com"
 #property strict
 
-#include "../Lang/Runtime.mqh"
 #include "FxSymbol.mqh"
-#include "../Collection/Vector.mqh"
+#include "OrderPool.mqh"
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
 class OrderManager
   {
 private:
-   FxSymbol          m_symbol;
-   int               m_magic;
+   FxSymbol         *m_symbol;
 
-   int const         M_DIGITS;
-   double const      M_POINT;
-   double const      M_MINLOT;
+   ObjectAttr(int,magic,Magic);
+   ObjectAttr(int,slippage,Slippage);
+   ObjectAttr(color,buyColor,BuyColor);
+   ObjectAttr(color,sellColor,SellColor);
+   ObjectAttr(color,closeColor,CloseColor);
 
 protected:
    int               getOrderType(bool buyOrSell,double requestPrice);
 
    double            ask() {return m_symbol.getAsk();}
    double            bid() {return m_symbol.getBid();}
+   double            p(double price) {return m_symbol.normalizePrice(price);}
+   double            l(double lots) {return m_symbol.normalizeLots(lots);}
+   // order type factor: buy order 1, sell order -1
+   int               otf(int cmd) {return cmd%2==0?1:-1;}
 
-   double            normalizeLots(double lots);
-
-   double            normalizePrice(double price) {return NormalizeDouble(price,M_DIGITS);}
-   double            addPoints(double price,int points) {return points > 0 ? NormalizeDouble(price+points*M_POINT,M_DIGITS) : 0;}
-   double            subPoints(double price,int points) {return points > 0 ? NormalizeDouble(price-points*M_POINT,M_DIGITS) : 0;}
-
-public:
-                     OrderManager(string symbol="",int magic=0);
-
-   // Order opening
    int               send(int cmd,double lots,double price,double stoploss,double takeprofit);
 
-   int               buy(double lots,double stoploss,double takeprofit);
-   int               sell(double lots,double stoploss,double takeprofit);
-   int               pendBuy(double price,double lots,double stoploss,double takeprofit);
-   int               pendSell(double price,double lots,double stoploss,double takeprofit);
+public:
+                     OrderManager(FxSymbol *symbol);
 
-   int               buy(double lots,int stoploss,int takeprofit) {return buy(lots,subPoints(ask(),stoploss),addPoints(ask(),takeprofit));}
-   int               sell(double lots,int stoploss,int takeprofit) {return sell(lots,addPoints(bid(),stoploss),subPoints(bid(),takeprofit));}
-   int               pendBuy(double price,double lots,int stoploss,int takeprofit) {return pendBuy(price,lots,subPoints(price,stoploss),addPoints(price,takeprofit));}
-   int               pendSell(double price,double lots,int stoploss,int takeprofit) {return pendSell(price,lots,addPoints(price,stoploss),subPoints(price,takeprofit));}
+   FxSymbol         *getSymbol() const {return m_symbol;}
+   // Order opening
+   int               buy(double lots,double stoploss=0.0,double takeprofit=0.0);
+   int               sell(double lots,double stoploss=0.0,double takeprofit=0.0);
+   int               pendBuy(double price,double lots,double stoploss=0.0,double takeprofit=0.0);
+   int               pendSell(double price,double lots,double stoploss=0.0,double takeprofit=0.0);
 
-   // Order selecting
-   bool              getOrders(Vector<int> &v,int type=-1);
-   bool              select(int ticket);
+   int               buy(double lots,int stoploss,int takeprofit)
+     {return buy(lots,stoploss==0?0.0:m_symbol.subPoints(ask(),stoploss),takeprofit==0?0.0:m_symbol.addPoints(ask(),takeprofit));}
+   int               sell(double lots,int stoploss,int takeprofit)
+     {return sell(lots,stoploss==0?0.0:m_symbol.addPoints(bid(),stoploss),takeprofit==0?0.0:m_symbol.subPoints(bid(),takeprofit));}
+   int               pendBuy(double price,double lots,int stoploss,int takeprofit)
+     {return pendBuy(price,lots,stoploss==0?0.0:m_symbol.subPoints(price,stoploss),takeprofit==0?0.0:m_symbol.addPoints(price,takeprofit));}
+   int               pendSell(double price,double lots,int stoploss,int takeprofit)
+     {return pendSell(price,lots,stoploss==0?0.0:m_symbol.addPoints(price,stoploss),takeprofit==0?0.0:m_symbol.subPoints(price,takeprofit));}
 
-   // Market order modify (current order)
-/*
-   bool              modify(double stoploss, double takeprofit);
-   bool              modify(int stoploss, int takeprofit);
-   bool              stoploss(double price);
-   bool              takeprofit(double price);
-*/
+   // isomorphic order sending: positive lots for buy, negative lots for sell, and zero lots for doing nothing
+   int               send(double lots,int stoploss,int takeprofit)
+     {
+      if(lots > 0) return buy(lots, stoploss, takeprofit);
+      else if(lots < 0) return sell(-lots, stoploss, takeprofit);
+      else return 0;
+     }
+   // Order modification
+   bool              modify(int ticket,double stoploss,double takeprofit);
+   bool              modify(int ticket,int stoploss,int takeprofit);
+   // Pending order only
+   bool              modifyPending(int ticket,double price,datetime expiration=0);
 
    // Order closing
    bool              closeCurrent();
    bool              close(int ticket);
-
-   bool              closeCurrentBy(int other);
    bool              closeBy(int ticket,int other);
-
-   void              closeByType(int type);
-   void              closeAll();
   };
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-OrderManager::OrderManager(string symbol,int magic)
+OrderManager::OrderManager(FxSymbol *symbol)
    :m_symbol(symbol),
-     m_magic(magic),
-     M_POINT(m_symbol.getPoint()),
-     M_DIGITS(m_symbol.getDigits()),
-     M_MINLOT(m_symbol.getMinLot())
-  {
-  }
-//+------------------------------------------------------------------+
-//|                                                                  |
-//+------------------------------------------------------------------+
-double OrderManager::normalizeLots(double lots)
-  {
-   double r=MathMod(lots,M_MINLOT);
-   return Runtime::isEqual(r,0.0) ? lots : (lots -r + M_MINLOT);
-  }
+     m_magic(0),
+     m_slippage(3),
+     m_buyColor(clrBlue),
+     m_sellColor(clrRed),
+     m_closeColor(clrWhite)
+  {}
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
@@ -99,8 +90,8 @@ int OrderManager::getOrderType(bool buyOrSell,double normalizedPrice)
 
    int stopLevel=m_symbol.getStopLevel();
 
-   double minPrice = NormalizeDouble(marketPrice - stopLevel*M_POINT, M_DIGITS);
-   double maxPrice = NormalizeDouble(marketPrice + stopLevel*M_POINT, M_DIGITS);
+   double minPrice = m_symbol.subPoints(marketPrice, stopLevel);
+   double maxPrice = m_symbol.addPoints(marketPrice, stopLevel);
 
    int cmd;
    if(normalizedPrice<minPrice)
@@ -122,11 +113,13 @@ int OrderManager::getOrderType(bool buyOrSell,double normalizedPrice)
 //+------------------------------------------------------------------+
 int OrderManager::send(int cmd,double lots,double price,double stoploss,double takeprofit)
   {
-   int ticket=OrderSend(m_symbol.getName(),cmd,lots,price,3,stoploss,takeprofit,"",m_magic,0,cmd%2==0?clrBlue:clrRed);
+   int ticket=OrderSend(m_symbol.getName(),cmd,lots,price,
+                        m_slippage,stoploss,takeprofit,"",m_magic,0,
+                        cmd%2==0?m_buyColor:m_sellColor);
 
    if(ticket<0)
      {
-      Print("OrderSend error: ",ErrorDescription(GetLastError()));
+      Alert("Error: OrderSend ",ErrorDescription(GetLastError()));
      }
 
    return ticket;
@@ -136,67 +129,86 @@ int OrderManager::send(int cmd,double lots,double price,double stoploss,double t
 //+------------------------------------------------------------------+
 int OrderManager::buy(double lots,double stoploss,double takeprofit)
   {
-   return send(OP_BUY, normalizeLots(lots), ask(), normalizePrice(stoploss), normalizePrice(takeprofit));
+   return send(OP_BUY, l(lots), ask(), p(stoploss), p(takeprofit));
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
 int OrderManager::sell(double lots,double stoploss,double takeprofit)
   {
-   return send(OP_SELL, normalizeLots(lots), bid(), normalizePrice(stoploss), normalizePrice(takeprofit));
+   return send(OP_SELL, l(lots), bid(), p(stoploss), p(takeprofit));
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
 int OrderManager::pendBuy(double price,double lots,double stoploss,double takeprofit)
   {
-   double p=normalizePrice(price);
+   double p=p(price);
    int cmd=getOrderType(true,p);
-   return send(cmd,normalizeLots(lots),p,normalizePrice(stoploss),normalizePrice(takeprofit));
+   return send(cmd,l(lots),p,p(stoploss),p(takeprofit));
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
 int OrderManager::pendSell(double price,double lots,double stoploss,double takeprofit)
   {
-   double p=normalizePrice(price);
+   double p=p(price);
    int cmd=getOrderType(false,p);
-   return send(cmd,normalizeLots(lots),p,normalizePrice(stoploss),normalizePrice(takeprofit));
+   return send(cmd,l(lots),p,p(stoploss),p(takeprofit));
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-bool OrderManager::getOrders(Vector<int> &v,int type)
+bool OrderManager::modify(int ticket,double stoploss,double takeprofit)
   {
-   int total=OrdersTotal();
-   for(int i=0;i<total;i++)
+   bool success=OrderModify(ticket,0,p(stoploss),p(takeprofit),0);
+   if(!success)
      {
-      if(OrderSelect(i,SELECT_BY_POS,MODE_TRADES)==false)
-        {
-         return false;
-        }
-      if(OrderSymbol()==m_symbol.getName() && OrderMagicNumber()==m_magic && (type==-1 || OrderType()==type))
-        {
-         v.push(OrderTicket());
-        }
+      Alert(">>> Error setting stoploss or takeprofit: ",Mql::getErrorMessage(Mql::getLastError()));
      }
-   return true;
+   return success;
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-bool OrderManager::select(int ticket)
+bool OrderManager::modify(int ticket,int stoploss,int takeprofit)
   {
-   return OrderSelect(ticket,SELECT_BY_TICKET);
+   bool modifyStoploss=stoploss>0;
+   bool modifyTakeprofit=takeprofit>0;
+   if(!(modifyStoploss || modifyTakeprofit)) return false;
+
+   bool success=OrderPool::selectByTicket(ticket);
+
+   if(success)
+     {
+      double price=Order::OpenPrice();
+      int factor=otf(Order::Type());
+      success=modify(ticket,
+                     modifyStoploss?m_symbol.subPoints(price,stoploss*factor):0.0,
+                     modifyTakeprofit?m_symbol.addPoints(price,takeprofit*factor):0.0);
+     }
+   return success;
+  }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+bool OrderManager::modifyPending(int ticket,double price,datetime expiration)
+  {
+   bool success=OrderModify(ticket,p(price),0,0,expiration);
+   if(!success)
+     {
+      Alert(StringFormat(">>> Error modify pending order #%d: %s",ticket,Mql::getErrorMessage(Mql::getLastError())));
+     }
+   return success;
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
 bool OrderManager::closeCurrent(void)
   {
-   int type=OrderType();
-   int ticket=OrderTicket();
-   double lots=OrderLots();
+   int type=Order::Type();
+   int ticket=Order::Ticket();
+   double lots=Order::Lots();
    double p;
 
    if(type==OP_SELL) p=ask();
@@ -205,17 +217,17 @@ bool OrderManager::closeCurrent(void)
 
    if(p>0)
      {
-      if(!OrderClose(ticket,lots,p,3,White))
+      if(!OrderClose(ticket,lots,p,m_slippage,m_closeColor))
         {
-         Print("OrderClose #",ticket," error: ",ErrorDescription(GetLastError()));
+         Alert(">>> Error OrderClose #",ticket,": ",Mql::getErrorMessage(Mql::getLastError()));
          return false;
         }
      }
    else
      {
-      if(!OrderDelete(ticket,White))
+      if(!OrderDelete(ticket,m_closeColor))
         {
-         Print("OrderDelete #",ticket," error ",ErrorDescription(GetLastError()));
+         Alert(">>> Error OrderDelete #",ticket,": ",Mql::getErrorMessage(Mql::getLastError()));
          return false;
         }
      }
@@ -226,7 +238,7 @@ bool OrderManager::closeCurrent(void)
 //+------------------------------------------------------------------+
 bool OrderManager::close(int ticket)
   {
-   if(!select(ticket)) {return false;}
+   if(!OrderPool::selectByTicket(ticket)) {return false;}
    return closeCurrent();
   }
 //+------------------------------------------------------------------+
@@ -234,38 +246,6 @@ bool OrderManager::close(int ticket)
 //+------------------------------------------------------------------+
 bool OrderManager::closeBy(int ticket,int other)
   {
-   return OrderCloseBy(ticket, other, clrYellow);
-  }
-//+------------------------------------------------------------------+
-//|                                                                  |
-//+------------------------------------------------------------------+
-bool OrderManager::closeCurrentBy(int other)
-  {
-   return OrderCloseBy(OrderTicket(), other, clrYellow);
-  }
-//+------------------------------------------------------------------+
-//|                                                                  |
-//+------------------------------------------------------------------+
-void OrderManager::closeByType(int type)
-  {
-   Vector<int> v;
-   if(!getOrders(v,type))
-     {
-      Print(__FUNCTION__,": Getting orders failed");
-      return;
-     }
-
-   int total=v.size();
-   for(int i=0;i<total;i++)
-     {
-      close(v.get(i));
-     }
-  }
-//+------------------------------------------------------------------+
-//|                                                                  |
-//+------------------------------------------------------------------+
-void OrderManager::closeAll()
-  {
-   closeByType(-1);
+   return OrderCloseBy(ticket, other, m_closeColor);
   }
 //+------------------------------------------------------------------+
