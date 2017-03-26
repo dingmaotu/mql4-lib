@@ -5,6 +5,9 @@
 #property link      "dingmaotu@hotmail.com"
 #property strict
 
+#include "Mql.mqh"
+#include "Pointer.mqh"
+
 #define PARAM(ParamName, ParamValue) __app__.set##ParamName((ParamValue));
 
 #define DECLARE_APP(AppClass,PARAM_SECTION) \
