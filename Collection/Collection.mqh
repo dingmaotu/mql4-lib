@@ -4,6 +4,8 @@
 #property copyright "Copyright 2016, Li Ding"
 #property link      "dingmaotu@hotmail.com"
 #property strict
+
+#define foreach(Type,Iterable) for(Iter<Type>it(Iterable); !it.end(); it.next())
 //+------------------------------------------------------------------+
 //| Standard Iterator for all collections                            |
 //+------------------------------------------------------------------+
@@ -13,6 +15,19 @@ interface Iterator
    void      next();
    T         current() const;
    bool      end() const;
+   bool      set(T value);  // replace current value in target collection
+  };
+//+------------------------------------------------------------------+
+//| Do something on each elements of an iterable                     |
+//| Returns true if it is needed to delete this element              |
+//+------------------------------------------------------------------+
+template<typename T>
+class ElementOperator
+  {
+public:
+   virtual void      begin() {}
+   virtual void      end() {}
+   virtual bool      operate(T value)=0;
   };
 //+------------------------------------------------------------------+
 //| A collection must be iterable                                    |
@@ -36,6 +51,7 @@ public:
    bool              end() const {return m_iterator.end();}
    void              next() {m_iterator.next();}
    T                 current() const {return m_iterator.current();}
+   bool              set(T value) {return m_iterator.set(value);}
   };
 //+------------------------------------------------------------------+
 //| Base class for collections                                       |

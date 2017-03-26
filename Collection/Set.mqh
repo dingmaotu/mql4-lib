@@ -67,11 +67,12 @@ class SetIterator: public Iterator<T>
 private:
    int               m_index;
    const int         m_size;
-   const             Array<T>*m_a;
+   Array<T>*m_a;
 public:
-                     SetIterator(const Array<T>&v):m_index(0),m_size(v.size()),m_a(GetPointer(v)) {}
+                     SetIterator(const Array<T>&v):m_index(0),m_size(v.size()),m_a((Array<T>*)GetPointer(v)) {}
    bool              end() const {return m_index>=m_size;}
    void              next() {if(!end()){m_index++;}}
    T                 current() const {return m_a[m_index];}
+   bool              set(T value) {m_a.set(m_index,value);return true;}
   };
 //+------------------------------------------------------------------+

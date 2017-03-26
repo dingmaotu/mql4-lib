@@ -77,11 +77,12 @@ public:
    void              set(int i,T o) {LinkedNode<T>*on=at(i);if(on!=m_tail){on.set(o);}}
    void              insertAt(int i,T o) {insert(at(i),new LinkedNode<T>(o));}
    void              removeAt(int i) {detach(at(i));}
+   void              compact();
 
    // Stack and Queue interface
    void              push(T o) {insert(m_tail,new LinkedNode<T>(o));}
    T                 pop() {LinkedNode<T>*n=last(); return n==NULL?NULL:getAndDetach(n);}
-   T                 peek() {LinkedNode<T>*n=last(); return n==NULL?NULL:n.get();}
+   T                 peek() const {LinkedNode<T>*n=last(); return n==NULL?NULL:n.get();}
    void              unshift(T o) {insert(m_head.next(),new LinkedNode<T>(o));}
    T                 shift() {LinkedNode<T>*n=m_head.next(); return getAndDetach(n);}
   };
@@ -179,7 +180,7 @@ bool LinkedList::remove(const T value)
    LinkedNode<T>*toDetach=NULL;
    for(LinkedNode<T>*p=m_head.next(); p!=m_tail; p=p.next())
      {
-      if(IsEqual(value,p.get()))
+      if(value==p.get())
         {
          toDetach=p;
          break;
@@ -197,6 +198,23 @@ bool LinkedList::remove(const T value)
 //|                                                                  |
 //+------------------------------------------------------------------+
 template<typename T>
+void LinkedList::compact()
+  {
+   LinkedNode<T>*p=m_head.next();
+   while(p!=m_tail)
+     {
+      LinkedNode<T>*toTest=p;
+      p=p.next();
+      if(NULL==toTest.get())
+        {
+         detach(toTest);
+        }
+     }
+  }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+template<typename T>
 class ListIterator: public Iterator<T>
   {
 private:
@@ -207,5 +225,6 @@ public:
    bool              end() const {return m_p==m_tail;}
    void              next() {m_p=m_p.next();}
    T                 current() const {return m_p.get();}
+   bool              set(T value) {m_p.set(value); return true;}
   };
 //+------------------------------------------------------------------+
