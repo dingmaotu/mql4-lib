@@ -62,6 +62,18 @@ public:\
 private:\
    Type              m_##Private\
 
+#define ObjectAttrRead(Type, Private, Public) \
+public:\
+   Type              get##Public() const {return m_##Private;}\
+private:\
+   Type              m_##Private\
+
+#define ObjectAttrWrite(Type, Private, Public) \
+public:\
+   void              set##Public(Type value) {m_##Private=value;}\
+private:\
+   Type              m_##Private\
+
 #ifdef _DEBUG
 #define Debug(msg) Print(">>> DEBUG: In ",__FUNCTION__,"(",__FILE__,":",__LINE__,") [", msg, "]")
 #else
