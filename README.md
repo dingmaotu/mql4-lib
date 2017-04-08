@@ -45,11 +45,11 @@ In `Lang`, I abstract three Program types (Script, Indicator, and
  Expert Advisor) to three base classes that you can inherit.
 
 Basically, you write your program in a reusable class, and when
-you want to make them as standalone executables, you use macros
+you want to use them as standalone executables, you use macros
 to declare them.
 
-The macro distinguish between programs with and without input parameters.
-Here is a simple script without any input parameter:
+The macro distinguish between programs with and without input parameters. Here
+is a simple script without any input parameter:
 
 ```c++
 #include <MQL4/Lang/Script.mqh>
