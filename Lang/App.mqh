@@ -8,31 +8,69 @@
 #include "Mql.mqh"
 #include "Pointer.mqh"
 
-#define PARAM(ParamName, ParamValue) __app__.set##ParamName((ParamValue));
+#define BEGIN_INPUT(AppParamClass) \
+AppParamClass *__param__=new AppParamClass;
 
-#define DECLARE_APP(AppClass,PARAM_SECTION) \
-AppClass *__app__;\
-int OnInit(){\
-__app__=new AppClass();\
-__app__.setRuntimeControlled(true);\
-PARAM_SECTION\
-return __app__.onInit();}\
-void OnDeinit(const int reason) {SafeDelete(__app__);}
+#define INPUT(Type, Name, Default) \
+BEGIN_EXECUTE(Set##Name)\
+   __param__.set##Name(Inp##Name);\
+END_EXECUTE(Set##Name)\
+input Type Inp##Name=Default;
+
+#define END_INPUT
+
+#define __APP_NEW(AppClass,Boolean) __APP_NEW_##Boolean(AppClass)
+
+#define __APP_NEW_true(AppClass) \
+if(!__param__.check()) return INIT_PARAMETERS_INCORRECT;\
+App::Global=new AppClass(__param__);
+
+#define __APP_NEW_false(AppClass) \
+App::Global=new AppClass();
+
+#define __DEINIT(Boolean) __DEINIT_##Boolean
+#define __DEINIT_true SafeDelete(__param__);
+#define __DEINIT_false
+
+#define DECLARE_APP(AppClass,Boolean) \
+App *App::Global=NULL;\
+int OnInit()\
+{\
+   __APP_NEW(AppClass,Boolean)\
+   App::Global.__setRuntimeControlled(true);\
+   return App::Global.__init();\
+ }\
+void OnDeinit(const int reason) {SafeDelete(App::Global);__DEINIT(Boolean)}
+//+------------------------------------------------------------------+
+//| (Optional) parameters for the App                                |
+//+------------------------------------------------------------------+
+class AppParam
+  {
+public:
+   virtual bool      check(void) const {return true;}
+  };
 //+------------------------------------------------------------------+
 //| Abstract base class for a MQL Application                        |
 //+------------------------------------------------------------------+
 class App
   {
 private:
-   bool              mRuntimeControlled;
+   bool              m_runtimeControlled;
+   ENUM_INIT_RETCODE m_ret;
 protected:
-   bool              isRuntimeControlled() const {return mRuntimeControlled;}
+   bool              isRuntimeControlled() const {return m_runtimeControlled;}
    int               getDeinitReason() const {return UninitializeReason();}
+   void              fail(string message="",ENUM_INIT_RETCODE ret=INIT_FAILED)
+     {
+      if(message!="") Alert(message);
+      m_ret=ret;
+     }
 public:
-   //--- This method is not intended for public use
-   void              setRuntimeControlled(bool value) {mRuntimeControlled=value;}
-                     App():mRuntimeControlled(false){}
+   //--- Methods for internal use
+   void              __setRuntimeControlled(bool value) {m_runtimeControlled=value;}
+   int               __init() const {return m_ret;}
 
-   virtual int       onInit(void)=0;
+                     App():m_runtimeControlled(false),m_ret(INIT_SUCCEEDED){}
+   static App       *Global;
   };
 //+------------------------------------------------------------------+

@@ -79,4 +79,7 @@ private:\
 #else
 #define Debug(msg)
 #endif
+
+#define BEGIN_EXECUTE(Name) class __Execute##Name{public:__Execute##Name() {
+#define END_EXECUTE(Name) }} __execute##Name;
 //+------------------------------------------------------------------+

@@ -8,17 +8,17 @@
 #include "App.mqh"
 #include "Event.mqh"
 
-#define DECLARE_EVENT_APP(AppClass,PARAM_SECTION) \
-DECLARE_APP(AppClass,PARAM_SECTION)\
-void OnTimer() {__app__.onTimer();}\
+#define DECLARE_EVENT_APP(AppClass,Boolean) \
+DECLARE_APP(AppClass,Boolean)\
+void OnTimer() {dynamic_cast<EventApp*>(App::Global).onTimer();}\
 void OnChartEvent(const int id,const long &lparam,const double &dparam,const string &sparam)\
 {\
   if(IsKeydownMessage(lparam)){\
    ushort event;uint param;\
    DecodeKeydownMessage(lparam,dparam,event,param);\
-   __app__.onAppEvent(event,param);\
+   dynamic_cast<EventApp*>(App::Global).onAppEvent(event,param);\
   }else{\
-   __app__.onChartEvent(id,lparam,dparam,sparam);\
+   dynamic_cast<EventApp*>(App::Global).onChartEvent(id,lparam,dparam,sparam);\
   }\
 }
 //+------------------------------------------------------------------+
