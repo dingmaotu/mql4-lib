@@ -15,7 +15,7 @@ AppParamClass *__param__=new AppParamClass;
 BEGIN_EXECUTE(Set##Name)\
    __param__.set##Name(Inp##Name);\
 END_EXECUTE(Set##Name)\
-input Type Inp##Name=Default;
+input Type Inp##Name=Default\
 
 #define END_INPUT
 

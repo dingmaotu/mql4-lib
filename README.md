@@ -71,8 +71,8 @@ Here is another example, this time an Expert Advisor with input parameters:
 
 class MyEaParam: public AppParam
 {
-  ObjAttr(string,eaName,EaName);
-  ObjAttr(double,baseLot,BaseLot);
+  ObjectAttr(string,eaName,EaName);
+  ObjectAttr(double,baseLot,BaseLot);
 public:
   // optionally override `check` method to validate paramters
   // this method will be called before initialization of EA
@@ -106,15 +106,17 @@ public:
 // The code before this line can be put in a separate mqh header
 
 // We use macros to declare inputs
+// Notice the trailing semicolon at the end of each INPUT, it is needed
+// support custom display name because of some unknown rules from MetaQuotes
 BEGIN_INPUT(MyEaParam)
-  INPUT(string,EaName,"My EA") // EA Name (Custom display is supported)
-  INPUT(double,BaseLot,0.1)    // Base Lot
+  INPUT(string,EaName,"My EA"); // EA Name (Custom display name is supported)
+  INPUT(double,BaseLot,0.1);    // Base Lot
 END_INPUT
 
 DECLARE_EA(MyEa,true)  // true to indicate it has parameters
 ```
 
-The `ObjAttr` macro declares standard get/set methods for a class. Just
+The `ObjectAttr` macro declares standard get/set methods for a class. Just
 follow the Java Beans(TM) convention.
 
 I used some macro tricks to work around limits of MQL4. I will document
