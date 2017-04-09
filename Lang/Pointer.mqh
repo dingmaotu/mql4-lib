@@ -4,6 +4,8 @@
 #property copyright "Copyright 2016, Li Ding"
 #property link      "dingmaotu@hotmail.com"
 #property strict
+
+#include "Integer.mqh"
 //+------------------------------------------------------------------+
 //| Generic safe pointer delete                                      |
 //+------------------------------------------------------------------+
@@ -125,4 +127,21 @@ public:
 
    T                *r() const {return m_ref;}
   };
+//+------------------------------------------------------------------+
+//| Generic pointer container                                        |
+//+------------------------------------------------------------------+
+struct Pointer
+  {
+   void             *value;
+  };
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+template<typename T>
+int GetAddress(T *pointer)
+  {
+   Pointer p;
+   p.value=(void*)pointer;
+   return ((LargeInt)p).lowPart;
+  }
 //+------------------------------------------------------------------+
