@@ -87,6 +87,7 @@ private:
    TempVar           m_var;
 public:
                      Semaphore(string name,long initial=0);
+   bool              isValid() const {return m_var.isValid();}
    bool              acquire();
    void              release();
   };
@@ -121,6 +122,6 @@ void Semaphore::release(void)
       long value=(long)m_var.get();
       success=m_var.setOn(value+1,value);
      }
-   while(success);
+   while(!success && !IsStopped());
   }
 //+------------------------------------------------------------------+
