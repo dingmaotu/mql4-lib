@@ -5,7 +5,9 @@
 #property link      "dingmaotu@hotmail.com"
 #property strict
 
-#define foreach(Type,Iterable) for(Iter<Type>it(Iterable); !it.end(); it.next())
+#include "../Lang/Pointer.mqh"
+
+#define foreach(Type,Iterable) for(Iterator<Type>*it=Iterable.iterator(); !it.end() || SafeDelete(it); it.next())
 //+------------------------------------------------------------------+
 //| Standard Iterator for all collections                            |
 //+------------------------------------------------------------------+
@@ -38,22 +40,6 @@ interface Iterable
    Iterator<T>*iterator() const;
   };
 //+------------------------------------------------------------------+
-//| Wraps the iterator of a collection for RAII                      |
-//+------------------------------------------------------------------+
-template<typename T>
-class Iter: public Iterator<T>
-  {
-private:
-   Iterator<T>*m_iterator;
-public:
-                     Iter(const Iterable<T>&t):m_iterator(t.iterator()){}
-   virtual          ~Iter() {SafeDelete(m_iterator);}
-   bool              end() const {return m_iterator.end();}
-   void              next() {m_iterator.next();}
-   T                 current() const {return m_iterator.current();}
-   bool              set(T value) {return m_iterator.set(value);}
-  };
-//+------------------------------------------------------------------+
 //| Base class for collections                                       |
 //+------------------------------------------------------------------+
 template<typename T>
@@ -83,9 +69,9 @@ public:
 template<typename T>
 bool Collection::contains(const T value) const
   {
-   for(Iter<T>iter(this);!iter.end();iter.next())
+   foreach(T,this)
      {
-      if(iter.current()==value) return true;
+      if(it.current()==value) return true;
      }
    return false;
   }
@@ -111,9 +97,9 @@ template<typename T>
 bool Collection::addAll(const Collection<T>&collection)
   {
    bool added=false;
-   for(Iter<T>iter(collection); !iter.end(); iter.next())
+   foreach(T,collection)
      {
-      bool tmp=add(iter.current());
+      bool tmp=add(it.current());
       if(!added) added=tmp;
      }
    return added;

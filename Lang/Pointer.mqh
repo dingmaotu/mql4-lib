@@ -26,17 +26,21 @@ bool IsPointer(const T &value)
   }
 //+------------------------------------------------------------------+
 //| Generic safe pointer delete                                      |
+//| Note that this funtion always return false: it is used in for    |
+//| loop to delete the pointer when loop ends                        |
+//| Generally you should use it as if it returns void                |
 //+------------------------------------------------------------------+
 template<typename T>
-void SafeDelete(T *pointer)
+bool SafeDelete(T *pointer)
   {
    if(IsValid(pointer)) delete pointer;
+   return false;
   }
 //+------------------------------------------------------------------+
 //| If pointer is actually a value type                              |
 //+------------------------------------------------------------------+
 template<typename T>
-void SafeDelete(T pointer) {}
+bool SafeDelete(T pointer) {return false;}
 //+------------------------------------------------------------------+
 //| Wraps a pointer that does not own the underlying resource        |
 //+------------------------------------------------------------------+
