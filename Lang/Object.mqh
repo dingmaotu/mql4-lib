@@ -6,6 +6,7 @@
 #property strict
 
 #include "Integer.mqh"
+#include "Pointer.mqh"
 //+------------------------------------------------------------------+
 //| Base class for all complicated objects in this library           |
 //+------------------------------------------------------------------+
@@ -17,13 +18,6 @@ public:
    virtual string    toString() const {return StringFormat("[Object #%d]",hash());}
    virtual int       hash() const;
    virtual bool      equals(const Object *o) const {return GetPointer(this)==o;}
-  };
-//+------------------------------------------------------------------+
-//| Generic pointer container                                        |
-//+------------------------------------------------------------------+
-struct Pointer
-  {
-   void             *value;
   };
 //+------------------------------------------------------------------+
 //|                                                                  |

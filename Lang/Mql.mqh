@@ -14,6 +14,28 @@ bool   CompareDoubles(double number1,double number2);
 string DoubleToStrMorePrecision(double number,int precision);
 string IntegerToHexString(int integer_number);
 #import
+
+#include "Pointer.mqh"
+#include "Hash.mqh"
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+template<typename T>
+interface EqualityComparer
+  {
+   bool      equals(T left,T right) const;
+   int       hash(T value) const;
+  };
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+template<typename T>
+class GenericEqualityComparer: public EqualityComparer<T>
+  {
+public:
+   virtual bool       equals(T left,T right) const {return left==right;}
+   virtual int        hash(T value) const {return Hash(value);}
+  };
 //+------------------------------------------------------------------+
 //| Mql language specific methods                                    |
 //+------------------------------------------------------------------+
@@ -80,6 +102,12 @@ private:\
 #define Debug(msg)
 #endif
 
-#define BEGIN_EXECUTE(Name) class __Execute##Name{public:__Execute##Name() {
-#define END_EXECUTE(Name) }} __execute##Name;
+#define BEGIN_EXECUTE(Name) class __Execute##Name\
+  {\
+   public:__Execute##Name()\
+     {
+#define END_EXECUTE(Name) \
+     }\
+  }\
+__execute##Name;
 //+------------------------------------------------------------------+

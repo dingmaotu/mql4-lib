@@ -7,21 +7,13 @@
 
 #include "Integer.mqh"
 //+------------------------------------------------------------------+
-//| Generic safe pointer delete                                      |
+//| Generic pointer check                                            |
 //+------------------------------------------------------------------+
 template<typename T>
-void SafeDelete(T *pointer)
+bool IsValid(T *pointer)
   {
-   if(CheckPointer(pointer)==POINTER_DYNAMIC)
-     {
-      delete pointer;
-     }
+   return CheckPointer(pointer)!=POINTER_INVALID;
   }
-//+------------------------------------------------------------------+
-//| If pointer is actually a value type                              |
-//+------------------------------------------------------------------+
-template<typename T>
-void SafeDelete(T pointer) {}
 //+------------------------------------------------------------------+
 //| Dynamically check if the value is a pointer type                 |
 //+------------------------------------------------------------------+
@@ -33,115 +25,69 @@ bool IsPointer(const T &value)
    return StringGetCharacter(tn, StringLen(tn) - 1) == '*';
   }
 //+------------------------------------------------------------------+
-//| Generic pointer check                                            |
+//| Generic safe pointer delete                                      |
 //+------------------------------------------------------------------+
 template<typename T>
-bool IsInvalid(T *pointer)
+void SafeDelete(T *pointer)
   {
-   return CheckPointer(pointer)==POINTER_INVALID;
+   if(IsValid(pointer)) delete pointer;
   }
 //+------------------------------------------------------------------+
-//| Generic pointer check                                            |
+//| If pointer is actually a value type                              |
 //+------------------------------------------------------------------+
 template<typename T>
-bool IsValid(T *pointer)
-  {
-   return CheckPointer(pointer)!=POINTER_INVALID;
-  }
+void SafeDelete(T pointer) {}
 //+------------------------------------------------------------------+
-//| Wraps a pointer that owns a resource                             |
-//+------------------------------------------------------------------+
-template<typename T>
-class Ptr
-  {
-private:
-   T                *m_ref;
-public:
-                     Ptr(T *raw=NULL):m_ref(raw){}
-                     Ptr(Ptr &other):m_ref(other.m_ref){other.m_ref=NULL;}
-                     Ptr(const Ref<T>&other):m_ref(other.r()){}
-                    ~Ptr() {if(IsValid(m_ref)) delete m_ref;}
-
-   T                *operator=(T *other)
-     {
-      m_ref=other;
-      return m_ref;
-     }
-   T                *operator=(const Ref<T>&other)
-     {
-      m_ref=other.r();
-      return m_ref;
-     }
-   T                *operator=(Ptr &other)
-     {
-      m_ref=other.m_ref;
-      other.m_ref=NULL;
-      return m_ref;
-     }
-
-   bool              operator==(const Ptr &other) const {return m_ref==other.m_ref;}
-   bool              operator==(const T *other) const {return m_ref==other;}
-   bool              operator==(const Ref<T>&other) const {return m_ref==other.r();}
-   bool              operator!=(const Ptr &other) const {return m_ref!=other.m_ref;}
-   bool              operator!=(const T *other) const {return m_ref!=other;}
-   bool              operator!=(const Ref<T>&other) const {return m_ref!=other.r();}
-
-   T                *r() const {return m_ref;}
-  };
-//+------------------------------------------------------------------+
-//| Wraps a pointer that does not own a resource                     |
+//| Wraps a pointer that does not own the underlying resource        |
 //+------------------------------------------------------------------+
 template<typename T>
 class Ref
   {
-private:
-   T                *m_ref;
 public:
-                     Ref(T *raw=NULL):m_ref(raw) {}
-                     Ref(const Ptr<T>&other):m_ref(other.r()) {}
-                     Ref(const Ref &other):m_ref(other.r()) {}
-                    ~Ref() {}
+   T                *r;
+                     Ref(T *raw=NULL):r(raw) {}
+                     Ref(const Ref<T>&other):r(other.r) {}
+   virtual          ~Ref() {}
 
-   bool              operator==(const Ref &other) const {return other.m_ref==m_ref;}
-   bool              operator==(const Ptr<T>&other) const {return other.r()==m_ref;}
-   bool              operator==(const T *other) const {return m_ref==other;}
-   bool              operator!=(const Ref &other) const {return other.m_ref!=m_ref;}
-   bool              operator!=(const Ptr<T>&other) const {return other.r()!=m_ref;}
-   bool              operator!=(const T *other) const {return m_ref!=other;}
+   bool              operator==(const Ref &other) const {return other.r==r;}
+   bool              operator==(const T *other) const {return r==other;}
+   bool              operator!=(const Ref &other) const {return other.r!=r;}
+   bool              operator!=(const T *other) const {return r!=other;}
 
-   T                *operator=(const Ptr<T>&other)
-     {
-      m_ref=other.r();
-      return m_ref;
-     }
-   T                *operator=(const Ref &other)
-     {
-      m_ref=other.r();
-      return m_ref;
-     }
-   T                *operator=(T *other)
-     {
-      m_ref=other;
-      return m_ref;
-     }
-
-   T                *r() const {return m_ref;}
+   virtual T        *operator=(Ref &other) {r=other.r;return r;}
+   T                *operator=(T *other){ r=other;return r;}
   };
 //+------------------------------------------------------------------+
-//| Generic pointer container                                        |
+//| Wraps a pointer that owns the underlying resource                |
 //+------------------------------------------------------------------+
-struct Pointer
+template<typename T>
+class Ptr: public Ref<T>
   {
-   void             *value;
+public:
+                     Ptr(T *raw=NULL):Ref(raw) {}
+                     Ptr(const Ptr<T>&other):Ref(other) {}
+
+   //--- responsible for delete the resource
+                    ~Ptr() {SafeDelete(r);}
   };
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
 template<typename T>
+struct PointerWrapper
+  {
+public:
+                     PointerWrapper(T *v):r(v) {}
+   T                *r;
+  };
+//+------------------------------------------------------------------+
+//| Numeric address for a pointer: different pointers returns a      |
+//| distinct value                                                   |
+//+------------------------------------------------------------------+
+template<typename T>
 int GetAddress(T *pointer)
   {
-   Pointer p;
-   p.value=(void*)pointer;
+   PointerWrapper<T>p(pointer);
    return ((LargeInt)p).lowPart;
   }
 //+------------------------------------------------------------------+
