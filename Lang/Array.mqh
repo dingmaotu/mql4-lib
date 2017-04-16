@@ -105,6 +105,25 @@ int BinarySearch(const T &array[],T value)
    return mid;
   }
 //+------------------------------------------------------------------+
+//| Find the first matching element                                  |
+//+------------------------------------------------------------------+
+template<typename T>
+bool ArrayFindMatch(const T &a[],const T &b[],T &result)
+  {
+   int sizeA = ArraySize(a);
+   int sizeB = ArraySize(b);
+   if(sizeA==0||sizeB==0) return false;
+
+   for(int i=0; i<sizeA; i++)
+      for(int j=0; j<sizeB; j++)
+         if(a[i]==b[j])
+           {
+            result=a[i];
+            return true;
+           }
+   return false;
+  }
+//+------------------------------------------------------------------+
 //| Wraps array                                                      |
 //+------------------------------------------------------------------+
 template<typename T>
