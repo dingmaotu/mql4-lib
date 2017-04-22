@@ -55,7 +55,6 @@ ChartFile::ChartFile(string symbol,int period)
    m_file_handle=-1;
    openChart();
    m_numRecords=hardGetNumberOfRecords();
-   Print("Number of records are ",m_numRecords);
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -149,7 +148,7 @@ long ChartFile::hardGetNumberOfRecords()
         }
       else
         {
-         long number=(size-HEADER_SIZE)/RECORD_SIZE;
+         long number=(long)((size-HEADER_SIZE)/RECORD_SIZE);
          return number<0?0:number;
         }
      }
