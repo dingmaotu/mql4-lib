@@ -57,21 +57,39 @@ int ArrayFind(const T &array[],const T value)
    return index;
   }
 //+------------------------------------------------------------------+
-//| Remove all elements that are marked as NULL                      |
+//|                                                                  |
 //+------------------------------------------------------------------+
-template<typename T>
-void ArrayCompact(T &array[])
+void ArrayCompact(double &array[])
   {
    int s=ArraySize(array);
    int i=0;
    for(; i<s; i++)
      {
-      if(array[i]!=NULL) continue;
+      if(MathIsValidNumber(array[i])) continue;
       int j=i+1;
-      while(j<s && array[j]==NULL) {j++;}
+      while(j<s && !MathIsValidNumber(array[j])) {j++;}
       if(j==s) break;
       array[i] = array[j];
-      array[j] = NULL;
+      array[j] = Double::NaN;
+     }
+   ArrayResize(array,i);
+  }
+//+------------------------------------------------------------------+
+//| Remove all elements that are marked as `comapre` (default NULL)  |
+//+------------------------------------------------------------------+
+template<typename T>
+void ArrayCompact(T &array[],T compare=NULL)
+  {
+   int s=ArraySize(array);
+   int i=0;
+   for(; i<s; i++)
+     {
+      if(array[i]!=compare) continue;
+      int j=i+1;
+      while(j<s && array[j]==compare) {j++;}
+      if(j==s) break;
+      array[i] = array[j];
+      array[j] = compare;
      }
    ArrayResize(array,i);
   }
