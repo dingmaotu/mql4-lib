@@ -38,6 +38,7 @@ public:
    static double getEquity() {return AccountInfoDouble(ACCOUNT_EQUITY);}
    static double getMargin() {return AccountInfoDouble(ACCOUNT_MARGIN);}
    static double getFreeMargin() {return AccountInfoDouble(ACCOUNT_MARGIN_FREE);}
+   static int    getFreeMarginCalcMode() {return AccountFreeMarginMode();}
    static double getMarginLevel() {return AccountInfoDouble(ACCOUNT_MARGIN_LEVEL);}
    static double getMarginCallLevel() {return AccountInfoDouble(ACCOUNT_MARGIN_SO_CALL);}
    static double getMarginStopoutLevel() {return AccountInfoDouble(ACCOUNT_MARGIN_SO_SO);}
