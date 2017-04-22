@@ -11,6 +11,14 @@
 #define BEGIN_INPUT(AppParamClass) \
 AppParamClass *__param__=new AppParamClass;
 
+//--- Fixed input only sets the input parameter as Default
+//--- but does not declare the input parameter for change
+#define FIXED_INPUT(Type, Name, Default) \
+BEGIN_EXECUTE(Set##Name)\
+   __param__.set##Name(Default);\
+END_EXECUTE(Set##Name)\
+
+//--- normal input parameter with declaration
 #define INPUT(Type, Name, Default) \
 BEGIN_EXECUTE(Set##Name)\
    __param__.set##Name(Inp##Name);\
@@ -47,7 +55,7 @@ void OnDeinit(const int reason) {SafeDelete(App::Global);__DEINIT(Boolean)}
 class AppParam
   {
 public:
-   virtual bool      check(void) const {return true;}
+   virtual bool      check(void) {return true;}
   };
 //+------------------------------------------------------------------+
 //| Abstract base class for a MQL Application                        |
