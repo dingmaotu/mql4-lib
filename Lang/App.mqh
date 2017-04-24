@@ -81,8 +81,6 @@ protected:
       Setters[m_index]=GetPointer(this);
      }
 public:
-                    ~AppParamSetter() {SafeDelete(Setters[m_index]);}
-
    static void       setParamters()
      {
       int s=ArraySize(Setters);
