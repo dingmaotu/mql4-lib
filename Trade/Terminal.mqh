@@ -44,6 +44,7 @@ public:
    static bool       isNotificationsEnabled() {return TerminalInfoInteger(TERMINAL_NOTIFICATIONS_ENABLED);}
    static bool       hasMetaQuotesId() {return TerminalInfoInteger(TERMINAL_MQID);}
    static bool       notify(string msg);
+   static bool       mail(string subject,string content);
   };
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -72,5 +73,20 @@ bool Terminal::notify(string msg)
       Alert("ERROR: [",__FUNCTION__,"] Notification is not enabled or MetaQuotes ID is not set.");
       return false;
      }
+  }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+bool Terminal::mail(string subject,string content)
+  {
+   if(Terminal::isEmailEnabled())
+     {
+      if(!SendMail(subject,content))
+        {
+         int code=Mql::getLastError();
+         PrintFormat(">>> Sending mail failed with error %d: %s",code,Mql::getErrorMessage(code));
+        }
+     }
+   return false;
   }
 //+------------------------------------------------------------------+
