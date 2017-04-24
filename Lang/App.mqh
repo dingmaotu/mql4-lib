@@ -8,37 +8,45 @@
 #include "Mql.mqh"
 #include "Pointer.mqh"
 
-#define BEGIN_INPUT(AppParamClass) \
-AppParamClass *__param__=new AppParamClass;
-
-//--- Fixed input only sets the input parameter as Default
-//--- but does not declare the input parameter for change
-#define FIXED_INPUT(Type, Name, Default) \
-BEGIN_EXECUTE(Set##Name)\
-   __param__.set##Name(Default);\
-END_EXECUTE(Set##Name)\
+#define BEGIN_INPUT(ParamType) \
+class GlobalAppParamSetter: public AppParamSetter\
+  {\
+protected:\
+                     GlobalAppParamSetter() {if(Global==NULL) Global=new ParamType;}\
+public:\
+                    ~GlobalAppParamSetter() {SafeDelete(Global);}\
+   static ParamType *Global;\
+  };\
+ParamType *GlobalAppParamSetter::Global=NULL;
 
 //--- normal input parameter with declaration
 #define INPUT(Type, Name, Default) \
-BEGIN_EXECUTE(Set##Name)\
-   __param__.set##Name(Inp##Name);\
-END_EXECUTE(Set##Name)\
+class __Set##Name: public GlobalAppParamSetter {public: void set() {GlobalAppParamSetter::Global.set##Name(Inp##Name);}} __set##Name;\
 input Type Inp##Name=Default\
+
+//--- Fixed input only sets the input parameter as Default
+//--- but does not declare the input parameter for user change
+#define FIXED_INPUT(Type, Name, Default) \
+class __Set##Name: public GlobalAppParamSetter {public: void set() {GlobalAppParamSetter::Global.set##Name(Default);}} __set##Name
+
+//--- Input separator
+#define INPUT_SEP(Name) \
+input string ____##Name##____=""\
+
+//--- Input separator
+#define FIXED_INPUT_SEP(Name)
 
 #define END_INPUT
 
 #define __APP_NEW(AppClass,Boolean) __APP_NEW_##Boolean(AppClass)
 
 #define __APP_NEW_true(AppClass) \
-if(!__param__.check()) return INIT_PARAMETERS_INCORRECT;\
-App::Global=new AppClass(__param__);
+AppParamSetter::setParamters();\
+if(!GlobalAppParamSetter::Global.check()) return INIT_PARAMETERS_INCORRECT;\
+App::Global=new AppClass(GlobalAppParamSetter::Global);
 
 #define __APP_NEW_false(AppClass) \
 App::Global=new AppClass();
-
-#define __DEINIT(Boolean) __DEINIT_##Boolean
-#define __DEINIT_true SafeDelete(__param__);
-#define __DEINIT_false
 
 #define DECLARE_APP(AppClass,Boolean) \
 App *App::Global=NULL;\
@@ -47,8 +55,8 @@ int OnInit()\
    __APP_NEW(AppClass,Boolean)\
    App::Global.__setRuntimeControlled(true);\
    return App::Global.__init();\
- }\
-void OnDeinit(const int reason) {SafeDelete(App::Global);__DEINIT(Boolean)}
+}\
+void OnDeinit(const int reason) {SafeDelete(App::Global);}
 //+------------------------------------------------------------------+
 //| (Optional) parameters for the App                                |
 //+------------------------------------------------------------------+
@@ -57,6 +65,34 @@ class AppParam
 public:
    virtual bool      check(void) {return true;}
   };
+//+------------------------------------------------------------------+
+//| The base class for dynamically generated setters for parameters  |
+//+------------------------------------------------------------------+
+class AppParamSetter
+  {
+private:
+   int               m_index;
+protected:
+   static AppParamSetter *Setters[];
+                     AppParamSetter()
+     {
+      m_index=ArraySize(Setters);
+      ArrayResize(Setters,ArraySize(Setters)+1,10);
+      Setters[m_index]=GetPointer(this);
+     }
+public:
+                    ~AppParamSetter() {SafeDelete(Setters[m_index]);}
+
+   static void       setParamters()
+     {
+      int s=ArraySize(Setters);
+      for(int i=0;i<s;i++)Setters[i].set();
+     }
+   static int        getNumberOfParameters() {return ArraySize(Setters);}
+
+   virtual void      set()=0;
+  };
+AppParamSetter *AppParamSetter::Setters[];
 //+------------------------------------------------------------------+
 //| Abstract base class for a MQL Application                        |
 //+------------------------------------------------------------------+
