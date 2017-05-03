@@ -25,11 +25,19 @@ protected:
 public:
                     ~FreeFormElement() {deleteSelf();}
    //--- Position and Shape
-   virtual int       getX() const {return(int)getInteger(OBJPROP_XDISTANCE)-getParent().getX();}
-   virtual bool      setX(int value) {return setInteger(OBJPROP_XDISTANCE,getParent().getX()+value);}
-   virtual int       getY() const {return(int)getInteger(OBJPROP_YDISTANCE)-getParent().getY();};
-   virtual bool      setY(int value) {return setInteger(OBJPROP_YDISTANCE,getParent().getY()+value);}
+   virtual int       getX() const {return(int)getInteger(OBJPROP_XDISTANCE);}
+   virtual bool      setX(int value) {return setInteger(OBJPROP_XDISTANCE,value);}
+   virtual int       getY() const {return(int)getInteger(OBJPROP_YDISTANCE);}
+   virtual bool      setY(int value) {return setInteger(OBJPROP_YDISTANCE,value);}
+
+   int               getRelativeX() const {return getX()-getParent().getX();}
+   int               getRelativeY() const {return getY()-getParent().getY();}
+   bool              setRelativeX(int value) {return setX(getParent().getX()+value);}
+   bool              setRelativeY(int value) {return setY(getParent().getY()+value);}
+
    bool              setPosition(int x,int y) {return setX(x) && setY(y);}
+   bool              setRelativePosition(int x,int y) {return setRelativeX(x) && setRelativeY(y);}
+   bool              move(int dx,int dy) {return setX(getX()+dx) && setY(getY()+dy);}
 
    virtual int       getWidth() const {return(int)getInteger(OBJPROP_XSIZE);}
    virtual bool      setWidth(int value) {return setInteger(OBJPROP_XSIZE,value);}

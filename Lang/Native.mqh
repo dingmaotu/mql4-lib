@@ -33,6 +33,7 @@
 #import "kernel32.dll"
 void RtlMoveMemory(intptr_t dest,const uchar &array[],size_t length);
 void RtlMoveMemory(uchar &array[],intptr_t src,size_t length);
+void RtlMoveMemory(intptr_t dest,intptr_t src,size_t length);
 int lstrlen(intptr_t psz);
 int MultiByteToWideChar(uint   codePage,
                         uint   flags,
@@ -58,6 +59,15 @@ void ArrayToPointer(const uchar &array[],intptr_t dest,int count=WHOLE_ARRAY)
   {
    int size=(count==WHOLE_ARRAY)?ArraySize(array):count;
    RtlMoveMemory(dest,array,(size_t)size);
+  }
+//+------------------------------------------------------------------+
+//| For void** type, dereference a level to void*                    |
+//+------------------------------------------------------------------+
+intptr_t DereferencePointer(intptr_t pointer)
+  {
+   intptr_t res=0;
+   RtlMoveMemory(res,pointer,sizeof(intptr_t));
+   return res;
   }
 //+------------------------------------------------------------------+
 //| Read a valid utf-8 string to the MQL environment                 |
