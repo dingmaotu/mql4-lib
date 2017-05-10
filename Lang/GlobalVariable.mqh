@@ -33,15 +33,16 @@ class TempVar
   {
 private:
    string            m_name;
+   bool              m_owned;
 public:
-                     TempVar(string name,bool create=false):m_name(name)
+                     TempVar(string name,bool create=false):m_name(name),m_owned(create)
      {
       if(create)
         {
          GlobalVariable::makeTemp(name);
         }
      }
-                    ~TempVar() {if(isValid()) {if(isValid()) {GlobalVariable::remove(m_name);}}}
+                    ~TempVar() {if(m_owned && isValid()) {GlobalVariable::remove(m_name);}}
 
    bool              isValid() const {return GlobalVariable::exists(m_name);}
    string            getName() const {return m_name;}
