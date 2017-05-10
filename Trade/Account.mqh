@@ -35,6 +35,7 @@ public:
    static double getBalance() {return AccountInfoDouble(ACCOUNT_BALANCE);}
    static double getCredit() {return AccountInfoDouble(ACCOUNT_CREDIT);}
    static double getProfit() {return AccountInfoDouble(ACCOUNT_PROFIT);}
+   static double getFloatingProfit() {return getEquity()-getBalance();}
    static double getEquity() {return AccountInfoDouble(ACCOUNT_EQUITY);}
    static double getMargin() {return AccountInfoDouble(ACCOUNT_MARGIN);}
    static double getFreeMargin() {return AccountInfoDouble(ACCOUNT_MARGIN_FREE);}

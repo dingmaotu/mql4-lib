@@ -113,6 +113,8 @@ public:
    int               __init() const {return m_ret;}
 
                      App():m_runtimeControlled(false),m_ret(INIT_SUCCEEDED){}
+
+   bool              isInitSuccess() const {return m_ret==INIT_SUCCEEDED;}
    static App       *Global;
   };
 //+------------------------------------------------------------------+
