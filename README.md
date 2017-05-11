@@ -201,9 +201,9 @@ void OnStart()
 
    PrintFormat("There are %d orders. ",list.size());
 
-   for(Iter<Order*> iter(list); !iter.end(); iter.next())
+   foreach(Order*,list)
      {
-      Order*o=iter.current();
+      Order*o=it.current();
       Print(o.toString());
      }
   }
