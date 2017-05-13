@@ -174,4 +174,6 @@ public:
    string            current() const {return m_current;}
    bool              end() const {return !m_found;}
   };
+
+#define foreachfile(fnvar,filter) for(string fnvar="file"; fnvar!=NULL;fnvar=NULL) for(FileIterator __it__(filter); !__it__.end() && (fnvar=__it__.current())!=NULL; __it__.next())
 //+------------------------------------------------------------------+

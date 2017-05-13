@@ -274,7 +274,7 @@ kind of file it's opearting: for Binary the unicode bytes (UTF-16 LE) are read
 with specified length, for Text the entire line is read (is FILE_ANSI flag is
 set the text is decoded based on codepage), and for CSV only a string field is
 read. I don't like this design, neither I have the energy and time to
-reimplement text encoding/decoding and type serializing/deserilizing.
+reimplement text encoding/decoding and type serializing/deserializing.
 
 So I wrote a `Utils/File` module, wrapping all file functions with a much
 cleaner interface, but without changing the whole design. There are five
@@ -350,6 +350,25 @@ int OnStart()
         {
          Print("File: ",name);
         }
+     }
+}
+```
+
+Or you can go fancy with the powerful `foreachfile` macro:
+
+```c++
+#include <MQL4/Utils/File.mqh>
+
+int OnStart()
+{
+//--- first parameter is the local variable *name* for current file name
+//--- second parameter is the filter pattern string
+   foreachfile(name,"*")
+     {
+      if(File::isDirectory(name))
+         Print("Directory: ",name);
+      else
+         Print("File: ",name);
      }
 }
 ```
