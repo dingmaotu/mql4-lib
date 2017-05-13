@@ -8,6 +8,7 @@ MQL4 Foundation Library For Professional Developers
   * [3.1 Basic Programs](#basic-programs)
   * [3.2 Collections](#collections)
   * [3.3 Asynchronous Events](#asynchronous-events)
+  * [3.4 File System and IO](#file-system-and-io)
 
 ## Introduction
 
@@ -261,3 +262,94 @@ because of very strong anti-debugging measures.
 Inside MetaTrader terminal, you better use ChartEventCustom to
 send custom events.
 
+### File System and IO 
+
+MQL file functions by design directly operate on three types of files: Binary,
+Text, and CSV. To me, these types of files are supposed to form a layered
+relationship: CSV is a specialized Text, and Text specialized Binary (with
+encoding/decoding of text). But the functions are NOT designed this way, rather
+as a tangled mess by allowing various functions to operate on different types of
+files. For example, `FileReadString` behavior is totally different besed on what
+kind of file it's opearting: for Binary the unicode bytes (UTF-16 LE) are read
+with specified length, for Text the entire line is read (is FILE_ANSI flag is
+set the text is decoded based on codepage), and for CSV only a string field is
+read. I don't like this design, neither I have the energy and time to
+reimplement text encoding/decoding and type serializing/deserilizing.
+
+So I wrote a `Utils/File` module, wrapping all file functions with a much
+cleaner interface, but without changing the whole design. There are five
+classes: `File` is a base class but you can not instantiate it; `BinaryFile`,
+`TextFile`, and `CsvFile` are the subclasses which are what you use in your
+code; and there is an interesting class `FileIterator` which impelemented
+standard `Iterator` interface, and you can use the same technique to iterate
+through directory files.
+
+Here is a example for TextFile and CsvFile:
+
+```c++
+#include <MQL4/Utils/File.mqh>
+
+void OnStart()
+  {
+   File::createFolder("TestFileApi");
+
+   TextFile txt("TestFileApi\\MyText.txt",FILE_WRITE);
+   txt.writeLine("你好，世界。");
+   txt.writeLine("Hello world.");
+
+//--- reopen closes the current file handle first
+   txt.reopen("TestFileApi\\MyText.txt",FILE_READ);
+   while(!txt.end())
+     {
+      Print(txt.readLine());
+     }
+
+   CsvFile csv("TestFileApi\\MyCsv.csv",FILE_WRITE);
+//--- write whole line as a text file
+   csv.writeLine("This,is one,CSV,file");
+
+//--- write fields one by one
+   csv.writeString("这是");
+   csv.writeDelimiter();
+   csv.writeInteger(1);
+   csv.writeDelimiter();
+   csv.writeBool(true);
+   csv.writeDelimiter();
+   csv.writeString("CSV");
+   csv.writeNewline();
+
+   csv.reopen("TestFileApi\\MyCsv.csv",FILE_READ);
+   for(int i=1; !csv.end(); i++)
+     {
+      Print("Line ",i);
+      //--- notice that you SHALL NOT directly use while(!csv.isLineEnding()) here
+      //--- or you will run into a infinite loop
+      do
+        {
+         Print("Field: ",csv.readString());
+        }
+      while(!csv.isLineEnding());
+     }
+```
+
+And here is an example for `FileIterator`:
+
+```c++
+#include <MQL4/Utils/File.mqh>
+
+int OnStart()
+{
+   for(FileIterator it("*"); !it.end(); it.next())
+     {
+      string name=it.current();
+      if(File::isDirectory(name))
+        {
+         Print("Directory: ",name);
+        }
+      else
+        {
+         Print("File: ",name);
+        }
+     }
+}
+```
