@@ -7,8 +7,9 @@ MQL4 Foundation Library For Professional Developers
 * [3. Usage](#usage)
   * [3.1 Basic Programs](#basic-programs)
   * [3.2 Collections](#collections)
-  * [3.3 Asynchronous Events](#asynchronous-events)
-  * [3.4 File System and IO](#file-system-and-io)
+  * [3.3 Maps](#maps)
+  * [3.4 Asynchronous Events](#asynchronous-events)
+  * [3.5 File System and IO](#file-system-and-io)
 
 ## Introduction
 
@@ -39,6 +40,8 @@ stable and can be used in production. Here are the main components:
 3. `Charts` directory contains several chart types and common chart tools
 4. `Trade` directory contains useful abstractions for trading
 5. `Utils` directory contains various utilities
+6. `UI` chart objects and UI controls (in progress)
+7. `OpenCL` brings OpenCL support to MT4 (in progress)
 
 ### Basic Programs
 
@@ -210,6 +213,59 @@ void OnStart()
   }
 //+------------------------------------------------------------------+
 ```
+
+### Maps
+
+Map (or dictionary) is extremely important for any non-trivial programs.
+Mql4-lib impelements an efficient Hash map using Murmur3 string hash. The
+implementation follows the CPython3 hash and it preserves insertion order.
+
+The HashMap interface is very simple. Below is a simple example counting words
+of the famous `Hamlet`:
+
+```c++
+#include <MQL4/Lang/Script.mqh>
+#include <MQL4/Collection/HashMap.mqh>
+#include <MQL4/Utils/File.mqh>
+
+class CountHamletWords: public Script
+  {
+public:
+   void              main()
+     {
+      TextFile txt("hamlet.txt", FILE_READ);
+      if(txt.valid())
+        {
+         HashMap<string,int>wordCount;
+         while(!txt.end() && !IsStopped())
+           {
+            string line= txt.readLine();
+            string words[];
+            StringSplit(line,' ',words);
+            int len=ArraySize(words);
+            if(len>0)
+              {
+               for(int i=0; i<len; i++)
+                 {
+                  int newCount=0;
+                  if(!wordCount.contains(words[i]))
+                     newCount=1;
+                  else
+                     newCount=wordCount[words[i]]+1;
+                  wordCount.set(words[i],newCount);
+                 }
+              }
+           }
+         Print("Total words: ",wordCount.size());
+         BEGIN_MAP_FOR(string,word,int,count,wordCount)
+            PrintFormat("%s: %d",word,count);
+         END_MAP_FOR
+        }
+     }
+  };
+DECLARE_SCRIPT(CountHamletWords,false)
+```
+
   
 ### Asynchronous Events
 
