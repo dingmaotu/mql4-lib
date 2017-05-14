@@ -6,6 +6,7 @@
 #property strict
 
 #include "Integer.mqh"
+#include "Native.mqh"
 //+------------------------------------------------------------------+
 //| Generic pointer check                                            |
 //+------------------------------------------------------------------+
@@ -77,21 +78,23 @@ public:
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-template<typename T>
+/*
 struct PointerWrapper
   {
-public:
-                     PointerWrapper(T *v):r(v) {}
-   T                *r;
+   void const       *r;
   };
+*/
 //+------------------------------------------------------------------+
 //| Numeric address for a pointer: different pointers returns a      |
 //| distinct value                                                   |
 //+------------------------------------------------------------------+
+/*
 template<typename T>
 int GetAddress(T *pointer)
   {
-   PointerWrapper<T>p(pointer);
+   PointerWrapper p;
+   p.r=pointer;
    return ((LargeInt)p).lowPart;
   }
+*/
 //+------------------------------------------------------------------+

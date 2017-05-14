@@ -188,7 +188,9 @@ int Hash(const float value)
      }
    Single s;
    s.value=value;
-   return ((Int32)s).value;
+   Int32 t;
+   RtlMoveMemory(t,s,sizeof(Int32));
+   return t.value;
   }
 //+------------------------------------------------------------------+
 //| double converted to long                                         |
@@ -202,7 +204,9 @@ int Hash(const double value)
      }
    Double s;
    s.value=value;
-   return Hash(((Int64)s).value);
+   Int64 t;
+   RtlMoveMemory(t,s,sizeof(Int64));
+   return Hash(t.value);
   }
 //+------------------------------------------------------------------+
 //| datetime is of same size with long                               |
