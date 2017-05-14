@@ -26,7 +26,14 @@ void OnChartEvent(const int id,const long &lparam,const double &dparam,const str
 //+------------------------------------------------------------------+
 class EventApp: public App
   {
+private:
+   bool              m_hasTimer;
+protected:
+   void              setupTimer(int seconds) {if(EventSetTimer(seconds))m_hasTimer=true;}
+   void              setupMillisTimer(int millis) {if(EventSetMillisecondTimer(millis))m_hasTimer=true;}
+   bool              hasTimer() const {return m_hasTimer;}
 public:
+                    ~EventApp() {if(m_hasTimer)EventKillTimer();}
    virtual void      onTimer()=0;
    virtual void      onChartEvent(const int id,const long &lparam,const double &dparam,const string &sparam)=0;
    virtual void      onAppEvent(const ushort event,const uint param)=0;

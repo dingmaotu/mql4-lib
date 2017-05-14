@@ -52,6 +52,8 @@ public:
    int               getSubwindowY(int index=0) const {return(int)ChartGetInteger(m_chartId,CHART_WINDOW_YDISTANCE,index);}
    int               getSubwindowHeight(int index=0) const {return(int)ChartGetInteger(m_chartId,CHART_HEIGHT_IN_PIXELS,index);}
    bool              setSubwindowHeight(int index,int height) {return ChartSetInteger(m_chartId,CHART_HEIGHT_IN_PIXELS,index,height);}
+
+   bool              sendCustomEvent(ushort eventId,long lparam,double dparam,string sparam) {return EventChartCustom(m_chartId,eventId,lparam,dparam,sparam);}
   };
 //+------------------------------------------------------------------+
 //| Create from opened chart                                         |
