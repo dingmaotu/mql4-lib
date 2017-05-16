@@ -174,6 +174,10 @@ Vector<int> intVector;
 To iterate through a collection, use its iterator, as iterators know what is
 the most efficient way to iterating.
 
+Threre are alao two macros for iteration: `foreach` and `foreachv`. You can
+`break` and `return` in the loop without worrying about resource leaks because
+we use `Iter` RAII class to wrap the iterator pointer.
+
 Here is a simple example:
 
 ```
@@ -205,11 +209,24 @@ void OnStart()
 
    PrintFormat("There are %d orders. ",list.size());
 
+   //--- Iter RAII class
+   for(Iter<Order*> it(list); !it.end(); it.next())
+     {
+      Order*o=it.current();
+      Print(o.toString());
+     }
+
+   //--- foreach macro: use it as the iterator variable
    foreach(Order*,list)
      {
       Order*o=it.current();
       Print(o.toString());
      }
+
+   //--- foreachv macro: declare element varaible o in the second parameter
+   foreachv(Order*,o,list)
+     Print(o.toString());
+
   }
 //+------------------------------------------------------------------+
 ```
