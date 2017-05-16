@@ -163,8 +163,10 @@ protected:
 
    bool              m_found;
    string            m_current;
+
+   int               m_condition;
 public:
-                     FileIterator(string filter,bool common=false):m_filter(filter)
+                     FileIterator(string filter,bool common=false):m_filter(filter),m_condition(0)
      {
       m_handle=FileFindFirst(m_filter,m_current,common?FILE_COMMON:0);
       m_found=m_handle!=INVALID_HANDLE;
@@ -173,7 +175,10 @@ public:
    void              next() { m_found=FileFindNext(m_handle,m_current); }
    string            current() const {return m_current;}
    bool              end() const {return !m_found;}
+
+   bool              trueForOnce() {return m_condition++==0;}
+   bool              assign(string &var) {if(!m_found) return false; else {var=m_current;return true;}}
   };
 
-#define foreachfile(fnvar,filter) for(string fnvar="file"; fnvar!=NULL;fnvar=NULL) for(FileIterator __it__(filter); !__it__.end() && (fnvar=__it__.current())!=NULL; __it__.next())
+#define foreachfile(fnvar,filter) for(FileIterator __it__(filter);__it__.trueForOnce();) for(string fnvar;__it__.assign(fnvar);__it__.next())
 //+------------------------------------------------------------------+

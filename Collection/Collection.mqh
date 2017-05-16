@@ -6,8 +6,6 @@
 #property strict
 
 #include "../Lang/Pointer.mqh"
-
-#define foreach(Type,Iterable) for(Iterator<Type>*it=Iterable.iterator(); !it.end() || SafeDelete(it); it.next())
 //+------------------------------------------------------------------+
 //| Standard Iterator for all collections                            |
 //+------------------------------------------------------------------+
@@ -39,6 +37,29 @@ interface Iterable
   {
    Iterator<T>*iterator() const;
   };
+//+------------------------------------------------------------------+
+//| This is the utility class for implementing iterator RAII         |
+//| assign and trueForOnce is for implementing foreach               |
+//+------------------------------------------------------------------+
+template<typename T>
+class Iter:public Iterator<T>
+  {
+private:
+   Iterator<T>*m_it;
+   int               m_condition;
+public:
+                     Iter(const Iterable<T>&it):m_it(it.iterator()),m_condition(0) {}
+                    ~Iter() {SafeDelete(m_it);}
+   void              next() {m_it.next();}
+   T                 current() const {return m_it.current();}
+   bool              end() const {return m_it.end();}
+   bool              set(T value) {return m_it.set(value);}
+
+   bool              trueForOnce() {return m_condition++==0;}
+   bool              assign(T &var) {if(m_it.end()) return false; else {var=m_it.current();return true;}}
+  };
+#define foreach(Type,Iterable) for(Iter<Type> it(Iterable);!it.end();it.next())
+#define foreachv(Type,Var,Iterable) for(Iter<Type> it(Iterable);it.trueForOnce();) for(Type Var;it.assign(Var);it.next())
 //+------------------------------------------------------------------+
 //| Base class for collections                                       |
 //+------------------------------------------------------------------+
