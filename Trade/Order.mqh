@@ -4,8 +4,6 @@
 #property copyright "Copyright 2016, Li Ding"
 #property link      "dingmaotu@hotmail.com"
 #property strict
-
-#include "../Lang/Object.mqh"
 //+------------------------------------------------------------------+
 //| if current order matches                                         |
 //+------------------------------------------------------------------+
@@ -20,7 +18,7 @@ const string OrderTypeString[]={"buy","sell","buy limit","sell simit","buy stop"
 //| Creating a new Order captures all properties of a current        |
 //| selected order                                                   |
 //+------------------------------------------------------------------+
-class Order: public Object
+class Order
   {
 private:
    int               ticket;
@@ -51,6 +49,8 @@ public:
                      Order();
    string            toString() const;
    int               hash() const;
+
+   static bool       Select(int ticket) {return OrderSelect(ticket,SELECT_BY_TICKET);}
 
    //--- static wrappers for getting order properties
    //--- this is necessary if you want to use these functions as function pointers
