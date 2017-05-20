@@ -78,17 +78,14 @@ public:
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-/*
 struct PointerWrapper
   {
    void const       *r;
   };
-*/
 //+------------------------------------------------------------------+
 //| Numeric address for a pointer: different pointers returns a      |
 //| distinct value                                                   |
 //+------------------------------------------------------------------+
-/*
 template<typename T>
 int GetAddress(T *pointer)
   {
@@ -96,5 +93,4 @@ int GetAddress(T *pointer)
    p.r=pointer;
    return ((LargeInt)p).lowPart;
   }
-*/
 //+------------------------------------------------------------------+
