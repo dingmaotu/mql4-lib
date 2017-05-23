@@ -5,7 +5,7 @@
 //+------------------------------------------------------------------+
 #property strict
 
-#include "Integer.mqh"
+#include "Cast.mqh"
 #include "Pointer.mqh"
 
 // uint32_t rotl32(uint32_t x,int8_t r)
@@ -163,7 +163,6 @@ int Hash(const uint value)
 //+------------------------------------------------------------------+
 int Hash(const long value)
   {
-   Print("Long hash");
    if(value==0 || value==-0)
      {
       return (0);
@@ -186,27 +185,22 @@ int Hash(const float value)
      {
       return (0);
      }
-   Single s;
-   s.value=value;
-   Int32 t;
-   RtlMoveMemory(t,s,sizeof(Int32));
-   return t.value;
+   int n;
+   reinterpret_cast(value,n);
+   return n;
   }
 //+------------------------------------------------------------------+
 //| double converted to long                                         |
 //+------------------------------------------------------------------+
 int Hash(const double value)
   {
-   Print("Double hash");
    if(value==0.0 || value==-0.0f)
      {
       return (0);
      }
-   Double s;
-   s.value=value;
-   Int64 t;
-   RtlMoveMemory(t,s,sizeof(Int64));
-   return Hash(t.value);
+   long n;
+   reinterpret_cast(value,n);
+   return Hash(n);
   }
 //+------------------------------------------------------------------+
 //| datetime is of same size with long                               |
@@ -228,6 +222,6 @@ int Hash(const color value)
 template<typename T>
 int Hash(T *value)
   {
-   return GetAddress(value);
+   return (int)GetAddress(value);
   }
 //+------------------------------------------------------------------+

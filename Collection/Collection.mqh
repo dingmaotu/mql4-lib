@@ -1,8 +1,7 @@
 //+------------------------------------------------------------------+
 //|                                        Collection/Collection.mqh |
+//|                                          Copyright 2016, Li Ding |
 //+------------------------------------------------------------------+
-#property copyright "Copyright 2016, Li Ding"
-#property link      "dingmaotu@hotmail.com"
 #property strict
 
 #include "../Lang/Pointer.mqh"
@@ -48,18 +47,18 @@ private:
    Iterator<T>*m_it;
    int               m_condition;
 public:
-                     Iter(const Iterable<T>&it):m_it(it.iterator()),m_condition(0) {}
+                     Iter(const Iterable<T>&it):m_it(it.iterator()),m_condition(1) {}
                     ~Iter() {SafeDelete(m_it);}
    void              next() {m_it.next();}
    T                 current() const {return m_it.current();}
    bool              end() const {return m_it.end();}
    bool              set(T value) {return m_it.set(value);}
 
-   bool              trueForOnce() {return m_condition++==0;}
+   bool              testTrue() {if(m_condition==0)return false;else {m_condition--;return true;}}
    bool              assign(T &var) {if(m_it.end()) return false; else {var=m_it.current();return true;}}
   };
 #define foreach(Type,Iterable) for(Iter<Type> it(Iterable);!it.end();it.next())
-#define foreachv(Type,Var,Iterable) for(Iter<Type> it(Iterable);it.trueForOnce();) for(Type Var;it.assign(Var);it.next())
+#define foreachv(Type,Var,Iterable) for(Iter<Type> it(Iterable);it.testTrue();) for(Type Var;it.assign(Var);it.next())
 //+------------------------------------------------------------------+
 //| Base class for collections                                       |
 //+------------------------------------------------------------------+

@@ -3,8 +3,6 @@
 //|                                          Copyright 2017, Li Ding |
 //|                                            dingmaotu@hotmail.com |
 //+------------------------------------------------------------------+
-#property copyright "Copyright 2017, Li Ding"
-#property link      "dingmaotu@hotmail.com"
 #property strict
 
 #import "stdlib.ex4"
@@ -14,35 +12,6 @@ bool   CompareDoubles(double number1,double number2);
 string DoubleToStrMorePrecision(double number,int precision);
 string IntegerToHexString(int integer_number);
 #import
-
-#include "Pointer.mqh"
-#include "Hash.mqh"
-//+------------------------------------------------------------------+
-//|                                                                  |
-//+------------------------------------------------------------------+
-interface Callable
-  {
-   void call();
-  };
-//+------------------------------------------------------------------+
-//|                                                                  |
-//+------------------------------------------------------------------+
-template<typename T>
-interface EqualityComparer
-  {
-   bool      equals(T left,T right) const;
-   int       hash(T value) const;
-  };
-//+------------------------------------------------------------------+
-//|                                                                  |
-//+------------------------------------------------------------------+
-template<typename T>
-class GenericEqualityComparer: public EqualityComparer<T>
-  {
-public:
-   virtual bool       equals(T left,T right) const {return left==right;}
-   virtual int        hash(T value) const {return Hash(value);}
-  };
 //+------------------------------------------------------------------+
 //| Mql language specific methods                                    |
 //+------------------------------------------------------------------+
@@ -109,6 +78,7 @@ private:\
 #define Debug(msg)
 #endif
 
+//--- Execute some code in the global scope
 #define BEGIN_EXECUTE(Name) class __Execute##Name\
   {\
    public:__Execute##Name()\

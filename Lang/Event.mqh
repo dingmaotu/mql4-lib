@@ -53,7 +53,7 @@ send custom events.
 */
 
 #property strict
-#include "Integer.mqh" // for SHORT_BITS
+#include "Number.mqh" // for SHORT_BITS
 //+------------------------------------------------------------------+
 //| Encode AppEvent parameters to PostMessage parameters             |
 //| This should not be used in mt4 programs, only as reference for   |

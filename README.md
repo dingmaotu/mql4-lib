@@ -13,27 +13,30 @@ MQL4 Foundation Library For Professional Developers
 
 ## Introduction
 
-MQL4 programming language provided by MetaQuotes is a very limited
-version of C++, and its standard library is a clone of the (ugly) MFC,
-both of which I am very uncomfortable with. Most MQL4 programs have not
-adapted to the MQL5 (Object Oriented) style yet, let alone reuable and
-elegant component based design and programming.
+MQL4 programming language provided by MetaQuotes is a very limited version of
+C++, and its standard library is a clone of the (ugly) MFC, both of which I am
+very uncomfortable with. Most MQL4 programs have not adapted to the MQL5 (Object
+Oriented) style yet, let alone reuable and elegant component based design and
+programming.
 
-mql4-lib is a simple library that tries to make MQL4 programming
-pleasant with a more object oriented approach and a coding style like
-Java, and encourages writing reusable components. This library has the
-ambition to become the de facto Foundation Library for MQL4.
+mql4-lib is a simple library that tries to make MQL4 programming pleasant with a
+more object oriented approach and a coding style like Java, and encourages
+writing reusable components. This library has the ambition to become the de
+facto Foundation Library for MQL4.
 
 ## Installation
 
-Just copy the library to your MQL4 Data Folder's `Include` directory,
-with the root directory name of your choice, for example:
+Just copy the library to your MQL4 Data Folder's `Include` directory, with the
+root directory name of your choice, for example:
 `<MQL4Data>\Include\MQL4\<mql4-lib content>`.
+
+It is recommened that you use the lastest version MetaTrader4, as many features
+are not available in older versions.
 
 ## Usage
 
-The library is in its early stage. However, most components are pretty
-stable and can be used in production. Here are the main components:
+The library is in its early stage. However, most components are pretty stable
+and can be used in production. Here are the main components:
 
 1. `Lang` directory contains modules that enhance the MQL4 language
 2. `Collection` directory contains useful collection types
@@ -45,12 +48,11 @@ stable and can be used in production. Here are the main components:
 
 ### Basic Programs
 
-In `Lang`, I abstract three Program types (Script, Indicator, and
- Expert Advisor) to three base classes that you can inherit.
+In `Lang`, I abstract three Program types (Script, Indicator, and Expert
+ Advisor) to three base classes that you can inherit.
 
-Basically, you write your program in a reusable class, and when
-you want to use them as standalone executables, you use macros
-to declare them.
+Basically, you write your program in a reusable class, and when you want to use
+them as standalone executables, you use macros to declare them.
 
 The macro distinguish between programs with and without input parameters. Here
 is a simple script without any input parameter:
@@ -123,40 +125,40 @@ DECLARE_EA(MyEa,true)  // true to indicate it has parameters
 The `ObjectAttr` macro declares standard get/set methods for a class. Just
 follow the Java Beans(TM) convention.
 
-I used some macro tricks to work around limits of MQL4. I will document
-the library in detail when I have the time.
+I used some macro tricks to work around limits of MQL4. I will document the
+library in detail when I have the time.
 
-With this approach, you can write reusable EAs, Scripts, or
-Indicators.  You do not need to worry about the OnInit, OnDeinit,
-OnStart, OnTick, OnCalculate, etc.  You never use a input parameter directly in
-your EA. You can write a base EA, and extend it easily.
+With this approach, you can write reusable EAs, Scripts, or Indicators. You do
+not need to worry about the OnInit, OnDeinit, OnStart, OnTick, OnCalculate, etc.
+You never use a input parameter directly in your EA. You can write a base EA,
+and extend it easily.
 
 ### Collections
 
-In advanced MQL4 programs, you have to use more sophisticated
-collection types for your order management.
+In advanced MQL4 programs, you have to use more sophisticated collection types
+for your order management.
 
-It is planned to add common collection types to the lib, including
-lists, hash maps, trees, and others.
+It is planned to add common collection types to the lib, including lists, hash
+maps, trees, and others.
 
 Currently there are two list types:
 
 1. Collection/LinkedList is a Linked List implementation
 2. Collection/Vector is an array based implementation
 
-First I'd like to point out some extremely useful undocumented MQL4/5
-features:
+First I'd like to point out some extremely useful undocumented MQL4/5 features:
 
 1. class templates(!)
 2. typedef function pointers(!)
 3. template function overloading
+4. union type
 
 Though inheriting multiple interfaces is not possible now, I think this will be
 possible in the future.
  
 Among these features, `class template` is the most important because we can
-greatly simplify Collection code. These features are used by MetaQuotes
-to port .Net Regular Expression Library to MQL.
+greatly simplify Collection code. These features are used by MetaQuotes to port
+.Net Regular Expression Library to MQL.
 
 With class templates and inheritance, I implemented a hierarchy:
 
@@ -171,8 +173,8 @@ Vector<Order*>; orderVector // array based implementation, faster random access
 Vector<int> intVector;
 ```
 
-To iterate through a collection, use its iterator, as iterators know what is
-the most efficient way to iterating.
+To iterate through a collection, use its iterator, as iterators know what is the
+most efficient way to iterating.
 
 Threre are alao two macros for iteration: `foreach` and `foreachv`. You can
 `break` and `return` in the loop without worrying about resource leaks because
@@ -237,8 +239,11 @@ Map (or dictionary) is extremely important for any non-trivial programs.
 Mql4-lib impelements an efficient Hash map using Murmur3 string hash. The
 implementation follows the CPython3 hash and it preserves insertion order.
 
+You can use any builtin type as key, including any class pointer. These types
+has their hash functions implemented in `Lang/Hash` module.
+
 The HashMap interface is very simple. Below is a simple example counting words
-of the famous `Hamlet`:
+of the famous opera `Hamlet`:
 
 ```c++
 #include <MQL4/Lang/Script.mqh>
@@ -274,9 +279,11 @@ public:
               }
            }
          Print("Total words: ",wordCount.size());
-         BEGIN_MAP_FOR(string,word,int,count,wordCount)
+         //--- you can use the foreachm macro to iterate a map
+         foreachm(string,word,int,count,wordCount)
+         {
             PrintFormat("%s: %d",word,count);
-         END_MAP_FOR
+         }
         }
      }
   };
@@ -286,13 +293,13 @@ DECLARE_SCRIPT(CountHamletWords,false)
   
 ### Asynchronous Events
 
-The `Lang/Event` module provides a way to send custom events from
-outside the MetaTrader terminal runtime, like from a DLL.
+The `Lang/Event` module provides a way to send custom events from outside the
+MetaTrader terminal runtime, like from a DLL.
 
 You need to call the `PostMessage/PostThreadMessage` funtion, and pass
-parameters as encoded in the same algorithm with
-`EncodeKeydownMessage`.  Then any program that derives from EventApp
-can process this message from its `onAppEvent` event handler:
+parameters as encoded in the same algorithm with `EncodeKeydownMessage`. Then
+any program that derives from EventApp can process this message from its
+`onAppEvent` event handler:
 
 ```
    #include <WinUser32.mqh>
@@ -305,35 +312,33 @@ can process this message from its `onAppEvent` event handler:
      }
 ```
 
-The mechanism uses a custom WM_KEYDOWN message to trigger the
-OnChartEvent.  In `OnChartEvent` handler, `EventApp` checks if KeyDown
-event is actually a custom app event from another source (not a real
-key down). If it is, then `EventApp` calls its `onAppEvent` method.
+The mechanism uses a custom WM_KEYDOWN message to trigger the OnChartEvent. In
+`OnChartEvent` handler, `EventApp` checks if KeyDown event is actually a custom
+app event from another source (not a real key down). If it is, then `EventApp`
+calls its `onAppEvent` method.
 
-This mechnism has certain limitations: the parameter is only an integer
-(32bit), due to how WM_KEYDOWN is processed in MetaTrader
-terminal. And this solution may not work in 64bit MetaTrader5.
+This mechnism has certain limitations: the parameter is only an integer (32bit),
+due to how WM_KEYDOWN is processed in MetaTrader terminal. And this solution may
+not work in 64bit MetaTrader5.
 
-Despite the limitations, this literally liberates you from the
-MetaTrader jail: you can send in events any time and let mt4 program
-process it, without polling in OnTimer, or creating pipe/sockets in
-OnTick, which is the way most API wrappers work.
+Despite the limitations, this literally liberates you from the MetaTrader jail:
+you can send in events any time and let mt4 program process it, without polling
+in OnTimer, or creating pipe/sockets in OnTick, which is the way most API
+wrappers work.
 
-Using OnTimer is not a good idea. First it can not receive any
-parameters from the MQL side. You at least needs an identifier for the
-event. Second, WM_TIMER events are very crowded in the main
-thread. Even on weekends where there are no data coming in, WM_TIMER
-is constantly sent to the main thread. This makes more instructions
-executed to decide if it is a valid event for the program.
+Using OnTimer is not a good idea. First it can not receive any parameters from
+the MQL side. You at least needs an identifier for the event. Second, WM_TIMER
+events are very crowded in the main thread. Even on weekends where there are no
+data coming in, WM_TIMER is constantly sent to the main thread. This makes more
+instructions executed to decide if it is a valid event for the program.
 
 *WARNING*: This is a temporary solution. The best way to handle asynchronous
-events is to find out how ChartEventCustom is implemented and
-implement that in C/C++, which is extremely hard as it is not
-implemented by win32 messages, and you can not look into it
-because of very strong anti-debugging measures.
+events is to find out how ChartEventCustom is implemented and implement that in
+C/C++, which is extremely hard as it is not implemented by win32 messages, and
+you can not look into it because of very strong anti-debugging measures.
 
-Inside MetaTrader terminal, you better use ChartEventCustom to
-send custom events.
+Inside MetaTrader terminal, you better use ChartEventCustom to send custom
+events.
 
 ### File System and IO 
 

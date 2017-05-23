@@ -5,9 +5,10 @@
 #property strict
 
 #include "Map.mqh"
-#include "../Lang/Pointer.mqh"
-#include "../Lang/Hash.mqh"
+#include "EqualityComparer.mqh" // contains Hash.mqh, which contains Pointer.mqh
+#include "Collection.mqh"
 #include "../Lang/Array.mqh"
+
 
 template<typename Key,typename Value>
 class HashMapIterator;

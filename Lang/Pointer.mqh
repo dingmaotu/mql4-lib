@@ -1,12 +1,8 @@
 //+------------------------------------------------------------------+
 //|                                                 Lang/Pointer.mqh |
+//|                                          Copyright 2016, Li Ding |
 //+------------------------------------------------------------------+
-#property copyright "Copyright 2016, Li Ding"
-#property link      "dingmaotu@hotmail.com"
 #property strict
-
-#include "Integer.mqh"
-#include "Native.mqh"
 //+------------------------------------------------------------------+
 //| Generic pointer check                                            |
 //+------------------------------------------------------------------+
@@ -16,32 +12,29 @@ bool IsValid(T *pointer)
    return CheckPointer(pointer)!=POINTER_INVALID;
   }
 //+------------------------------------------------------------------+
-//| Dynamically check if the value is a pointer type                 |
-//+------------------------------------------------------------------+
-template<typename T>
-bool IsPointer(const T &value)
-  {
-   string tn=typename(value);
-// Note that a typename is at least of length > 0
-   return StringGetCharacter(tn, StringLen(tn) - 1) == '*';
-  }
-//+------------------------------------------------------------------+
 //| Generic safe pointer delete                                      |
-//| Note that this funtion always return false: it is used in for    |
-//| loop to delete the pointer when loop ends                        |
-//| Generally you should use it as if it returns void                |
 //+------------------------------------------------------------------+
 template<typename T>
-bool SafeDelete(T *pointer)
+void SafeDelete(T *pointer)
   {
    if(IsValid(pointer)) delete pointer;
-   return false;
   }
 //+------------------------------------------------------------------+
 //| If pointer is actually a value type                              |
 //+------------------------------------------------------------------+
 template<typename T>
-bool SafeDelete(T pointer) {return false;}
+void SafeDelete(T pointer) {}
+//+------------------------------------------------------------------+
+//| Get numerical value of a pointer                                 |
+//| Mainly used by the Hash function on pointers                     |
+//| According to official documentation, MQL4 pointer is a 8 byte    |
+//| value, not the actual pointer address of objects.                |
+//| But numeric values of different pointers have to be distinct.    |
+//+------------------------------------------------------------------+
+long GetAddress(void *pointer)
+  {
+   return long(StringFormat("%I64d",pointer));
+  }
 //+------------------------------------------------------------------+
 //| Wraps a pointer that does not own the underlying resource        |
 //+------------------------------------------------------------------+
@@ -75,22 +68,4 @@ public:
    //--- responsible for delete the resource
                     ~Ptr() {SafeDelete(r);}
   };
-//+------------------------------------------------------------------+
-//|                                                                  |
-//+------------------------------------------------------------------+
-struct PointerWrapper
-  {
-   void const       *r;
-  };
-//+------------------------------------------------------------------+
-//| Numeric address for a pointer: different pointers returns a      |
-//| distinct value                                                   |
-//+------------------------------------------------------------------+
-template<typename T>
-int GetAddress(T *pointer)
-  {
-   PointerWrapper p;
-   p.r=pointer;
-   return ((LargeInt)p).lowPart;
-  }
 //+------------------------------------------------------------------+
