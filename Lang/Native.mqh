@@ -95,7 +95,9 @@ string StringFromUtf8Pointer(intptr_t psz,int len)
 //+------------------------------------------------------------------+
 string StringFromUtf8Pointer(intptr_t psz)
   {
+   if(psz==0) return NULL;
    int len=lstrlen(psz);
+   if(len==0) return NULL;
    return StringFromUtf8Pointer(psz, len);
   }
 //+------------------------------------------------------------------+
