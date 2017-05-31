@@ -28,6 +28,8 @@ private:
    int               m_hashes[];
    Key               m_keys[];
    Value             m_values[];
+   // removal mark
+   bool              m_removed[];
    // this is the current capacity (m_slots)
    int               m_cap;
    // this is the current used storage units (m_hashes, m_keys, m_values)
@@ -37,6 +39,7 @@ private:
 protected:
    void              initState();
    void              clearEntry(int i);
+   int               compactStorage(); // return storage size after compact
    int               lookup(int hash) const;
    int               lookupKey(Key key) const {return lookup(m_comparer.hash(key));}
    void              upsize();
@@ -48,6 +51,7 @@ public:
    int               __storage__() const {return m_storage;}
    Key               __key__(int i) const {return m_keys[i];}
    Value             __value__(int i) const {return m_values[i];}
+   bool              __removed__(int i) const {return m_removed[i];}
 
    int               size() const {return m_size;}
    bool              isEmpty() const {return m_size==0;}
@@ -77,6 +81,7 @@ void HashMap::initState()
    ArrayResize(m_hashes,0,m_cap);
    ArrayResize(m_keys,0,m_cap);
    ArrayResize(m_values,0,m_cap);
+   ArrayResize(m_removed,0,m_cap);
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -84,16 +89,14 @@ void HashMap::initState()
 template<typename Key,typename Value>
 void HashMap::clearEntry(int i)
   {
-   if(m_hashes[i]!=NULL)
+   if(!m_removed[i])
      {
       // delete possble pointers
       SafeDelete(m_keys[i]);
       SafeDelete(m_values[i]);
 
-      // mark entry as NULL
-      m_hashes[i]=NULL;
-      m_keys[i]=NULL;
-      m_values[i]=NULL;
+      // mark entry as removed
+      m_removed[i]=true;
 
       // update size
       --m_size;
@@ -103,20 +106,48 @@ void HashMap::clearEntry(int i)
 //|                                                                  |
 //+------------------------------------------------------------------+
 template<typename Key,typename Value>
+int HashMap::compactStorage()
+  {
+   int i=0;
+   for(; i<m_storage; i++)
+     {
+      if(!m_removed[i]) continue;
+      int j=i+1;
+      while(j<m_storage && m_removed[j]) j++;
+      if(j==m_storage) break;
+      m_hashes[i]=m_hashes[j];
+      m_keys[i]=m_keys[j];
+      m_values[i]=m_values[j];
+      m_removed[i]=m_removed[j];
+      m_removed[j]=true;
+     }
+   ArrayResize(m_hashes,i);
+   ArrayResize(m_keys,i);
+   ArrayResize(m_values,i);
+   ArrayResize(m_removed,i);
+   return i;
+  }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+template<typename Key,typename Value>
 void HashMap::upsize()
   {
-   m_cap<<=1;
-   ArrayResize(m_slots,m_cap);
-   ArrayInitialize(m_slots,-1);
-// possible compact
+   if(m_storage<m_cap) return;
+
+// first attempt to compact current storage
    if(m_size<m_storage)
      {
-      ArrayCompact(m_hashes);
-      ArrayCompact(m_keys);
-      ArrayCompact(m_values);
-      m_size=m_storage=ArraySize(m_hashes);
+      m_size=m_storage=compactStorage();
+     }
+   else
+     {
+      // increase capacity
+      m_cap<<=1;
+      ArrayResize(m_slots,m_cap);
      }
 // relocate entries
+   ArrayInitialize(m_slots,-1);
    for(int i=0; i<m_storage && !IsStopped(); i++)
      {
       int si=lookup(m_hashes[i]);
@@ -176,9 +207,6 @@ bool HashMap::remove(Key key)
    int si=lookupKey(key);
    int i=m_slots[si];
    if(i==-1) return false;
-// empty slot
-   m_slots[si]=-1;
-// clear entry
    clearEntry(i);
    return true;
   }
@@ -203,7 +231,7 @@ bool HashMap::keys(Collection<Key>&col) const
    bool added=false;
    for(int i=0; i<m_storage; i++)
      {
-      if(m_keys[i]!=NULL)
+      if(!m_removed[i])
         {
          col.add(m_keys[i]);
          added=true;
@@ -220,7 +248,7 @@ bool HashMap::values(Collection<Value>&col) const
    bool added=false;
    for(int i=0; i<m_storage; i++)
      {
-      if(m_values[i]!=NULL)
+      if(!m_removed[i])
         {
          col.add(m_values[i]);
          added=true;
@@ -236,22 +264,29 @@ void HashMap::set(Key key,Value value)
   {
    int hash=m_comparer.hash(key);
    int si=lookup(hash);
-   if(m_slots[si]==-1)
+   int ri=m_slots[si];
+   if(ri==-1)
      {
       m_slots[si]=m_storage;
       ArrayResize(m_hashes,m_storage+1);
       ArrayResize(m_keys,m_storage+1);
       ArrayResize(m_values,m_storage+1);
+      ArrayResize(m_removed,m_storage+1);
       m_hashes[m_storage]=hash;
       m_keys[m_storage]=key;
       m_values[m_storage]=value;
+      m_removed[m_storage]=false;
       m_storage++;
       m_size++;
-      // we need to ensure that size is always smaller than capacity
-      if(m_size==m_cap)
-        {
-         upsize();
-        }
+      // we need to ensure that m_storage is always smaller than capacity
+      upsize();
+     }
+   else if(m_removed[ri])
+     {
+      m_removed[ri]=false;
+      m_keys[ri]=key;
+      m_values[ri]=value;
+      m_size++;
      }
    else
      {
@@ -271,7 +306,7 @@ private:
 public:
                      HashMapIterator(const HashMap<Key,Value>*map):m_map(map),m_current(0),m_total(map.__storage__())
      {
-      while((m_current<m_total) && (m_map.__key__(m_current)==NULL))
+      while((m_current<m_total) && m_map.__removed__(m_current))
         {
          m_current++;
         }
@@ -285,7 +320,7 @@ public:
         {
          m_current++;
         }
-      while((m_current<m_total) && (m_map.__key__(m_current)==NULL));
+      while((m_current<m_total) && (m_map.__removed__(m_current)));
      }
    bool              end() const {return m_current==m_total;}
   };
