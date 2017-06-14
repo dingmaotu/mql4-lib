@@ -30,7 +30,7 @@ int OrderPool::filter(OrderMatcher &matcher,Vector<int>&group) const
    int matched=0;
    for(int i=0; i<t; i++)
      {
-      if(select(i) && matcher.match())
+      if(select(i) && matcher.matches())
         {
          group.add(Order::Ticket());
          matched++;
