@@ -32,6 +32,7 @@ interface Map
 
    Value             operator[](Key key) const;
    void              set(Key key,Value value);
+   bool              setDefault(Key key,Value value);
   };
 //+------------------------------------------------------------------+
 //| This is the utility class for implementing iterator RAII         |

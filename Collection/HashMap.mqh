@@ -57,7 +57,7 @@ public:
    bool              isEmpty() const {return m_size==0;}
    bool              remove(Key key);
    void              clear();
-   bool              contains(Key key) const {return m_slots[lookupKey(key)]!=-1;}
+   bool              contains(Key key) const {int i=lookupKey(key);return m_slots[i]!=-1 && !m_removed[m_slots[i]];}
 
    MapIterator<Key,Value>*iterator() const {return new HashMapIterator<Key,Value>(GetPointer(this));}
 
@@ -66,6 +66,7 @@ public:
 
    Value             operator[](Key key) const {int i=m_slots[lookupKey(key)]; return i!=-1?m_values[i]:NULL;}
    void              set(Key key,Value value);
+   bool              setDefault(Key key,Value value);
   };
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -291,6 +292,45 @@ void HashMap::set(Key key,Value value)
    else
      {
       m_values[m_slots[si]]=value;
+     }
+  }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+template<typename Key,typename Value>
+bool HashMap::setDefault(Key key,Value value)
+  {
+   int hash=m_comparer.hash(key);
+   int si=lookup(hash);
+   int ri=m_slots[si];
+   if(ri==-1)
+     {
+      m_slots[si]=m_storage;
+      ArrayResize(m_hashes,m_storage+1);
+      ArrayResize(m_keys,m_storage+1);
+      ArrayResize(m_values,m_storage+1);
+      ArrayResize(m_removed,m_storage+1);
+      m_hashes[m_storage]=hash;
+      m_keys[m_storage]=key;
+      m_values[m_storage]=value;
+      m_removed[m_storage]=false;
+      m_storage++;
+      m_size++;
+      // we need to ensure that m_storage is always smaller than capacity
+      upsize();
+      return true;
+     }
+   else if(m_removed[ri])
+     {
+      m_removed[ri]=false;
+      m_keys[ri]=key;
+      m_values[ri]=value;
+      m_size++;
+      return true;
+     }
+   else
+     {
+      return false;
      }
   }
 //+------------------------------------------------------------------+
