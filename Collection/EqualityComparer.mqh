@@ -22,7 +22,7 @@ template<typename T>
 class GenericEqualityComparer: public EqualityComparer<T>
   {
 public:
-   virtual bool       equals(T left,T right) const {return left==right;}
-   virtual int        hash(T value) const {return Hash(value);}
+   virtual bool       equals(T left,T right) const override {return left==right;}
+   virtual int        hash(T value) const override {return Hash(value);}
   };
 //+------------------------------------------------------------------+
