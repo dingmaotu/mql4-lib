@@ -52,9 +52,10 @@ App::Global=new AppClass();
 App *App::Global=NULL;\
 int OnInit()\
 {\
+   App::__runtimeControlled__=true;\
    __APP_NEW(AppClass,Boolean)\
-   App::Global.__setRuntimeControlled(true);\
-   return App::Global.__init();\
+   App::__runtimeControlled__=false;\
+   return App::Global.__init__();\
 }\
 void OnDeinit(const int reason) {SafeDelete(App::Global);}
 //+------------------------------------------------------------------+
@@ -108,13 +109,14 @@ protected:
       m_ret=ret;
      }
 public:
-   //--- Methods for internal use
-   void              __setRuntimeControlled(bool value) {m_runtimeControlled=value;}
-   int               __init() const {return m_ret;}
+   //--- members for internal use
+   static bool       __runtimeControlled__;
+   int               __init__() const {return m_ret;}
 
-                     App():m_runtimeControlled(false),m_ret(INIT_SUCCEEDED){}
+                     App():m_runtimeControlled(App::__runtimeControlled__),m_ret(INIT_SUCCEEDED){}
 
    bool              isInitSuccess() const {return m_ret==INIT_SUCCEEDED;}
    static App       *Global;
   };
+bool App::__runtimeControlled__=false;
 //+------------------------------------------------------------------+
