@@ -33,7 +33,7 @@
 #import "kernel32.dll"
 void RtlMoveMemory(intptr_t dest,const uchar &array[],size_t length);
 void RtlMoveMemory(uchar &array[],intptr_t src,size_t length);
-void RtlMoveMemory(intptr_t dest,intptr_t src,size_t length);
+void RtlMoveMemory(intptr_t &dest,intptr_t src,size_t length);
 int lstrlen(intptr_t psz);
 int MultiByteToWideChar(uint   codePage,
                         uint   flags,
