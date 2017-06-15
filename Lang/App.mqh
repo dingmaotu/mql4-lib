@@ -54,7 +54,6 @@ int OnInit()\
 {\
    App::__runtimeControlled__=true;\
    __APP_NEW(AppClass,Boolean)\
-   App::__runtimeControlled__=false;\
    return App::Global.__init__();\
 }\
 void OnDeinit(const int reason) {SafeDelete(App::Global);}
@@ -113,7 +112,10 @@ public:
    static bool       __runtimeControlled__;
    int               __init__() const {return m_ret;}
 
-                     App():m_runtimeControlled(App::__runtimeControlled__),m_ret(INIT_SUCCEEDED){}
+                     App():m_runtimeControlled(App::__runtimeControlled__),m_ret(INIT_SUCCEEDED)
+     {
+      App::__runtimeControlled__=false;
+     }
 
    bool              isInitSuccess() const {return m_ret==INIT_SUCCEEDED;}
    static App       *Global;
