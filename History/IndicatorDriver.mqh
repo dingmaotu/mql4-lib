@@ -1,5 +1,5 @@
 //+------------------------------------------------------------------+
-//|                                        Trade/IndicatorDriver.mqh |
+//|                                      History/IndicatorDriver.mqh |
 //+------------------------------------------------------------------+
 #property copyright "Copyright 2017, Li Ding"
 #property link      "dingmaotu@hotmail.com"

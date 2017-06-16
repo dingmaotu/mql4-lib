@@ -1,5 +1,5 @@
 //+------------------------------------------------------------------+
-//|                                                 Trade/Filter.mqh |
+//|                                               History/Filter.mqh |
 //+------------------------------------------------------------------+
 #property copyright "Copyright 2017, Li Ding"
 #property link      "dingmaotu@hotmail.com"
