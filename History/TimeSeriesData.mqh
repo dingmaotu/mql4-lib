@@ -4,10 +4,11 @@
 //|                                            dingmaotu@hotmail.com |
 //+------------------------------------------------------------------+
 #property strict
+#include "HistoryData.mqh"
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-class TimeSeriesData
+class TimeSeriesData: public HistoryData
   {
 private:
    string            m_symbol;

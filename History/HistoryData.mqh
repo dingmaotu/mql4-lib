@@ -8,7 +8,9 @@
 //+------------------------------------------------------------------+
 interface HistoryData
   {
-   int               getBars() const;
+   long              getBars() const;
+   bool              isNewBar() const;
+   long              getNewBars() const;
 
    double            getHigh(int shift) const;
    double            getLow(int shift) const;

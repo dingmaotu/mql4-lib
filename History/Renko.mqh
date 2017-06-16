@@ -1,18 +1,21 @@
 //+------------------------------------------------------------------+
-//|                                                 Charts/Renko.mqh |
+//|                                                History/Renko.mqh |
 //+------------------------------------------------------------------+
 #property copyright "Copyright 2015-2016, Li Ding"
 #property link      "dingmaotu@hotmail.com"
 #property strict
 
+#include "HistoryData.mqh"
+
 #define RENKO_DEFAULT_BUFFER_SIZE 1000
 //+------------------------------------------------------------------+
 //| Base class used to generate renko charts                         |
 //+------------------------------------------------------------------+
-class Renko
+class Renko: public HistoryData
   {
 private:
    int               m_bars;
+   int               m_newBars;
    bool              m_std;
 
    double            m_open[];
@@ -33,7 +36,10 @@ public:
                      Renko(double barSize,bool std=false):BAR_SIZE(barSize),m_bars(0),m_std(std) {}
    virtual          ~Renko() {}
 
-   int               getBars() const {return m_bars;}
+   long              getBars() const {return m_bars;}
+
+   bool              isNewBar() const {return m_newBars>0;}
+   long              getNewBars() const {return m_newBars;}
 
    double            getHigh(int shift) {return m_high[m_bars-1-shift];}
    double            getLow(int shift) {return m_low[m_bars-1-shift];}
@@ -169,14 +175,14 @@ int Renko::moveByRate(MqlRates &r)
 //+------------------------------------------------------------------+
 void Renko::updateByRates(MqlRates &rs[],int shift,int size)
   {
-   int newBars=0;
+   m_newBars=0;
    if(ArraySize(rs)>=size && size>0)
      {
       for(int i=shift; i<shift+size; i++)
         {
-         newBars+=moveByRate(rs[i]);
+         m_newBars+=moveByRate(rs[i]);
         }
-      onNewBar(m_bars,newBars,m_open,m_high,m_low,m_close,m_volume);
+      onNewBar(m_bars,m_newBars,m_open,m_high,m_low,m_close,m_volume);
      }
   }
 //+------------------------------------------------------------------+
@@ -184,8 +190,8 @@ void Renko::updateByRates(MqlRates &rs[],int shift,int size)
 //+------------------------------------------------------------------+
 void Renko::update(double price,long vol=0)
   {
-   int newBars=move(price,vol);
-   onNewBar(m_bars,newBars,m_open,m_high,m_low,m_close,m_volume);
+   m_newBars=move(price,vol);
+   onNewBar(m_bars,m_newBars,m_open,m_high,m_low,m_close,m_volume);
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
