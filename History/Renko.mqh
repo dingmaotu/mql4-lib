@@ -41,11 +41,11 @@ public:
    bool              isNewBar() const {return m_newBars>0;}
    long              getNewBars() const {return m_newBars;}
 
-   double            getHigh(int shift) {return m_high[m_bars-1-shift];}
-   double            getLow(int shift) {return m_low[m_bars-1-shift];}
-   double            getOpen(int shift) {return m_open[m_bars-1-shift];}
-   double            getClose(int shift) {return m_close[m_bars-1-shift];}
-   long              getVolume(int shift) {return m_volume[m_bars-1-shift];}
+   double            getHigh(int shift) const {return m_high[m_bars-1-shift];}
+   double            getLow(int shift) const {return m_low[m_bars-1-shift];}
+   double            getOpen(int shift) const {return m_open[m_bars-1-shift];}
+   double            getClose(int shift) const {return m_close[m_bars-1-shift];}
+   long              getVolume(int shift) const {return m_volume[m_bars-1-shift];}
 
    virtual void      onNewBar(int total,int bars,double const &open[],double const &high[],
                               double const &low[],double const &close[],long const &volume[]);

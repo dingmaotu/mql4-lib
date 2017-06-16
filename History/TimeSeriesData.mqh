@@ -36,11 +36,11 @@ public:
    bool              isNewBar() const {return m_newBars>0;}
    long              getNewBars() const {return m_newBars;}
 
-   double            getHigh(int shift) {return iHigh(m_symbol,m_period,shift);}
-   double            getLow(int shift) {return iLow(m_symbol,m_period,shift);}
-   double            getOpen(int shift) {return iOpen(m_symbol,m_period,shift);}
-   double            getClose(int shift) {return iClose(m_symbol,m_period,shift);}
-   long              getVolume(int shift) {return iVolume(m_symbol,m_period,shift);}
+   double            getHigh(int shift) const {return iHigh(m_symbol,m_period,shift);}
+   double            getLow(int shift) const {return iLow(m_symbol,m_period,shift);}
+   double            getOpen(int shift) const {return iOpen(m_symbol,m_period,shift);}
+   double            getClose(int shift) const {return iClose(m_symbol,m_period,shift);}
+   long              getVolume(int shift) const {return iVolume(m_symbol,m_period,shift);}
   };
 //+------------------------------------------------------------------+
 //|                                                                  |
