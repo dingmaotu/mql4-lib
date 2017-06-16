@@ -6,10 +6,11 @@ MQL4 Foundation Library For Professional Developers
 * [2. Installation](#installation)
 * [3. Usage](#usage)
   * [3.1 Basic Programs](#basic-programs)
-  * [3.2 Collections](#collections)
-  * [3.3 Maps](#maps)
-  * [3.4 Asynchronous Events](#asynchronous-events)
-  * [3.5 File System and IO](#file-system-and-io)
+  * [3.2 Runtime Controlled Indicators and Indicator Drivers](#runtime-controlled-indicators-and-indicator-drivers)
+  * [3.3 Collections](#collections)
+  * [3.4 Maps](#maps)
+  * [3.5 Asynchronous Events](#asynchronous-events)
+  * [3.6 File System and IO](#file-system-and-io)
 
 ## Introduction
 
@@ -42,9 +43,10 @@ and can be used in production. Here are the main components:
 2. `Collection` directory contains useful collection types
 3. `Charts` directory contains several chart types and common chart tools
 4. `Trade` directory contains useful abstractions for trading
-5. `Utils` directory contains various utilities
-6. `UI` chart objects and UI controls (in progress)
-7. `OpenCL` brings OpenCL support to MT4 (in progress)
+5. `History` directory contains useful abstractions for history data
+6. `Utils` directory contains various utilities
+7. `UI` chart objects and UI controls (in progress)
+8. `OpenCL` brings OpenCL support to MT4 (in progress)
 
 ### Basic Programs
 
@@ -132,6 +134,195 @@ With this approach, you can write reusable EAs, Scripts, or Indicators. You do
 not need to worry about the OnInit, OnDeinit, OnStart, OnTick, OnCalculate, etc.
 You never use a input parameter directly in your EA. You can write a base EA,
 and extend it easily.
+
+### Runtime Controlled Indicators and Indicator Drivers
+
+When you create an indicator with this lib, it can be used as both standalone
+(controlled by the Terminal runtime) or driven by your programs. This is a
+powerful concept in that you can write your indicator once, and use it in your
+EA and Script, or as a standalone Indicator. You can use the indicator in normal
+time series chart, or let it driven by a RenkoIndicatorDriver.
+
+Let me show you with an example Indicator `DeMarker`. First we define the common
+reusable Indicator module in a header file `DeMarker.mqh`
+
+```MQL5
+//+------------------------------------------------------------------+
+//|                                                     DeMarker.mqh |
+//|                                          Copyright 2017, Li Ding |
+//|                                            dingmaotu@hotmail.com |
+//+------------------------------------------------------------------+
+#property strict
+
+#include <MQL4/Lang/Mql.mqh>
+#include <MQL4/Lang/Indicator.mqh>
+#include <MovingAverages.mqh>
+//+------------------------------------------------------------------+
+//| Indicator Input                                                  |
+//+------------------------------------------------------------------+
+class DeMarkerParam: public AppParam
+  {
+   ObjectAttr(int,AvgPeriod,AvgPeriod); // SMA Period
+  };
+//+------------------------------------------------------------------+
+//| DeMarker                                                         |
+//+------------------------------------------------------------------+
+class DeMarker: public Indicator
+  {
+private:
+   int               m_period;
+protected:
+   double            ExtMainBuffer[];
+   double            ExtMaxBuffer[];
+   double            ExtMinBuffer[];
+public:
+
+   //--- this provides time series like access to the indicator buffer
+   double            operator[](const int index) {return ExtMainBuffer[ArraySize(ExtMainBuffer)-index-1];}
+
+                     DeMarker(DeMarkerParam *param)
+   :m_period(param.getAvgPeriod())
+     {
+      //--- runtime controlled means that it is used as a standalone Indicator controlled by the Terminal
+      //--- isRuntimeControlled() is a method of common parent class `App`
+      if(isRuntimeControlled())
+        {
+         //--- for standalone indicators we set some options for visual appearance
+         string short_name;
+         //--- indicator lines
+         SetIndexStyle(0,DRAW_LINE);
+         SetIndexBuffer(0,ExtMainBuffer);
+         //--- name for DataWindow and indicator subwindow label
+         short_name="DeM("+IntegerToString(m_period)+")";
+         IndicatorShortName(short_name);
+         SetIndexLabel(0,short_name);
+         //---
+         SetIndexDrawBegin(0,m_period);
+        }
+     }
+
+   int               main(const int total,
+                          const int prev,
+                          const datetime &time[],
+                          const double &open[],
+                          const double &high[],
+                          const double &low[],
+                          const double &close[],
+                          const long &tickVolume[],
+                          const long &volume[],
+                          const int &spread[])
+     {
+      //--- check for bars count
+      if(total<m_period)
+         return(0);
+      if(isRuntimeControlled())
+        {
+         //--- runtime controlled buffer is auto extended and is by default time series like
+         ArraySetAsSeries(ExtMainBuffer,false);
+        }
+      else
+        {
+         //--- driven by yourself and thus the need to resize the main buffer
+         if(prev!=total)
+           {
+            ArrayResize(ExtMainBuffer,total,100);
+           }
+        }
+      if(prev!=total)
+        {
+         ArrayResize(ExtMaxBuffer,total,100);
+         ArrayResize(ExtMinBuffer,total,100);
+        }
+      ArraySetAsSeries(low,false);
+      ArraySetAsSeries(high,false);
+
+      int begin=(prev==total)?prev-1:prev;
+
+      for(int i=begin; i<total; i++)
+        {
+         if(i==0) {ExtMaxBuffer[i]=0.0;ExtMinBuffer[i]=0.0;continue;}
+         if(high[i]>high[i-1]) ExtMaxBuffer[i]=high[i]-high[i-1];
+         else ExtMaxBuffer[i]=0.0;
+
+         if(low[i]<low[i-1]) ExtMinBuffer[i]=low[i-1]-low[i];
+         else ExtMinBuffer[i]=0.0;
+        }
+      for(int i=begin; i<total; i++)
+        {
+         if(i<m_period) {ExtMainBuffer[i]=0.0;continue;}
+         double smaMax=SimpleMA(i,m_period,ExtMaxBuffer);
+         double smaMin=SimpleMA(i,m_period,ExtMinBuffer);
+         ExtMainBuffer[i]=smaMax/(smaMax+smaMin);
+        }
+
+      //--- OnCalculate done. Return new prev.
+      return(total);
+     }
+  };
+```
+
+If you want to use this as a standalone Indicator, create `DeMarker.mq4`:
+
+```MQL5
+//+------------------------------------------------------------------+
+//|                                                     DeMarker.mq4 |
+//|                                          Copyright 2017, Li Ding |
+//|                                            dingmaotu@hotmail.com |
+//+------------------------------------------------------------------+
+#property copyright "Copyright 2017, Li Ding"
+#property link      "dingmaotu@hotmail.com"
+#property version   "1.00"
+#property strict
+
+#property indicator_separate_window
+#property indicator_minimum    0
+#property indicator_maximum    1.0
+#property indicator_buffers    1
+#property indicator_color1     LightSeaGreen
+#property indicator_level1     0.3
+#property indicator_level2     0.7
+#property indicator_levelcolor clrSilver
+#property indicator_levelstyle STYLE_DOT
+
+#include <Indicators/DeMarker.mqh>
+//--- input parameters
+BEGIN_INPUT(DeMarkerParam)
+   INPUT(int,AvgPeriod,14); // Averaging Period
+END_INPUT
+
+DECLARE_INDICATOR(DeMarker,true);
+```
+
+Or if you want to use it in your EA, driven by a Renko chart:
+```MQL5
+//--- code snippets for using an indicator with IndicatorDriver
+
+//--- OnInit
+//--- create the indicator manually, its runtime controlled flag is false by default
+   DeMarkerParam param;
+   param.setAvgPeriod(14);
+   deMarker=new DeMarker(GetPointer(fp));
+
+//--- indicator driver is a container for indicators
+   IndicatorDriver *driver=new IndicatorDriver; 
+//--- add indicator to the driver: you can add multiple indicators
+   driver.add(deMarker);
+//--- create the real driver that provide history data
+   renkoDriver = new RenkoIndicatorDriver(300,driver);
+   
+//--- OnTick
+   renkoDriver.update(Close[0]);
+   
+//--- after update, all indicators attached to the IndicatorDriver will be updated
+//--- access DeMarker
+   double value = deMarker[0];
+   
+//--- OnDeinit
+//--- need to release resources
+   delete deMarker;
+   delete driver;
+   delete renkoDriver;
+```
 
 ### Collections
 
