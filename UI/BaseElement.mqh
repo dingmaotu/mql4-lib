@@ -70,7 +70,8 @@ public:
    //--- visible at least in one timeframe
    bool              isVisible() const {return getVisibility()>OBJ_NO_PERIODS;}
    bool              setVisible(bool value) {return setVisibility(value?OBJ_ALL_PERIODS:OBJ_NO_PERIODS);}
-
+   bool              setColor(int value){return setInteger(OBJPROP_COLOR,value);}
+   bool              setBgColor(int value){return setInteger(OBJPROP_BGCOLOR,value);}
    bool              isVisibleOn(long flag) const {return(getVisibility()&flag)==flag;}
    bool              setVisibleOn(long flag) {return setVisibility(getVisibility()|flag);}
    bool              setInvisibleOn(long flag) {return setVisibility(getVisibility()&(~flag));}

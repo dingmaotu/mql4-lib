@@ -79,7 +79,7 @@ public:
       setText(text);
      }
    bool              setWidth(int value) {return false;}  // read only, thus do nothing
-   bool              setHeight(int value) {return false;}  // read only, thus do nothing
+   bool              setHeight(int value) {return false;}  // read only, thus do nothing   
   };
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -114,10 +114,22 @@ public:
 class Button: public FreeFormElement
   {
 public:
-                     Button(Panel *parent,string name,string text)
-   :FreeFormElement(parent,name,OBJ_BUTTON)
-     {
-      setText(text);
-     }
+                     Button(Panel *parent,string name,string text):FreeFormElement(parent,name,OBJ_BUTTON)                     
+                     {
+                      setText(text);
+                     }
+                     Button(Panel *parent,string name,string text,int x, int y, int high, int width,int frontColor=clrBlack, int bgColor=clrWhite):FreeFormElement(parent,name,OBJ_BUTTON)
+                     {
+                       setText(text);
+                       setSize(width,high);
+                       setX(x);
+                       setY(y);
+                       setBgColor(bgColor);
+                       setColor(frontColor);
+                       setInteger(OBJPROP_ZORDER,999);
+                     }
+    bool              isClick(){return getInteger(OBJPROP_STATE)==1;}  
+    bool              setBtnStatus(bool isPress){ return setInteger(OBJPROP_STATE,isPress);}
+    bool              resetBtn(){return setInteger(OBJPROP_STATE,false);}
   };
 //+------------------------------------------------------------------+
