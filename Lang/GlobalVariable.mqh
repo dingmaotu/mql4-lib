@@ -173,37 +173,6 @@ public:
    bool              isValid() const {return m_name!=NULL;}
    string            getName() const {return m_name;}
 
-   void              enter() { while(!GlobalVariable::makeTemp(m_name))Sleep(100); }
-   bool              tryEnter() { return GlobalVariable::makeTemp(m_name); }
-   void              leave() { GlobalVariable::remove(m_name);}
-  };
-//+------------------------------------------------------------------+
-//| CriticalSection object for making atomic operations              |
-//|                                                                  |
-//| An exmaple of creating a global context (the creation and destroy|
-//| are both enclosed between the SAME critical section):            |
-//|                                                                  |
-//| enter()                                                          |
-//|   if(refcount==0) create context                                 |
-//|   else refcontext                                                |
-//|   increase refcount                                              |
-//| leave()                                                          |
-//|                                                                  |
-//| enter()                                                          |
-//|   decrease refcount                                              |
-//|   if(refcount==0) context destroy                                |
-//| leave()                                                          |
-//+------------------------------------------------------------------+
-class CriticalSection
-  {
-private:
-   const string      m_name;
-public:
-                     CriticalSection(string name):m_name(name){}
-
-   bool              isValid() const {return m_name!=NULL;}
-   string            getName() const {return m_name;}
-
    void              enter() { while(!GlobalVariable::makeTemp(m_name) && !IsStopped())Sleep(100); }
    bool              tryEnter() { return GlobalVariable::makeTemp(m_name); }
    void              leave() { GlobalVariable::remove(m_name);}
