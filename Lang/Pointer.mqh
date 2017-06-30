@@ -17,13 +17,28 @@ bool IsValid(T *pointer)
 template<typename T>
 void SafeDelete(T *pointer)
   {
-   if(IsValid(pointer)) delete pointer;
+//--- only dynamically created value with `new` should be deleted
+//--- automatic pointers from GetPointer (POINTER_AUTOMATIC) should not be deleted
+   if(CheckPointer(pointer)==POINTER_DYNAMIC) delete pointer;
   }
 //+------------------------------------------------------------------+
 //| If pointer is actually a value type                              |
 //+------------------------------------------------------------------+
 template<typename T>
 void SafeDelete(T pointer) {}
+//+------------------------------------------------------------------+
+//| Ensure dynamic global pointers be deleted after program exit     |
+//| In global context, declare the following (p is some pointer):    |
+//|     EnsureDelete ensureDeleteSomething(p);                       |
+//+------------------------------------------------------------------+
+class EnsureDelete
+  {
+private:
+   const void       *m_pointer;
+public:
+                     EnsureDelete(const void *p):m_pointer(p){}
+                    ~EnsureDelete() {if(CheckPointer(m_pointer)==POINTER_DYNAMIC) delete m_pointer;}
+  };
 //+------------------------------------------------------------------+
 //| Get numerical value of a pointer                                 |
 //| Mainly used by the Hash function on pointers                     |
