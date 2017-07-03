@@ -1,7 +1,22 @@
 //+------------------------------------------------------------------+
-//|                                          Lang/GlobalVariable.mqh |
-//|                                          Copyright 2017, Li Ding |
-//|                                            dingmaotu@hotmail.com |
+//| Module: Lang/GlobalVariable.mqh                                  |
+//| This file is part of the mql4-lib project:                       |
+//|     https://github.com/dingmaotu/mql4-lib                        |
+//|                                                                  |
+//| Copyright 2017 Li Ding <dingmaotu@126.com>                       |
+//|                                                                  |
+//| Licensed under the Apache License, Version 2.0 (the "License");  |
+//| you may not use this file except in compliance with the License. |
+//| You may obtain a copy of the License at                          |
+//|                                                                  |
+//|     http://www.apache.org/licenses/LICENSE-2.0                   |
+//|                                                                  |
+//| Unless required by applicable law or agreed to in writing,       |
+//| software distributed under the License is distributed on an      |
+//| "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,     |
+//| either express or implied.                                       |
+//| See the License for the specific language governing permissions  |
+//| and limitations under the License.                               |
 //+------------------------------------------------------------------+
 #property strict
 //+------------------------------------------------------------------+
@@ -158,7 +173,7 @@ public:
    bool              isValid() const {return m_name!=NULL;}
    string            getName() const {return m_name;}
 
-   void              enter() { while(!GlobalVariable::makeTemp(m_name))Sleep(100); }
+   void              enter() { while(!GlobalVariable::makeTemp(m_name) && !IsStopped())Sleep(100); }
    bool              tryEnter() { return GlobalVariable::makeTemp(m_name); }
    void              leave() { GlobalVariable::remove(m_name);}
   };
@@ -166,8 +181,9 @@ public:
 //| A reference counted global pointer (or handle)                   |
 //| Generic type parameter T can be long or int depending the handle |
 //| length (64bit or 32bit)                                          |
+//| HandleManager should implement 2 static methods: create & destroy|
 //+------------------------------------------------------------------+
-template<typename T>
+template<typename T,typename HandleManager>
 class GlobalHandle
   {
 private:
@@ -181,7 +197,7 @@ public:
      {
       m_refName=m_cs.getName()+"_Ref";
       m_counterName=m_cs.getName()+"_Count";
-      if(!m_cs.isValid()) m_ref=create();
+      if(!m_cs.isValid()) m_ref=HandleManager::create();
       else
         {
          m_cs.enter();
@@ -192,7 +208,7 @@ public:
            }
          if(long(GlobalVariable::get(m_counterName))==0)
            {
-            m_ref=create();
+            m_ref=HandleManager::create();
             if(!GlobalVariable::exists(m_refName))
               {
                GlobalVariable::makeTemp(m_refName);
@@ -209,12 +225,12 @@ public:
      }
                     ~GlobalHandle()
      {
-      if(!m_cs.isValid()) {destroy(m_ref); return;}
+      if(!m_cs.isValid()) {HandleManager::destroy(m_ref); return;}
       m_cs.enter();
       GlobalVariable::set(m_counterName,GlobalVariable::get(m_counterName)-1);
       if(long(GlobalVariable::get(m_counterName))==0)
         {
-         destroy(m_ref);
+         HandleManager::destroy(m_ref);
          GlobalVariable::remove(m_refName);
          GlobalVariable::remove(m_counterName);
         }
@@ -222,9 +238,5 @@ public:
      }
 
    T                 ref() const {return m_ref;}
-
-protected:
-   virtual T         create()=NULL;
-   virtual void      destroy(T handle)=NULL;
   };
 //+------------------------------------------------------------------+
