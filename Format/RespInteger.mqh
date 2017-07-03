@@ -1,5 +1,5 @@
 //+------------------------------------------------------------------+
-//| Module: Collection/EqualityComparer.mqh                          |
+//| Module: Format/RespInteger.mqh                                   |
 //| This file is part of the mql4-lib project:                       |
 //|     https://github.com/dingmaotu/mql4-lib                        |
 //|                                                                  |
@@ -18,25 +18,36 @@
 //| See the License for the specific language governing permissions  |
 //| and limitations under the License.                               |
 //+------------------------------------------------------------------+
-#include "../Lang/Hash.mqh"
 #property strict
+#include "RespValue.mqh"
 //+------------------------------------------------------------------+
-//|                                                                  |
+//| RespInteger                                                      |
 //+------------------------------------------------------------------+
-template<typename T>
-interface EqualityComparer
+class RespInteger: public RespValue
   {
-   bool      equals(T left,T right) const;
-   int       hash(T value) const;
-  };
-//+------------------------------------------------------------------+
-//|                                                                  |
-//+------------------------------------------------------------------+
-template<typename T>
-class GenericEqualityComparer: public EqualityComparer<T>
-  {
+private:
+   long              m_value;
 public:
-   virtual bool       equals(T left,T right) const override {return left==right;}
-   virtual int        hash(T value) const override {return Hash(value);}
+   RespType          getType() const {return RespTypeInteger;}
+   string            toString() const {return IntegerToString(m_value);}
+
+   int               encode(char &a[],int index) const
+     {
+      char buf[20];
+      int length=IntegerToCharArray(m_value,buf);
+      if(ArraySize(a)<index+3+length)
+        {
+         ArrayResize(a,index+3+length);
+        }
+      int currentIndex=index;
+      a[currentIndex++]=':';
+      currentIndex+=ArrayCopy(a,buf,currentIndex,20-length);
+      a[currentIndex++]='\r';
+      a[currentIndex++]='\n';
+      return currentIndex-index;
+     }
+                     RespInteger(const long value):m_value(value){}
+   //--- RespInteger specific
+   long              getValue() const {return m_value;}
   };
 //+------------------------------------------------------------------+

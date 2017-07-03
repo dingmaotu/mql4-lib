@@ -41,12 +41,13 @@ and can be used in production. Here are the main components:
 
 1. `Lang` directory contains modules that enhance the MQL4 language
 2. `Collection` directory contains useful collection types
-3. `Charts` directory contains several chart types and common chart tools
-4. `Trade` directory contains useful abstractions for trading
-5. `History` directory contains useful abstractions for history data
-6. `Utils` directory contains various utilities
-7. `UI` chart objects and UI controls (in progress)
-8. `OpenCL` brings OpenCL support to MT4 (in progress)
+3. `Format` directory contains serialization formats implementations
+4. `Charts` directory contains several chart types and common chart tools
+5. `Trade` directory contains useful abstractions for trading
+6. `History` directory contains useful abstractions for history data
+7. `Utils` directory contains various utilities
+8. `UI` chart objects and UI controls (in progress)
+9. `OpenCL` brings OpenCL support to MT4 (in progress)
 
 ### Basic Programs
 
