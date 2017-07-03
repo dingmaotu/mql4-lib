@@ -55,6 +55,7 @@ protected:
         }
      }
 public:
+   ~BaseElement();
    ENUM_OBJECT       getUnderlyingObjectType() const {return(ENUM_OBJECT)getInteger(OBJPROP_TYPE);}
    datetime          getCreateTime() const {return(datetime)getInteger(OBJPROP_CREATETIME);}
 
@@ -70,7 +71,8 @@ public:
    //--- visible at least in one timeframe
    bool              isVisible() const {return getVisibility()>OBJ_NO_PERIODS;}
    bool              setVisible(bool value) {return setVisibility(value?OBJ_ALL_PERIODS:OBJ_NO_PERIODS);}
-
+   bool              setColor(int value){return setInteger(OBJPROP_COLOR,value);}
+   bool              setBgColor(int value){return setInteger(OBJPROP_BGCOLOR,value);}
    bool              isVisibleOn(long flag) const {return(getVisibility()&flag)==flag;}
    bool              setVisibleOn(long flag) {return setVisibility(getVisibility()|flag);}
    bool              setInvisibleOn(long flag) {return setVisibility(getVisibility()&(~flag));}
@@ -81,3 +83,8 @@ public:
    virtual int       getHeight() const {return 0;}
   };
 //+------------------------------------------------------------------+
+
+BaseElement::~BaseElement()
+{
+    delete m_root;
+}
