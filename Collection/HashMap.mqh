@@ -81,6 +81,8 @@ public:
 
    Value             operator[](Key key) const {int i=m_slots[lookupKey(key)]; return i!=-1?m_values[i]:NULL;}
    void              set(Key key,Value value);
+
+   Value             pop(Key key);
    bool              setDefault(Key key,Value value);
   };
 //+------------------------------------------------------------------+
@@ -225,6 +227,27 @@ bool HashMap::remove(Key key)
    if(i==-1) return false;
    clearEntry(i);
    return true;
+  }
+//+------------------------------------------------------------------+
+//| only for pointers, returns NULL if key does not exist.           |
+//| For value types, use remove                                      |
+//+------------------------------------------------------------------+
+template<typename Key,typename Value>
+Value HashMap::pop(Key key)
+  {
+   int si=lookupKey(key);
+   int i=m_slots[si];
+   if(i==-1) return NULL;
+   if(!m_removed[i])
+     {
+      // delete possble pointers
+      SafeDelete(m_keys[i]);
+      // mark entry as removed
+      m_removed[i]=true;
+      // update size
+      --m_size;
+     }
+   return m_values[i];
   }
 //+------------------------------------------------------------------+
 //| clear all entries and return to initial state                    |

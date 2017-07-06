@@ -48,7 +48,11 @@ interface Map
 
    Value             operator[](Key key) const;
    void              set(Key key,Value value);
+
    bool              setDefault(Key key,Value value);
+//--- same as remove but does not delete the value
+//--- only for pointers, returns NULL if key does not exist. For value types, use remove
+   Value             pop(Key key);
   };
 //+------------------------------------------------------------------+
 //| This is the utility class for implementing iterator RAII         |
