@@ -26,7 +26,7 @@
 //| storage for actual entries                                       |
 //+------------------------------------------------------------------+
 template<typename Key>
-class HashEntries
+class HashSetEntries
   {
 private:
    // `m_removed` and `m_keys` array are of same length
@@ -37,14 +37,14 @@ private:
    int               m_realSize;
    const int         m_buffer;
 public:
-                     HashEntries(int buffer=8):m_realSize(0),m_buffer(buffer)
+                     HashSetEntries(int buffer=8):m_realSize(0),m_buffer(buffer)
      {
       ArrayResize(m_removed,0,m_buffer);
-      ArrayResize(m_removed,0,m_buffer);
+      ArrayResize(m_keys,0,m_buffer);
      }
    int               size() const {return ArraySize(m_keys);}
    Key               get(int i) const {return m_keys[i];}
-   void              set(int i,Key value) {m_keys[i]=value;}
+   void              set(int i,Key key) {m_keys[i]=key;}
    bool              isRemoved(int i) const {return m_removed[i];}
 
    bool              isCompacted() const {return m_realSize==ArraySize(m_keys);}
@@ -58,7 +58,7 @@ public:
      {
       m_realSize=0;
       ArrayResize(m_removed,0,m_buffer);
-      ArrayResize(m_removed,0,m_buffer);
+      ArrayResize(m_keys,0,m_buffer);
      }
 
    int               getRealSize() const {return m_realSize;}
@@ -118,7 +118,7 @@ private:
    //   2. >=0 normal entries (need check `m_removed` if it is still in use).
    int               m_slots[];
 
-   HashEntries<Key>m_entries;
+   HashSetEntries<Key>m_entries;
 
    // this is number of slots (hash table size)
    int               m_htsize;
@@ -135,9 +135,8 @@ public:
    //--- by default the HashSet do not own its elements
    //--- if the hash elements are pointers and the real owner wants to
    //--- transfer the ownership to this collection, then she need to explicitly `new HashSet(NULL,true)`
-                     HashSet(EqualityComparer<Key>*comparer=NULL,bool owned=false)
+                     HashSet(EqualityComparer<Key>*comparer=NULL,bool owned=false):m_comparer((comparer==NULL)?(new GenericEqualityComparer<Key>()):comparer),m_owned(owned)
      {
-      m_comparer=(comparer==NULL)?(new GenericEqualityComparer<Key>()):comparer;
       initState();
      }
                     ~HashSet()
@@ -327,10 +326,10 @@ class HashSetIterator: public Iterator<T>
   {
 private:
    // ref to hash set entries
-   const             HashEntries<T>*m_entries;
+   const             HashSetEntries<T>*m_entries;
    int               m_index;
 public:
-                     HashSetIterator(const HashEntries<T>&entries)
+                     HashSetIterator(const HashSetEntries<T>&entries)
    :m_index(0),m_entries(GetPointer(entries)) {}
    bool              end() const {return m_index>=m_entries.size();}
    void              next() {if(!end()) {do{m_index++;}while(!end() && m_entries.isRemoved(m_index));}}
