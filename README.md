@@ -7,11 +7,12 @@ MQL4 Foundation Library For Professional Developers
 * [3. Usage](#usage)
   * [3.1 Basic Programs](#basic-programs)
   * [3.2 Runtime Controlled Indicators and Indicator Drivers](#runtime-controlled-indicators-and-indicator-drivers)
-  * [3.3 Event handling](#event-handling)
+  * [3.3 Event Handling](#event-handling)
   * [3.4 External Events](#external-events)
   * [3.5 Collections](#collections)
   * [3.6 Maps](#maps)
   * [3.7 File System and IO](#file-system-and-io)
+  * [3.8 Serialization Formats](#serialization-formats)
 * [4. Contribution Guide](#contribution-guide)
 * [5. Changes](#changes)
 
@@ -328,7 +329,7 @@ Or if you want to use it in your EA, driven by a Renko chart:
    delete renkoDriver;
 ```
 
-### Event handling
+### Event Handling
 
 Expert Advisors and Indicators can receive events from the chart they run on,
 and they derive from the `EventApp` class, which provides the facility to handle
@@ -716,6 +717,96 @@ int OnStart()
 }
 ```
 
+### Serialization Formats
+
+It is very useful to have some fast and reliable serialization formats to do
+persistence, messsaging, etc. There are a lot of options: JSON, ProtoBuf, etc.
+However they are somewhat difficult to implement in MQL. Take JSON as an
+example, you have to use a Map or Dictionary like data structure to implement
+Objects, and even parsing a number is not an easy task (See the JSON
+sepcification). And I really don't like a Dictionary to be created every time I
+receive a simple JSON. ProtoBuf is a lot harder, because you have to implement a
+ProtoBuf compiler to generate code for MQL.
+
+When I decided to rewrite the mql4-redis binding, I had a plan to make a pure
+MQL Redis client. So I started to understand and implement the `REdis
+Serialization Protocol` (RESP). It is extremely simple yet useful enough. It has
+data types like string, integer, array, bulk string (bytes), and nil. So I
+implemented these types in MQL and make a full encoder/decoder.
+
+I put it in this general library rather than the mql-redis client because it is
+a reusable component. Think about you can serialize values to a buffer and use
+ZeroMQ to send them as messages. I will explain the usage of RESP protocol
+component in this section.
+
+To use the RESP protocol, you need to include `MQL4/Format/Resp.mqh`. The value
+types are straight forward:
+
+```MQL5
+#include <MQL4/Lang/Resp.mqh>
+//--- RespValue is the parent of all values
+//--- it has some common methods that is implemented by all types
+//--- they are: encode, toString, getType
+string GetEncodedString(const RespValue &value)
+  {
+   char res[];
+   value.encode(res,0);
+   RespBytes bytes(res);
+   // RespBytes' toString method prints the byte content as human readable string with proper escapes
+   return bytes.toString();
+  }
+void OnStart()
+  {
+   //--- create an array preallocated with 7 elements
+   RespArray a(7);
+   a.set(0, new RespBytes("set"));
+   a.set(1,new RespBytes("x"));
+   a.set(2, new RespBytes("10"));          // Bulk strings (can contains spaces, newlines, etc. in the string)
+   a.set(3, new RespError("ERROR test!")); // Same as RespString but indicate an error
+   a.set(4,new RespString("abd akdfa\"")); // RespString is what in hiredis REPLY_STATUS type
+   a.set(5,new RespInteger(623));
+   a.set(6,RespNil::getInstance());        // RespNil is a singleton type
+
+
+   Print(a.toString());                    // Print a human readable representation of array
+   Print(GetEncodedString(a));
+
+   char res[];
+   a.encode(res,0);
+
+   int encodedSize=ArraySize(res);
+   RespMsgParser msgParser;                // RespMsgParser parses a buffer with complete input
+   RespValue *value=RespParser::parse(res,0);
+   Print(parser.getPosition()==encodedSize);
+   Print(value.getType()==TypeArray);
+   Ptr<RespArray>b(dynamic_cast<RespArray*>(value));
+   Print(b.r.size()==7);
+  }
+```
+
+As shown in above code, you can compose values arbituarily and encode them to a
+buffer. You can nest arrays infinitely. The value types provide very useful methods
+for various operations. You can find more in corresponding source files.
+
+I wrote TWO parsers for the protocol. The first one is for a message oriented
+context, where you receive the buffer in a whole and start parsing. The class is
+`RespMsgParser`. The other is `RespStreamParser` for a stream oriented context,
+where you may receive a buffer partially and start parsing. It will tell you if
+it needs more input, and you can resume parsing when you feed more input to it.
+The later parser is inspired by the hiredis `ReplyReader` implementation.
+
+They both have a `getError` method that tells you what is going wrong (check
+`MQL4/Format/RespParseError.mqh` for all error codes) if the `parse` method
+returns a NULL value. `RespMsgParser` has a `check` method that can check if the
+giving buffer contains a valid `RespValue` without actaully create it. The
+`check` method also sets error flags like the `parse` method does.
+
+Both parsers do not have a nesting limit like the hiredis `ReplyReader`. Only
+your computer's memory (or MetaTrader's stack) is the limit. But overall, the
+`ReplyReader` will be faster than my parsers. It is C and it keeps a stack with
+a static array. And it does not aim to be a general encode/decode library.
+
+
 ## Contribution Guide
 
 I would be very glad if you want to contribute to this library, but there are
@@ -756,6 +847,8 @@ from all levels of developers.
 
 ## Changes
 
+* 2017-07-14: Add 2 RESP protocol parsers: one for message oriented buffers, one
+  for stream buffers; they provide more specific error reporting
 * 2017-07-10: Event handling in `EventApp`; add `HashSet`; reimplement `HashMap`
 * Before 2017-07-10: A lot, and I will not list them. I decided to add a change
   log for future users to see what is going on at first sight.
