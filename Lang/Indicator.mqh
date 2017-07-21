@@ -41,10 +41,7 @@ public:
                           const double &close[],
                           const long &tickVolume[],
                           const long &volume[],
-                          const int &spread[])=0;
-   //--- default for EventApp
-   virtual void      onTimer() {}
-   virtual void      onChartEvent(const int id,const long &lparam,const double &dparam,const string &sparam) {}
-   virtual void      onAppEvent(const ushort event,const uint param) {}
+                          const int &spread[])
+     {return total;}
   };
 //+------------------------------------------------------------------+

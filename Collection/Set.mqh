@@ -74,7 +74,7 @@ bool Set::remove(const T value)
       return false;
   }
 //+------------------------------------------------------------------+
-//| Iterator implementation for Set                               |
+//| Iterator implementation for Set                                  |
 //+------------------------------------------------------------------+
 template<typename T>
 class SetIterator: public Iterator<T>

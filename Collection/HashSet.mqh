@@ -1,5 +1,5 @@
 //+------------------------------------------------------------------+
-//| Module: Collection/HashMap.mqh                                   |
+//| Module: Collection/HashSet.mqh                                   |
 //| This file is part of the mql4-lib project:                       |
 //|     https://github.com/dingmaotu/mql4-lib                        |
 //|                                                                  |
@@ -20,39 +20,31 @@
 //+------------------------------------------------------------------+
 #property strict
 
-#include "Map.mqh"
-#include "EqualityComparer.mqh" // contains Hash.mqh, which contains Pointer.mqh
+#include "EqualityComparer.mqh"
 #include "Collection.mqh"
 //+------------------------------------------------------------------+
 //| storage for actual entries                                       |
 //+------------------------------------------------------------------+
-template<typename Key,typename Value>
-class HashMapEntries
+template<typename Key>
+class HashSetEntries
   {
 private:
-   // `m_removed`, `m_keys`, and `m_values` array are of same length
+   // `m_removed` and `m_keys` array are of same length
    // to reuse existing storage units, a removed entry will
    // keep its index in `slots`, but mark removed in `m_removed`
    bool              m_removed[];
    Key               m_keys[];
-   Value             m_values[];
    int               m_realSize;
    const int         m_buffer;
 public:
-                     HashMapEntries(int buffer=8):m_realSize(0),m_buffer(buffer)
+                     HashSetEntries(int buffer=8):m_realSize(0),m_buffer(buffer)
      {
       ArrayResize(m_removed,0,m_buffer);
       ArrayResize(m_keys,0,m_buffer);
-      ArrayResize(m_values,0,m_buffer);
      }
    int               size() const {return ArraySize(m_keys);}
-
-   Key               getKey(int i) const {return m_keys[i];}
-   void              setKey(int i,Key key) {m_keys[i]=key;}
-
-   Value             getValue(int i) const {return m_values[i];}
-   void              setValue(int i,Value value) {m_values[i]=value;}
-
+   Key               get(int i) const {return m_keys[i];}
+   void              set(int i,Key key) {m_keys[i]=key;}
    bool              isRemoved(int i) const {return m_removed[i];}
 
    bool              isCompacted() const {return m_realSize==ArraySize(m_keys);}
@@ -67,19 +59,16 @@ public:
       m_realSize=0;
       ArrayResize(m_removed,0,m_buffer);
       ArrayResize(m_keys,0,m_buffer);
-      ArrayResize(m_values,0,m_buffer);
      }
 
    int               getRealSize() const {return m_realSize;}
 
-   int               append(Key key,Value value)
+   int               append(Key key)
      {
       int ni=ArraySize(m_keys);
       ArrayResize(m_keys,ni+1);
-      ArrayResize(m_values,ni+1);
       ArrayResize(m_removed,ni+1);
       m_keys[ni]=key;
-      m_values[ni]=value;
       m_removed[ni]=false;
       m_realSize++;
       return ni;
@@ -88,14 +77,12 @@ public:
      {
       m_removed[i]=true;
       m_keys[i]=NULL;
-      m_values[i]=NULL;
       m_realSize--;
      }
-   void              unremove(int i,Key key,Value value)
+   void              unremove(int i,Key key)
      {
       m_removed[i]=false;
       m_keys[i]=key;
-      m_values[i]=value;
       m_realSize++;
      }
    void              compact()
@@ -110,24 +97,18 @@ public:
          while(j<s && m_removed[j]) {j++;}
          if(j==s) break;
          m_keys[i]=m_keys[j];
-         m_values[i]=m_values[j];
          m_removed[i]=false;
          m_removed[j]=true;
         }
       ArrayResize(m_keys,i,m_buffer);
-      ArrayResize(m_values,i,m_buffer);
       ArrayResize(m_removed,i,m_buffer);
      }
   };
-
-template<typename Key,typename Value>
-class HashMapIterator;
 //+------------------------------------------------------------------+
-//| Map implementation based on Python dict (open addressing         |
-//| hash table)                                                      |
+//| Set based on open addressing hash table                          |
 //+------------------------------------------------------------------+
-template<typename Key,typename Value>
-class HashMap: public Map<Key,Value>
+template<typename Key>
+class HashSet: public Collection<Key>
   {
 private:
    EqualityComparer<Key>*m_comparer;
@@ -137,69 +118,58 @@ private:
    //   2. >=0 normal entries (need check `m_removed` if it is still in use).
    int               m_slots[];
 
-   HashMapEntries<Key,Value>m_entries;
+   HashSetEntries<Key>m_entries;
 
    // this is number of slots (hash table size)
    int               m_htsize;
    // this is used (including removed, thus non -1) number of slots
    int               m_htused;
-protected:
+
    void              initState();
    int               lookup(Key key) const;
    void              rehash();
    void              upsize();
 public:
-                     HashMap(EqualityComparer<Key>*comparer=NULL,bool owned=false):m_comparer((comparer==NULL)?(new GenericEqualityComparer<Key>()):comparer),m_owned(owned)
+   //--- `owned` parameter determines if this collection owns its elements 
+   //--- (i.e. release their resources in destructor or on removal)
+   //--- by default the HashSet do not own its elements
+   //--- if the hash elements are pointers and the real owner wants to
+   //--- transfer the ownership to this collection, then she need to explicitly `new HashSet(NULL,true)`
+                     HashSet(EqualityComparer<Key>*comparer=NULL,bool owned=false):m_comparer((comparer==NULL)?(new GenericEqualityComparer<Key>()):comparer),m_owned(owned)
      {
       initState();
      }
-                    ~HashMap()
+                    ~HashSet()
      {
-      int s=m_entries.size();
-      for(int i=0; i<s; i++)
+      if(m_owned)
         {
-         // delete possble pointers
-         if(!m_entries.isRemoved(i))
+         int s=m_entries.size();
+         for(int i=0; i<s; i++)
            {
-            SafeDelete(m_entries.getKey(i));
-            if(m_owned)
-              {
-               SafeDelete(m_entries.getValue(i));
-              }
+            // delete possble pointers
+            if(!m_entries.isRemoved(i))
+               SafeDelete(m_entries.get(i));
            }
         }
       SafeDelete(m_comparer);
      }
 
+   // Iterator interface
+   Iterator<Key>*iterator() const {return new HashSetIterator<Key>(m_entries);}
+
+   // Collection interface
    int               size() const {return m_entries.getRealSize();}
-   bool              isEmpty() const {return size()==0;}
-   bool              remove(Key key);
+   bool              contains(const Key key) const {int ix=m_slots[lookup(key)];return ix>=0 && !m_entries.isRemoved(ix);}
+
+   bool              add(Key key);
+   bool              remove(const Key key);
    void              clear();
-   bool              contains(Key key) const {int ix=m_slots[lookup(key)];return ix>=0 && !m_entries.isRemoved(ix);}
-
-   MapIterator<Key,Value>*iterator() const {return new HashMapIterator<Key,Value>(m_entries);}
-
-   bool              keys(Collection<Key>&col) const;
-   bool              values(Collection<Value>&col) const;
-
-   Value             operator[](Key key) const
-     {
-      int ix=m_slots[lookup(key)];
-      if(ix>=0 && !m_entries.isRemoved(ix)) return m_entries.getValue(ix);
-      else return NULL;
-     }
-
-   void              set(Key key,Value value);
-   bool              setIfExist(Key key,Value value);
-   bool              setIfNotExist(Key key,Value value);
-
-   Value             pop(Key key);
   };
 //+------------------------------------------------------------------+
 //| restore internal state to initial                                |
 //+------------------------------------------------------------------+
-template<typename Key,typename Value>
-void HashMap::initState()
+template<typename Key>
+void HashSet::initState()
   {
    m_htsize=8;
    m_htused=0;
@@ -209,14 +179,13 @@ void HashMap::initState()
 //+------------------------------------------------------------------+
 //| relocate entries in slots                                        |
 //+------------------------------------------------------------------+
-template<typename Key,typename Value>
-void HashMap::rehash()
+template<typename Key>
+void HashSet::rehash()
   {
    ArrayInitialize(m_slots,-1);
-   int size = m_entries.size();
-   for(int i=0; i<size && !IsStopped(); i++)
+   for(int i=0; i<m_entries.size() && !IsStopped(); i++)
      {
-      int si=lookup(m_entries.getKey(i));
+      int si=lookup(m_entries.get(i));
       m_slots[si]=i;
      }
   }
@@ -224,8 +193,8 @@ void HashMap::rehash()
 //| if used slot is larger than 2/3 of the total slots, then upsize  |
 //| to keep performance high                                         |
 //+------------------------------------------------------------------+
-template<typename Key,typename Value>
-void HashMap::upsize()
+template<typename Key>
+void HashSet::upsize()
   {
    if(m_htused>((m_htsize<<1)/3))
      {
@@ -244,8 +213,8 @@ void HashMap::upsize()
 //| Lookup the slot index for the key                                |
 //| Uses the Python dictobject probing algorithm                     |
 //+------------------------------------------------------------------+
-template<typename Key,typename Value>
-int HashMap::lookup(Key key) const
+template<typename Key>
+int HashSet::lookup(Key key) const
   {
    int hash=m_comparer.hash(key);
    int mask=ArraySize(m_slots)-1;
@@ -264,7 +233,7 @@ int HashMap::lookup(Key key) const
       if(ix==-1) break;
       // slot is used but deleted
       else if(m_entries.isRemoved(ix)) freeslot=(int)i;
-      else if(m_comparer.equals(m_entries.getKey(ix),key))
+      else if(m_comparer.equals(m_entries.get(ix),key))
         {
          freeslot=-1; break;
         }
@@ -283,19 +252,18 @@ int HashMap::lookup(Key key) const
 //+------------------------------------------------------------------+
 //| If key actually removed returns true                             |
 //+------------------------------------------------------------------+
-template<typename Key,typename Value>
-bool HashMap::remove(Key key)
+template<typename Key>
+bool HashSet::remove(Key key)
   {
    int i=lookup(key);
    int ix=m_slots[i];
    if(ix==-1) return false;
 // empty slot
    if(m_entries.isRemoved(ix)) return false;
-// delete possble pointers
-   SafeDelete(m_entries.getKey(ix));
    if(m_owned)
      {
-      SafeDelete(m_entries.getValue(ix));
+      // delete possble pointers
+      SafeDelete(m_entries.get(ix));
      }
    m_entries.remove(ix);
 // if half of the keys is empty, then compact the storage
@@ -310,49 +278,20 @@ bool HashMap::remove(Key key)
    return true;
   }
 //+------------------------------------------------------------------+
-//| only for pointers, returns NULL if key does not exist.           |
-//| For value types, use remove                                      |
-//+------------------------------------------------------------------+
-template<typename Key,typename Value>
-Value HashMap::pop(Key key)
-  {
-   Value res=NULL;
-   int i=lookup(key);
-   int ix=m_slots[i];
-   if(ix==-1) return res;
-// empty slot
-   if(m_entries.isRemoved(ix)) return res;
-// delete possble pointers
-   SafeDelete(m_entries.getKey(ix));
-   res=m_entries.getValue(ix);
-   m_entries.remove(ix);
-// if half of the keys is empty, then compact the storage
-   if(m_entries.shouldCompact())
-     {
-#ifdef _DEBUG
-      PrintFormat(">>>DEBUG[%s,%d,%s]: should compact: real: %d, buffer: %d",__FILE__,__LINE__,__FUNCTION__,m_entries.getRealSize(),m_entries.size());
-#endif
-      m_entries.compact();
-      rehash();
-     }
-   return res;
-  }
-//+------------------------------------------------------------------+
 //| clear all entries and return to initial state                    |
 //+------------------------------------------------------------------+
-template<typename Key,typename Value>
-void HashMap::clear()
+template<typename Key>
+void HashSet::clear()
   {
-   int s=m_entries.size();
-   for(int i=0; i<s; i++)
+   if(m_owned)
      {
-      // delete possble pointers
-      if(!m_entries.isRemoved(i))
+      int s=m_entries.size();
+      for(int i=0; i<s; i++)
         {
-         SafeDelete(m_entries.getKey(i));
-         if(m_owned)
+         // delete possble pointers
+         if(!m_entries.isRemoved(i))
            {
-            SafeDelete(m_entries.getValue(i));
+            SafeDelete(m_entries.get(i));
            }
         }
      }
@@ -360,46 +299,10 @@ void HashMap::clear()
    initState();
   }
 //+------------------------------------------------------------------+
-//| Get all keys                                                     |
+//| If the key does not exist and get added, return true             |
 //+------------------------------------------------------------------+
-template<typename Key,typename Value>
-bool HashMap::keys(Collection<Key>&col) const
-  {
-   bool added=false;
-   int size=m_entries.size();
-   for(int i=0; i<size; i++)
-     {
-      if(!m_entries.isRemoved(i))
-        {
-         col.add(m_entries.getKey(i));
-         added=true;
-        }
-     }
-   return added;
-  }
-//+------------------------------------------------------------------+
-//| Get all values                                                   |
-//+------------------------------------------------------------------+
-template<typename Key,typename Value>
-bool HashMap::values(Collection<Value>&col) const
-  {
-   bool added=false;
-   int size=m_entries.size();
-   for(int i=0; i<size; i++)
-     {
-      if(!m_entries.isRemoved(i))
-        {
-         col.add(m_entries.getValue(i));
-         added=true;
-        }
-     }
-   return added;
-  }
-//+------------------------------------------------------------------+
-//| Set key to value. Add key if it does not exist                   |
-//+------------------------------------------------------------------+
-template<typename Key,typename Value>
-void HashMap::set(Key key,Value value)
+template<typename Key>
+bool HashSet::add(Key key)
   {
 // we need to make sure that used slots is always smaller than
 // certain percentage of total slots (m_htused <= (m_htsize*2)/3)
@@ -408,84 +311,31 @@ void HashMap::set(Key key,Value value)
    int ix=m_slots[i];
    if(ix==-1)
      {
-      m_slots[i]=m_entries.append(key,value);
+      m_slots[i]=m_entries.append(key);
       m_htused++;
      }
-   else if(m_entries.isRemoved(ix)) m_entries.unremove(ix,key,value);
-   else
-     {
-      if(m_owned)
-        {
-         SafeDelete(m_entries.getValue(ix));
-        }
-      m_entries.setValue(ix,value);
-     }
-  }
-//+------------------------------------------------------------------+
-//| Set key to value only if key does not exist                      |
-//+------------------------------------------------------------------+
-template<typename Key,typename Value>
-bool HashMap::setIfNotExist(Key key,Value value)
-  {
-// we need to make sure that used slots is always smaller than
-// certain percentage of total slots (m_htused <= (m_htsize*2)/3)
-   upsize();
-   int i=lookup(key);
-   int ix=m_slots[i];
-   if(ix==-1)
-     {
-      m_slots[i]=m_entries.append(key,value);
-      m_htused++;
-     }
-   else if(m_entries.isRemoved(ix)) m_entries.unremove(ix,key,value);
-   else
-     {
-      return false;
-     }
+   else if(m_entries.isRemoved(ix)) m_entries.unremove(ix,key);
+   else return false;
    return true;
   }
 //+------------------------------------------------------------------+
-//| Set key to value only if key exists                              |
+//| Iterator implementation for HashSet                              |
 //+------------------------------------------------------------------+
-template<typename Key,typename Value>
-bool HashMap::setIfExist(Key key,Value value)
-  {
-// we need to make sure that used slots is always smaller than
-// certain percentage of total slots (m_htused <= (m_htsize*2)/3)
-   upsize();
-   int i=lookup(key);
-   int ix=m_slots[i];
-   if(ix==-1)
-     {
-      return false;
-     }
-   else if(m_entries.isRemoved(ix)) return false;
-   else
-     {
-      if(m_owned)
-        {
-         SafeDelete(m_entries.getValue(ix));
-        }
-      m_entries.setValue(ix,value);
-      return true;
-     }
-  }
-//+------------------------------------------------------------------+
-//| Iterator implementation for HashMap                              |
-//+------------------------------------------------------------------+
-template<typename Key,typename Value>
-class HashMapIterator: public MapIterator<Key,Value>
+template<typename T>
+class HashSetIterator: public Iterator<T>
   {
 private:
    // ref to hash set entries
-   const             HashMapEntries<Key,Value>*m_entries;
+   const             HashSetEntries<T>*m_entries;
    int               m_index;
 public:
-                     HashMapIterator(const HashMapEntries<Key,Value>&entries)
+                     HashSetIterator(const HashSetEntries<T>&entries)
    :m_index(0),m_entries(GetPointer(entries)) {}
    bool              end() const {return m_index>=m_entries.size();}
    void              next() {if(!end()) {do{m_index++;}while(!end() && m_entries.isRemoved(m_index));}}
-   Key               key() const {return m_entries.getKey(m_index);}
-   Value             value() const {return m_entries.getValue(m_index);}
+   T                 current() const {return m_entries.get(m_index);}
+
+   // you can not set something to a hash entry
+   bool              set(T value) {return false;}
   };
 //+------------------------------------------------------------------+

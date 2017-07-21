@@ -68,3 +68,7 @@ Chart::Chart(string symbol,ENUM_TIMEFRAMES period)
    :m_chartId(ChartOpen(symbol,period))
   {}
 //+------------------------------------------------------------------+
+//| Macro to iterate every chart in the Terminal                     |
+//+------------------------------------------------------------------+
+#define foreachchart(VarChart) for(Chart VarChart(Chart::first());VarChart.getId()!=-1;VarChart.setId(VarChart.next()))
+//+------------------------------------------------------------------+
