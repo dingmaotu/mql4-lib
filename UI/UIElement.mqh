@@ -18,8 +18,7 @@ private:
 public:
                      UIElement(UIElement *parent,string name)
    :m_parent(parent),m_name(m_parent==NULL?name:m_parent.getName()+"."+name){}
-   ~UIElement();
-
+ 
    string            getName() const {return m_name;}
    UIElement        *getParent() const {return m_parent;}
 
@@ -39,11 +38,7 @@ public:
                              )
      {}
   };
-  
-UIElement::~UIElement()
-{
-    delete m_parent;
-}
+
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
