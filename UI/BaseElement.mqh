@@ -55,7 +55,6 @@ protected:
         }
      }
 public:
-   ~BaseElement();
    ENUM_OBJECT       getUnderlyingObjectType() const {return(ENUM_OBJECT)getInteger(OBJPROP_TYPE);}
    datetime          getCreateTime() const {return(datetime)getInteger(OBJPROP_CREATETIME);}
 
@@ -83,8 +82,3 @@ public:
    virtual int       getHeight() const {return 0;}
   };
 //+------------------------------------------------------------------+
-
-BaseElement::~BaseElement()
-{
-    delete m_root;
-}
