@@ -72,6 +72,10 @@ void RtlMoveMemory(intptr_t dest,const uchar &array[],size_t length);
 void RtlMoveMemory(uchar &array[],intptr_t src,size_t length);
 void RtlMoveMemory(intptr_t &dest,intptr_t src,size_t length);
 int lstrlen(intptr_t psz);
+int lstrlenW(intptr_t psz);
+uintptr_t lstrcpynW(string &s1,uintptr_t s2,int length);
+uintptr_t lstrcpynW(uintptr_t s1,string &s2,int length);
+
 int MultiByteToWideChar(uint   codePage,
                         uint   flags,
                         const  intptr_t multiByteString,
@@ -113,6 +117,25 @@ intptr_t DereferencePointer(intptr_t pointer)
    intptr_t res=0;
    RtlMoveMemory(res,pointer,sizeof(intptr_t));
    return res;
+  }
+//+------------------------------------------------------------------+
+//| Read a valid wide character string to the MQL environment        |
+//+------------------------------------------------------------------+
+string StringFromPointer(intptr_t psz,int len=0)
+  {
+   if(len < 0) return NULL;
+   if(len==0) {len=lstrlenW(psz);}
+   string res;
+   StringInit(res,len+1);
+   lstrcpynW(res,psz,len+1);
+   return res;
+  }
+//+------------------------------------------------------------------+
+//| Get the pointer address of a string                              |
+//+------------------------------------------------------------------+
+uintptr_t StringToPointer(string &s)
+  {
+   return lstrcpynW(s,0,0);
   }
 //+------------------------------------------------------------------+
 //| Read a valid utf-8 string to the MQL environment                 |
