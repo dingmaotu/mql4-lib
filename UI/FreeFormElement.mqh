@@ -55,6 +55,8 @@ public:
 
                      Panel(Panel *parent,string name)
    :FreeFormElement(parent,name,OBJ_RECTANGLE_LABEL){}
+
+   bool              setBackgroundColor(color value) {return setInteger(OBJPROP_BGCOLOR,value);}
   };
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -107,6 +109,8 @@ public:
 
    bool              setAlign(ENUM_ALIGN_MODE value) {return setInteger(OBJPROP_ALIGN,value);}
    bool              setReadOnly(bool value) {return setInteger(OBJPROP_READONLY,value?1:0);}
+
+   bool              setBackgroundColor(color value) {return setInteger(OBJPROP_BGCOLOR,value);}
   };
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -119,5 +123,7 @@ public:
      {
       setText(text);
      }
+
+   bool              setBackgroundColor(color value) {return setInteger(OBJPROP_BGCOLOR,value);}
   };
 //+------------------------------------------------------------------+
