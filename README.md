@@ -306,7 +306,7 @@ Or if you want to use it in your EA, driven by a Renko chart:
 //--- create the indicator manually, its runtime controlled flag is false by default
    DeMarkerParam param;
    param.setAvgPeriod(14);
-   deMarker=new DeMarker(GetPointer(fp));
+   deMarker=new DeMarker(GetPointer(param));
 
 //--- indicator driver is a container for indicators
    IndicatorDriver *driver=new IndicatorDriver; 
@@ -385,18 +385,33 @@ parameters as encoded in the same algorithm with `EncodeKeydownMessage`. Then
 any program that derives from EventApp can process this message from its
 `onAppEvent` event handler.
 
-And here is a sample implementation in MQL (demonstration only; you need C++ to
-write a function like this in DLL):
+Here is a sample implementation in C:
 
-```
-   #include <WinUser32.mqh>
-   #include <MQL4/Lang/Event.mqh>
-   bool SendAppEvent(int hwnd,ushort event,uint param)
-     {
-      int wparam, lparam;
-      EncodeKeydownMessage(event, param, wparam, lparam);
-      return PostMessageW(hwnd,WM_KEYDOWN,wparam, lparam) != 0;
-     }
+```C
+#include <Windows.h>
+#include <stdint.h>
+#include <limits.h>
+
+static const int WORD_BIT = sizeof(int16_t)*CHAR_BIT;
+
+void EncodeKeydownMessage(const WORD event,const DWORD param,WPARAM &wparam,LPARAM &lparam)
+{
+    DWORD t=(DWORD)event;
+    t<<= WORD_BIT;
+    t |= 0x80000000;
+    DWORD highPart= param & 0xFFFF0000;
+    DWORD lowPart = param & 0x0000FFFF;
+    wparam = (WPARAM)(t|(highPart>>WORD_BIT));
+    lparam = (LPARAM)lowPart;
+}
+
+BOOL MqlSendAppMessage(HWND hwnd, WORD event, DWORD param)
+{
+    WPARAM wparam;
+    LPARAM lparam;
+    EncodeKeydownMessage(event, param, wparam, lparam);
+    return PostMessageW(hwnd,WM_KEYDOWN,wparam, lparam);
+}
 ```
 
 The mechanism uses a custom WM_KEYDOWN message to trigger the OnChartEvent. In
