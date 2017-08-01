@@ -22,6 +22,7 @@
 
 #include "App.mqh"
 #include "Event.mqh"
+#include "../UI/Chart.mqh"
 
 #define DECLARE_EVENT_APP(AppClass,Boolean) \
 DECLARE_APP(AppClass,Boolean)\
@@ -39,6 +40,14 @@ protected:
    void              setupTimer(int seconds) {if(EventSetTimer(seconds))m_hasTimer=true;}
    void              setupMillisTimer(int millis) {if(EventSetMillisecondTimer(millis))m_hasTimer=true;}
    bool              hasTimer() const {return m_hasTimer;}
+   //--- broadcast a custom chart event to all opened charts
+   void              broadcast(const ushort id,const long lparam,const double dparam,const string sparam)
+     {
+      foreachchart(c)
+        {
+         c.sendCustomEvent(id,lparam,dparam,sparam);
+        }
+     }
 public:
                     ~EventApp() {if(m_hasTimer)EventKillTimer();}
 
@@ -47,7 +56,7 @@ public:
    virtual void      onTimer() {}
    //--- External events
    virtual void      onAppEvent(const ushort event,const uint param) {}
-   //--- custom events sent by ChartEventCustom (id is the SAME as sencond parameter of ChartEventCustom)
+   //--- custom events sent by EventChartCustom (id is the SAME as sencond parameter of EventChartCustom)
    virtual void      onCustom(int id,long lparam,double dparam,string sparam) {}
 
    //--- UI events
