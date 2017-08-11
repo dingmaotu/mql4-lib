@@ -123,25 +123,25 @@ public:
      {
       setText(text);
      }
-                     Button(Panel *parent,string name,string text):FreeFormElement(parent,name,OBJ_BUTTON)
-     {
-      setText(text);
-     }
 
-                     Button(Panel *parent,string name,string text,int x,int y,int high,int width,int frontColor=clrBlack,int bgColor=clrWhite):FreeFormElement(parent,name,OBJ_BUTTON)
+                     Button(Panel *parent,string name,string text,
+                                              int x,int y,int high,int width,
+                                              int frontColor=clrBlack,
+                                              int bgColor=clrWhite)
+   :FreeFormElement(parent,name,OBJ_BUTTON)
      {
       setText(text);
       setSize(width,high);
       setX(x);
       setY(y);
-      setBgColor(bgColor);
+      setBackgroundColor(bgColor);
       setColor(frontColor);
       setInteger(OBJPROP_ZORDER,999);
      }
 
    bool              setBackgroundColor(color value) {return setInteger(OBJPROP_BGCOLOR,value);}
-   bool              isClick(){return getInteger(OBJPROP_STATE)==1;}
-   bool              setBtnStatus(bool isPress){ return setInteger(OBJPROP_STATE,isPress);}
-   bool              resetBtn(){return setInteger(OBJPROP_STATE,false);}
+   bool              isClick() const {return getInteger(OBJPROP_STATE)==1;}
+   bool              setBtnStatus(bool isPress) { return setInteger(OBJPROP_STATE,isPress);}
+   bool              resetBtn() {return setInteger(OBJPROP_STATE,false);}
   };
 //+------------------------------------------------------------------+
