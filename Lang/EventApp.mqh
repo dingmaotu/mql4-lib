@@ -57,7 +57,7 @@ public:
    //--- External events
    virtual void      onAppEvent(const ushort event,const uint param) {}
    //--- custom events sent by EventChartCustom (id is the SAME as sencond parameter of EventChartCustom)
-   virtual void      onCustom(int id,long lparam,double dparam,string sparam) {}
+   virtual void      onCustom(ushort id,long lparam,double dparam,string sparam) {}
 
    //--- UI events
    virtual void      onKeyDown(int keyCode,int repeatCount,uint bitmask) {}
@@ -126,7 +126,7 @@ void EventApp::onChartEvent(const int id,const long &lparam,const double &dparam
         {
          if(id>=CHARTEVENT_CUSTOM && id<=CHARTEVENT_CUSTOM_LAST)
            {
-            onCustom(id-CHARTEVENT_CUSTOM,lparam,dparam,sparam);
+            onCustom(ushort(id-CHARTEVENT_CUSTOM),lparam,dparam,sparam);
            }
         }
      }
