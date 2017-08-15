@@ -7,6 +7,25 @@
 
 #include "../Lang/Native.mqh"
 //+------------------------------------------------------------------+
+//| Records the show status of a chart                               |
+//+------------------------------------------------------------------+
+struct ChartShowStatus
+  {
+public:
+   bool              ShowOHLC;
+   bool              ShowBidLine;
+   bool              ShowAskLine;
+   bool              ShowLastLine;
+   bool              ShowPeriodSeparator;
+   bool              ShowGrid;
+   bool              ShowObjectDescription;
+   bool              ShowDateScale;
+   bool              ShowPriceScale;
+   bool              ShowOneClick;
+   bool              ShowTradeLevels;
+   bool              ShowVolume;
+  };
+//+------------------------------------------------------------------+
 //| Wraps most chart operations                                      |
 //+------------------------------------------------------------------+
 class Chart
@@ -61,6 +80,75 @@ public:
    int               getSubwindowY(int index=0) const {return(int)ChartGetInteger(m_chartId,CHART_WINDOW_YDISTANCE,index);}
    int               getSubwindowHeight(int index=0) const {return(int)ChartGetInteger(m_chartId,CHART_HEIGHT_IN_PIXELS,index);}
    bool              setSubwindowHeight(int index,int height) {return ChartSetInteger(m_chartId,CHART_HEIGHT_IN_PIXELS,index,height);}
+
+   bool              isOffline() const {return ChartGetInteger(m_chartId,CHART_IS_OFFLINE);}
+
+#define BOOL_PROP(PropName,OptionName) \
+   bool              is##PropName() const {return ChartGetInteger(m_chartId,OptionName);}\
+   bool              set##PropName(bool value) {return ChartSetInteger(m_chartId,OptionName,value);}
+
+   BOOL_PROP(ShowOHLC,CHART_SHOW_OHLC)
+   BOOL_PROP(ShowBidLine,CHART_SHOW_BID_LINE)
+   BOOL_PROP(ShowAskLine,CHART_SHOW_ASK_LINE)
+   BOOL_PROP(ShowLastLine,CHART_SHOW_LAST_LINE)
+   BOOL_PROP(ShowPeriodSeparator,CHART_SHOW_PERIOD_SEP)
+   BOOL_PROP(ShowGrid,CHART_SHOW_GRID)
+   BOOL_PROP(ShowObjectDescription,CHART_SHOW_OBJECT_DESCR)
+   BOOL_PROP(ShowDateScale,CHART_SHOW_DATE_SCALE)
+   BOOL_PROP(ShowOneClick,CHART_SHOW_ONE_CLICK)
+   BOOL_PROP(ShowPriceScale,CHART_SHOW_PRICE_SCALE)
+   BOOL_PROP(ShowTradeLevels,CHART_SHOW_TRADE_LEVELS)
+
+   bool              isShowVolume() const {return ChartGetInteger(m_chartId,CHART_SHOW_VOLUMES)!=CHART_VOLUME_HIDE;}
+   bool              setShowVolume(bool value) const {return ChartSetInteger(m_chartId,CHART_SHOW_VOLUMES,value?CHART_VOLUME_TICK:CHART_VOLUME_HIDE);}
+
+   void              setShow(bool value)
+     {
+      setShowOHLC(value);
+      setShowBidLine(value);
+      setShowAskLine(value);
+      setShowLastLine(value);
+      setShowOneClick(value);
+      setShowPeriodSeparator(value);
+      setShowGrid(value);
+      setShowObjectDescription(value);
+      setShowPriceScale(value);
+      setShowDateScale(value);
+      setShowOneClick(value);
+      setShowVolume(value);
+     }
+
+   void              saveShow(ChartShowStatus &show) const
+     {
+      show.ShowOHLC=isShowOHLC();
+      show.ShowBidLine=isShowBidLine();
+      show.ShowAskLine=isShowAskLine();
+      show.ShowLastLine=isShowLastLine();
+      show.ShowOneClick=isShowOneClick();
+      show.ShowPeriodSeparator=isShowPeriodSeparator();
+      show.ShowGrid=isShowGrid();
+      show.ShowObjectDescription=isShowObjectDescription();
+      show.ShowPriceScale=isShowPriceScale();
+      show.ShowDateScale=isShowDateScale();
+      show.ShowOneClick=isShowOneClick();
+      show.ShowVolume=isShowVolume();
+     }
+
+   void              restoreShow(const ChartShowStatus &show)
+     {
+      setShowOHLC(show.ShowOHLC);
+      setShowBidLine(show.ShowBidLine);
+      setShowAskLine(show.ShowAskLine);
+      setShowLastLine(show.ShowLastLine);
+      setShowOneClick(show.ShowOneClick);
+      setShowPeriodSeparator(show.ShowPeriodSeparator);
+      setShowGrid(show.ShowGrid);
+      setShowObjectDescription(show.ShowObjectDescription);
+      setShowPriceScale(show.ShowPriceScale);
+      setShowDateScale(show.ShowDateScale);
+      setShowOneClick(show.ShowOneClick);
+      setShowVolume(show.ShowVolume);
+     }
 
    //--- Well known trick to force price update for an offline chart
    void              forcePriceUpdate() { PostMessageW(getNativeHandle(),WM_COMMAND,33324,0); }

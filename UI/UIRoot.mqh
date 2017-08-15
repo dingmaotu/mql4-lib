@@ -17,6 +17,7 @@ class UIRoot: public UIElement
 private:
    Chart             m_chart;
    int               m_subwindow;
+   ChartShowStatus   m_status;
 public:
                      UIRoot(long chart=0,int subwindow=0);
 
@@ -27,6 +28,15 @@ public:
    int               getY() const {return m_chart.getSubwindowY(m_subwindow);}
    int               getWidth() const {return m_chart.getChartWidth();}
    int               getHeight() const {return m_chart.getSubwindowHeight(m_subwindow);}
+
+   //--- disable display of price scale, date scale, price lines, OHLC, etc.
+   void              hideBackgroundElements()
+     {
+      m_chart.saveShow(m_status);
+      m_chart.setShow(false);
+     }
+
+   void              restoreBackgroundElements() {m_chart.restoreShow(m_status);}
 
    void              redraw() {m_chart.redraw();}
   };
