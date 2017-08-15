@@ -1,6 +1,6 @@
 # mql4-lib
 
-MQL4 Foundation Library For Professional Developers
+MQL Foundation Library For Professional Developers
 
 * [1. Introduction](#introduction)
 * [2. Installation](#installation)
@@ -18,32 +18,45 @@ MQL4 Foundation Library For Professional Developers
 
 ## Introduction
 
-MQL4 programming language provided by MetaQuotes is a very limited version of
+MQL4/5 programming language provided by MetaQuotes is a very limited version of
 C++, and its standard library is a clone of the (ugly) MFC, both of which I am
 very uncomfortable with. Most MQL4 programs have not adapted to the MQL5 (Object
 Oriented) style yet, let alone reuable and elegant component based design and
 programming.
 
-mql4-lib is a simple library that tries to make MQL4 programming pleasant with a
-more object oriented approach and a coding style like Java, and encourages
+mql4-lib is a simple library that tries to make MQL programming pleasant with
+a more object oriented approach and a coding style like Java, and encourages
 writing reusable components. This library has the ambition to become the de
-facto Foundation Library for MQL4.
+facto Foundation Library for MQL.
+
+Though the library was targeting MQL4, most of its components is compatible with
+MQL5. Except for trading related classes, you can use the library on
+MetaTrader5. It is intended to remove this restriction and make the library a
+truly cross version library for both MT4 and MT5 (and x86/x64). Maybe the
+library will change its name to mql-lib in the future.
 
 ## Installation
 
-Just copy the library to your MQL4 Data Folder's `Include` directory, with the
-root directory name of your choice, for example:
-`<MQL4Data>\Include\MQL4\<mql4-lib content>`.
+Just copy the library to your MetaTrader Data Folder's `Include` directory, with
+the root directory name of your choice, for example:
 
-It is recommened that you use the lastest version MetaTrader4, as many features
-are not available in older versions.
+1. For MT4: `<MetaTrader Data>\MQL4\Include\Mql\<mql4-lib content>`.
+2. For MT5: `<MetaTrader Data>\MQL5\Include\Mql\<mql4-lib content>`.
+
+  Note that the recommended root directory name is `Mql` (Pascal Case) now.
+  Previously it is `MQL4`, which is more MT4 specific. In fact, most of the
+  library is also usable on MT5, so I started the process to make this library
+  compatible with both. All examples will also use this root name.
+
+It is recommened that you use the lastest version MetaTrader4/5, as many
+features are not available in older versions.
 
 ## Usage
 
 The library is in its early stage. However, most components are pretty stable
 and can be used in production. Here are the main components:
 
-1. `Lang` directory contains modules that enhance the MQL4 language
+1. `Lang` directory contains modules that enhance the MQL language
 2. `Collection` directory contains useful collection types
 3. `Format` directory contains serialization formats implementations
 4. `Charts` directory contains several chart types and common chart tools
@@ -65,7 +78,7 @@ The macro distinguish between programs with and without input parameters. Here
 is a simple script without any input parameter:
 
 ```c++
-#include <MQL4/Lang/Script.mqh>
+#include <Mql/Lang/Script.mqh>
 class MyScript: public Script
 {
 public:
@@ -80,7 +93,7 @@ DECLARE_SCRIPT(MyScript,false)
 Here is another example, this time an Expert Advisor with input parameters:
 
 ```c++
-#include <MQL4/Lang/ExpertAdvisor.mqh>
+#include <Mql/Lang/ExpertAdvisor.mqh>
 
 class MyEaParam: public AppParam
 {
@@ -132,7 +145,7 @@ DECLARE_EA(MyEa,true)  // true to indicate it has parameters
 The `ObjectAttr` macro declares standard get/set methods for a class. Just
 follow the Java Beans(TM) convention.
 
-I used some macro tricks to work around limits of MQL4. I will document the
+I used some macro tricks to work around limits of MQL. I will document the
 library in detail when I have the time.
 
 With this approach, you can write reusable EAs, Scripts, or Indicators. You do
@@ -159,8 +172,8 @@ reusable Indicator module in a header file `DeMarker.mqh`
 //+------------------------------------------------------------------+
 #property strict
 
-#include <MQL4/Lang/Mql.mqh>
-#include <MQL4/Lang/Indicator.mqh>
+#include <Mql/Lang/Mql.mqh>
+#include <Mql/Lang/Indicator.mqh>
 #include <MovingAverages.mqh>
 //+------------------------------------------------------------------+
 //| Indicator Input                                                  |
@@ -339,7 +352,7 @@ By default `EventApp` handles all events by doing nothing. You can even create
 an empty EA or Indicator if you like:
 
 ```MQL5
-#include <MQL4/Lang/ExpertAdvisor.mqh>
+#include <Mql/Lang/ExpertAdvisor.mqh>
 
 class MyEA: public ExpertAdvisor {};
 
@@ -444,7 +457,7 @@ events.
 
 ### Collections
 
-In advanced MQL4 programs, you have to use more sophisticated collection types
+In advanced MQL programs, you have to use more sophisticated collection types
 for your order management.
 
 It is planned to add common collection types to the lib, including lists, hash
@@ -522,9 +535,9 @@ Here is a simple example:
 #property version   "1.00"
 #property strict
 
-#include <MQL4/Trade/Order.mqh>
-#include <MQL4/Trade/OrderPool.mqh>
-#include <MQL4/Collection/LinkedList.mqh>
+#include <Mql/Trade/Order.mqh>
+#include <Mql/Trade/OrderPool.mqh>
+#include <Mql/Collection/LinkedList.mqh>
 
 // for simplicity, I will not use the Lang/Script class
 void OnStart()
@@ -577,9 +590,9 @@ The HashMap interface is very simple. Below is a simple example counting words
 of the famous opera `Hamlet`:
 
 ```c++
-#include <MQL4/Lang/Script.mqh>
-#include <MQL4/Collection/HashMap.mqh>
-#include <MQL4/Utils/File.mqh>
+#include <Mql/Lang/Script.mqh>
+#include <Mql/Collection/HashMap.mqh>
+#include <Mql/Utils/File.mqh>
 
 class CountHamletWords: public Script
   {
@@ -646,7 +659,7 @@ through directory files.
 Here is a example for TextFile and CsvFile:
 
 ```MQL5
-#include <MQL4/Utils/File.mqh>
+#include <Mql/Utils/File.mqh>
 
 void OnStart()
   {
@@ -694,7 +707,7 @@ void OnStart()
 And here is an example for `FileIterator`:
 
 ```MQL5
-#include <MQL4/Utils/File.mqh>
+#include <Mql/Utils/File.mqh>
 
 int OnStart()
 {
@@ -716,7 +729,7 @@ int OnStart()
 Or you can go fancy with the powerful `foreachfile` macro:
 
 ```MQL5
-#include <MQL4/Utils/File.mqh>
+#include <Mql/Utils/File.mqh>
 
 int OnStart()
 {
@@ -754,11 +767,11 @@ a reusable component. Think about you can serialize values to a buffer and use
 ZeroMQ to send them as messages. I will explain the usage of RESP protocol
 component in this section.
 
-To use the RESP protocol, you need to include `MQL4/Format/Resp.mqh`. The value
+To use the RESP protocol, you need to include `Mql/Format/Resp.mqh`. The value
 types are straight forward:
 
 ```MQL5
-#include <MQL4/Lang/Resp.mqh>
+#include <Mql/Lang/Resp.mqh>
 //--- RespValue is the parent of all values
 //--- it has some common methods that is implemented by all types
 //--- they are: encode, toString, getType
@@ -811,7 +824,7 @@ it needs more input, and you can resume parsing when you feed more input to it.
 The later parser is inspired by the hiredis `ReplyReader` implementation.
 
 They both have a `getError` method that tells you what is going wrong (check
-`MQL4/Format/RespParseError.mqh` for all error codes) if the `parse` method
+`Mql/Format/RespParseError.mqh` for all error codes) if the `parse` method
 returns a NULL value. `RespMsgParser` has a `check` method that can check if the
 giving buffer contains a valid `RespValue` without actaully create it. The
 `check` method also sets error flags like the `parse` method does.
