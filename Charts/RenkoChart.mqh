@@ -1,19 +1,34 @@
 //+------------------------------------------------------------------+
-//|                                            Charts/RenkoChart.mqh |
+//| Module: Charts/RenkoChart.mqh                                    |
+//| This file is part of the mql4-lib project:                       |
+//|     https://github.com/dingmaotu/mql4-lib                        |
+//|                                                                  |
+//| Copyright 2015-2017 Li Ding <dingmaotu@126.com>                  |
+//|                                                                  |
+//| Licensed under the Apache License, Version 2.0 (the "License");  |
+//| you may not use this file except in compliance with the License. |
+//| You may obtain a copy of the License at                          |
+//|                                                                  |
+//|     http://www.apache.org/licenses/LICENSE-2.0                   |
+//|                                                                  |
+//| Unless required by applicable law or agreed to in writing,       |
+//| software distributed under the License is distributed on an      |
+//| "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,     |
+//| either express or implied.                                       |
+//| See the License for the specific language governing permissions  |
+//| and limitations under the License.                               |
 //+------------------------------------------------------------------+
-#property copyright "Copyright 2015-2016, Li Ding"
-#property link      "dingmaotu@hotmail.com"
 #property strict
 
-#include "Renko.mqh"
-#include "../Utils/ChartFile.mqh"
+#include "../History/Renko.mqh"
+#include "../Utils/HistoryFile.mqh"
 //+------------------------------------------------------------------+
-//|                                                                  |
+//| Renko chart for saving to history file (offline charts)          |
 //+------------------------------------------------------------------+
 class RenkoChart: public Renko
   {
 private:
-   ChartFile         m_file;
+   HistoryFile       m_file;
    datetime          currentTime;
 public:
                      RenkoChart(string symbol,int period,int barSize,bool std=false);
@@ -81,9 +96,7 @@ void RenkoChart::loadHistory(MqlRates &rs[])
                currentTime++;
               }
            }
-
         }
-
       m_file.writeRecord(getRate(0));
       m_file.flush();
      }

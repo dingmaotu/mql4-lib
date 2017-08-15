@@ -4,8 +4,10 @@
 #property copyright "Copyright 2017, Li Ding"
 #property link      "dingmaotu@hotmail.com"
 #property strict
+
+#include "../Lang/Native.mqh"
 //+------------------------------------------------------------------+
-//|                                                                  |
+//| Wraps most chart operations                                      |
 //+------------------------------------------------------------------+
 class Chart
   {
@@ -46,12 +48,22 @@ public:
 
    int               getChartWidth() const {return(int)ChartGetInteger(m_chartId,CHART_WIDTH_IN_PIXELS);}
 
-   long              getNativeHandle() const {return ChartGetInteger(m_chartId,CHART_WINDOW_HANDLE);}
+   intptr_t          getNativeHandle() const
+     {
+#ifdef __X64__
+      return ChartGetInteger(m_chartId,CHART_WINDOW_HANDLE);
+#else
+      return (intptr_t)ChartGetInteger(m_chartId,CHART_WINDOW_HANDLE);
+#endif
+     }
    int               getNumberSubwindows() const {return(int)ChartGetInteger(m_chartId,CHART_WINDOWS_TOTAL);}
    bool              isSubwindowVisible(int index=0) const {return ChartGetInteger(m_chartId,CHART_WINDOW_IS_VISIBLE,index)!=0;}
    int               getSubwindowY(int index=0) const {return(int)ChartGetInteger(m_chartId,CHART_WINDOW_YDISTANCE,index);}
    int               getSubwindowHeight(int index=0) const {return(int)ChartGetInteger(m_chartId,CHART_HEIGHT_IN_PIXELS,index);}
    bool              setSubwindowHeight(int index,int height) {return ChartSetInteger(m_chartId,CHART_HEIGHT_IN_PIXELS,index,height);}
+
+   //--- Well known trick to force price update for an offline chart
+   void              forcePriceUpdate() { PostMessageW(getNativeHandle(),WM_COMMAND,33324,0); }
 
    bool              sendCustomEvent(ushort eventId,long lparam,double dparam,string sparam) {return EventChartCustom(m_chartId,eventId,lparam,dparam,sparam);}
   };

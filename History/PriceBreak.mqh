@@ -36,31 +36,6 @@ void GrowBuffer(T &a[],int size)
      }
   }
 //+------------------------------------------------------------------+
-//|                                                                  |
-//+------------------------------------------------------------------+
-double GetPrice(ENUM_APPLIED_PRICE applied,double open,double high,double low,double close)
-  {
-   switch(applied)
-     {
-      case PRICE_CLOSE:
-         return close;
-      case PRICE_HIGH:
-         return high;
-      case PRICE_LOW:
-         return low;
-      case PRICE_MEDIAN:
-         return (high+low)/2;
-      case PRICE_OPEN:
-         return open;
-      case PRICE_TYPICAL:
-         return (high+low+close)/3;
-      case PRICE_WEIGHTED:
-         return (high+low+close+open)/4;
-      default:
-         return 0;
-     }
-  }
-//+------------------------------------------------------------------+
 //| Base class used to generate PriceBreak charts                    |
 //+------------------------------------------------------------------+
 class PriceBreak
@@ -69,12 +44,13 @@ private:
    int               m_bars;
    int               m_trend;
 
-   double            m_reversal_high;
-   double            m_reversal_low;
+   double            m_reversalHigh;
+   double            m_reversalLow;
+   long              m_accumulatedVolume;
 
-   void              Grow(int size);
-   double            GetHigh();
-   double            GetLow();
+   void              grow(int size);
+   double            calcReversalHigh();
+   double            calcReversalLow();
 
 protected:
    double            m_open[];
@@ -82,7 +58,7 @@ protected:
    double            m_low[];
    double            m_close[];
    long              m_volume[];
-   int               Move(double p,long vol);
+   int               move(double p,long vol);
 
 public:
    const int         DISTANCE;
@@ -90,14 +66,14 @@ public:
                      PriceBreak(int);
    virtual          ~PriceBreak(){}
 
-   int               GetBars() const {return m_bars;}
+   int               getBars() const {return m_bars;}
 
    //--- Feed data by normal candle bars
-   void              LoadRate(MqlRates &r,ENUM_APPLIED_PRICE applied);
+   int               loadRate(const MqlRates &r);
    //--- Feed data by last price
-   void              MoveTo(double price,long volume);
+   int               moveTo(double price,long volume);
 
-   virtual void      OnNewBar(int bars,int new_bars,double const &open[],double const &high[],
+   virtual void      onNewBar(int bars,int new_bars,double const &open[],double const &high[],
                               double const &low[],double const &close[],long const &volume[])
      {}
   };
@@ -107,42 +83,37 @@ public:
 PriceBreak::PriceBreak(int distance=3):DISTANCE(distance)
   {
    m_bars=0;
-   m_reversal_high=m_reversal_low=0;
+   m_reversalHigh=m_reversalLow=0;
+   m_accumulatedVolume=0;
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-double PriceBreak::GetHigh(void)
+double PriceBreak::calcReversalHigh(void)
   {
-   double p = m_high[m_bars-1];
-   for(int i=m_bars-DISTANCE; i>=0&&i<m_bars-1; i++)
+   double p=m_high[m_bars-1];
+   for(int i=m_bars-DISTANCE; i>=0 && i<m_bars-1; i++)
      {
-      if(m_high[i]>p)
-        {
-         p=m_high[i];
-        }
+      if(m_high[i]>p) p=m_high[i];
      }
    return p;
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-double PriceBreak::GetLow(void)
+double PriceBreak::calcReversalLow(void)
   {
-   double p = m_low[m_bars-1];
-   for(int i=m_bars-DISTANCE; i>=0&&i<m_bars-1; i++)
+   double p=m_low[m_bars-1];
+   for(int i=m_bars-DISTANCE; i>=0 && i<m_bars-1; i++)
      {
-      if(m_low[i]<p)
-        {
-         p=m_low[i];
-        }
+      if(m_low[i]<p) p=m_low[i];
      }
    return p;
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-void PriceBreak::Grow(int size)
+void PriceBreak::grow(int size)
   {
    m_bars+=size;
    GrowBuffer(m_open,m_bars);
@@ -154,55 +125,64 @@ void PriceBreak::Grow(int size)
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-int PriceBreak::Move(double price,long volume)
+int PriceBreak::move(double price,long volume)
   {
    if(m_bars==0)
      {
-      Grow(1);
-      m_open[m_bars-1]=m_high[m_bars-1]=
-                       m_low[m_bars-1]=m_close[m_bars-1]=price;
+      grow(1);
+
+      m_open[m_bars-1]=price;
+      m_high[m_bars-1]=price;
+      m_low[m_bars-1]=price;
+      m_close[m_bars-1]=price;
       m_volume[m_bars-1]=volume;
-      m_reversal_high=GetHigh();
-      m_reversal_low=GetLow();
+
+      m_reversalHigh=calcReversalHigh();
+      m_reversalLow=calcReversalLow();
       return 1;
      }
 
-   if(price>m_reversal_high)
+   m_accumulatedVolume+=volume;
+
+   if(price>m_reversalHigh)
      {
-      Grow(1);
+      grow(1);
       m_close[m_bars-1]=m_high[m_bars-1]=price;
       m_open[m_bars-1]=m_low[m_bars-1]=m_high[m_bars-2];
-      m_volume[m_bars-1]=volume;
-      m_reversal_high=GetHigh();
-      m_reversal_low=GetLow();
+      m_volume[m_bars-1]=m_accumulatedVolume;
+      m_reversalHigh=calcReversalHigh();
+      m_reversalLow=calcReversalLow();
+      m_accumulatedVolume=0;
       return 1;
      }
-   if(price<m_reversal_low)
+   if(price<m_reversalLow)
      {
-      Grow(1);
+      grow(1);
       m_close[m_bars-1]=m_low[m_bars-1]=price;
       m_open[m_bars-1]=m_high[m_bars-1]=m_low[m_bars-2];
-      m_volume[m_bars-1]=volume;
-      m_reversal_high=GetHigh();
-      m_reversal_low=GetLow();
+      m_volume[m_bars-1]=m_accumulatedVolume;
+      m_reversalHigh=calcReversalHigh();
+      m_reversalLow=calcReversalLow();
+      m_accumulatedVolume=0;
       return 1;
      }
-   m_volume[m_bars-1]+=volume;
+
    return 0;
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-void PriceBreak::LoadRate(MqlRates &r,ENUM_APPLIED_PRICE applied=PRICE_CLOSE)
+int PriceBreak::loadRate(const MqlRates &r)
   {
-   MoveTo(GetPrice(applied,r.open,r.high,r.low,r.close),r.tick_volume);
+   return moveTo(r.close,r.tick_volume);
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-void PriceBreak::MoveTo(double price,long volume=0)
+int PriceBreak::moveTo(double price,long volume=0)
   {
-   int new_bars=Move(price,volume);
-   OnNewBar(m_bars,new_bars,m_open,m_high,m_low,m_close,m_volume);
+   int newBars=move(price,volume);
+   onNewBar(m_bars,newBars,m_open,m_high,m_low,m_close,m_volume);
+   return newBars;
   }
 //+------------------------------------------------------------------+

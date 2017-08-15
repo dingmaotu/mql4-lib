@@ -92,6 +92,9 @@ uint FormatMessageW(uint dwFlags,
                     intptr_t Arguments
                     );
 #import
+
+//--- This is a standard header of the official MetaTrader distribution
+#include <WinUser32.mqh>
 //+------------------------------------------------------------------+
 //| Copy the memory contents pointed by src to array                 |
 //| array parameter should be initialized to the desired size        |

@@ -1,5 +1,5 @@
 //+------------------------------------------------------------------+
-//| Module: Utils/ChartFile.mqh                                      |
+//| Module: Utils/HistoryFile.mqh                                    |
 //| This file is part of the mql4-lib project:                       |
 //|     https://github.com/dingmaotu/mql4-lib                        |
 //|                                                                  |
@@ -19,199 +19,194 @@
 //| and limitations under the License.                               |
 //+------------------------------------------------------------------+
 #property strict
+#include "../Lang/Mql.mqh"
 //+------------------------------------------------------------------+
-//|                                                                  |
+//| A special file that stores quotes data                           |
 //+------------------------------------------------------------------+
-class ChartFile
+class HistoryFile
   {
+   ObjectAttrRead(string,symbol,Symbol);
+   ObjectAttrRead(int,period,Period);
 private:
    const int         HEADER_SIZE;
    const int         RECORD_SIZE;
-
-   string            m_symbol;
-   int               m_period;
+   const string      HISTORY_FILENAME;
 
    long              m_numRecords;
-
-   int               m_file_handle;
-
-   long              hardGetNumberOfRecords();
+   int               m_handle;
 public:
-                     ChartFile(string symbol,int period);
-                    ~ChartFile();
-   string            getSymbol() const {return m_symbol;}
-   int               getPeriod() const {return m_period;}
+                     HistoryFile(string symbol,int period);
+                    ~HistoryFile() { close(); }
 
+   bool              truncate();
 
-   void              openChart();
-   void              closeChart();
+   bool              open();
+   void              close();
    bool              isClosed();
+
+   ulong             size() const {if(m_handle>0) return FileSize(m_handle); else return -1;}
+   long              getNumberOfRecords();
+   void              flush();
 
    void              writeHeader();
    void              skipHeader();
 
-   long              getNumberOfRecords() {return m_numRecords;}
-
    void              gotoRecord(int shift);
    void              readRecord(MqlRates &rs);
-
-   void              flush();
    void              writeRecord(const MqlRates &r);
    void              updateRecord(const MqlRates &r);
   };
 //+------------------------------------------------------------------+
-//|                                                                  |
+//| Only initializes internal members without really opening the file|
 //+------------------------------------------------------------------+
-ChartFile::ChartFile(string symbol,int period)
-   :HEADER_SIZE(148),RECORD_SIZE(sizeof(MqlRates))
+HistoryFile::HistoryFile(string symbol,int period)
+   :HEADER_SIZE(148),RECORD_SIZE(sizeof(MqlRates)),HISTORY_FILENAME(StringFormat("%s%d.hst",symbol,period))
   {
    m_symbol=symbol;
    m_period=period;
-   m_file_handle=-1;
-   openChart();
-   m_numRecords=hardGetNumberOfRecords();
+   m_handle=-1;
   }
 //+------------------------------------------------------------------+
-//|                                                                  |
+//| There is no way to resize a file in MQL                          |
+//| This is a workaround                                             |
 //+------------------------------------------------------------------+
-ChartFile::~ChartFile()
+bool HistoryFile::truncate()
   {
-   closeChart();
-  }
-//+------------------------------------------------------------------+
-//|                                                                  |
-//+------------------------------------------------------------------+
-void ChartFile::openChart()
-  {
-   if(m_file_handle<0)
+   m_handle=FileOpenHistory(HISTORY_FILENAME,FILE_BIN|FILE_WRITE);
+   if(m_handle!=-1)
      {
-      m_file_handle=FileOpenHistory(m_symbol+(string)m_period+".hst",FILE_BIN|FILE_READ|FILE_WRITE|FILE_SHARE_WRITE|FILE_SHARE_READ|FILE_ANSI);
+      FileClose(m_handle);
+      m_handle=-1;
+      return true;
+     }
+   return false;
+  }
+//+------------------------------------------------------------------+
+//| Open the history file for read/write                             |
+//+------------------------------------------------------------------+
+bool HistoryFile::open()
+  {
+   if(m_handle==-1)
+     {
+      m_handle=FileOpenHistory(HISTORY_FILENAME,FILE_BIN|FILE_READ|FILE_WRITE|FILE_SHARE_WRITE|FILE_SHARE_READ);
+      return m_handle!=-1;
+     }
+//--- m_handle has a valid value
+   return true;
+  }
+//+------------------------------------------------------------------+
+//| Close the history file                                           |
+//+------------------------------------------------------------------+
+void HistoryFile::close()
+  {
+   if(m_handle!=-1)
+     {
+      FileClose(m_handle);
+      m_handle=-1;
      }
   }
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-void ChartFile::closeChart()
+bool HistoryFile::isClosed()
   {
-   if(m_file_handle>0)
-     {
-      FileClose(m_file_handle);
-      m_file_handle=-1;
-     }
+   return m_handle==-1;
   }
 //+------------------------------------------------------------------+
-//|                                                                  |
+//| Write standard history data header                               |
+//| This is from PeriodConverter example                             |
 //+------------------------------------------------------------------+
-bool ChartFile::isClosed()
+void HistoryFile::writeHeader(void)
   {
-   return m_file_handle<0;
-  }
-//+------------------------------------------------------------------+
-//|                                                                  |
-//+------------------------------------------------------------------+
-void ChartFile::writeHeader(void)
-  {
-   if(m_file_handle>0)
+   if(m_handle>0)
      {
       int      file_version=401;
       string   file_copyright="(C)opyright 2003, MetaQuotes Software Corp.";
       int      unused[13];
       ArrayInitialize(unused,0);
-      FileSeek(m_file_handle,0,SEEK_SET);
-      FileWriteInteger(m_file_handle,file_version,LONG_VALUE);
-      FileWriteString(m_file_handle,file_copyright,64);
-      FileWriteString(m_file_handle,m_symbol,12);
-      FileWriteInteger(m_file_handle,m_period,LONG_VALUE);
-      FileWriteInteger(m_file_handle,Digits,LONG_VALUE);
-      FileWriteInteger(m_file_handle,0,LONG_VALUE);
-      FileWriteInteger(m_file_handle,0,LONG_VALUE);
-      FileWriteArray(m_file_handle,unused,0,13);
-      FileFlush(m_file_handle);
+      FileSeek(m_handle,0,SEEK_SET);
+      FileWriteInteger(m_handle,file_version,LONG_VALUE);
+      FileWriteString(m_handle,file_copyright,64);
+      FileWriteString(m_handle,m_symbol,12);
+      FileWriteInteger(m_handle,m_period,LONG_VALUE);
+      FileWriteInteger(m_handle,Digits,LONG_VALUE);
+      FileWriteInteger(m_handle,0,LONG_VALUE);
+      FileWriteInteger(m_handle,0,LONG_VALUE);
+      FileWriteArray(m_handle,unused,0,13);
+      FileFlush(m_handle);
      }
   }
 //+------------------------------------------------------------------+
-//|                                                                  |
+//| Skip the standard header and to the start of the first record    |
 //+------------------------------------------------------------------+
-void ChartFile::skipHeader(void)
+void HistoryFile::skipHeader(void)
   {
-   if(m_file_handle>0)
-     {
-      FileSeek(m_file_handle,HEADER_SIZE,SEEK_SET);
-     }
+   if(m_handle>0) FileSeek(m_handle,HEADER_SIZE,SEEK_SET);
   }
 //+------------------------------------------------------------------+
-//|                                                                  |
+//| Ensure content be written to the disk                            |
 //+------------------------------------------------------------------+
-void ChartFile::flush(void)
+void HistoryFile::flush(void)
   {
-   if(m_file_handle>0)
-     {
-      FileFlush(m_file_handle);
-     }
+   if(m_handle>0) FileFlush(m_handle);
   }
 //+------------------------------------------------------------------+
-//|                                                                  |
+//| Get the number of quote records in this history file             |
 //+------------------------------------------------------------------+
-long ChartFile::hardGetNumberOfRecords()
+long HistoryFile::getNumberOfRecords()
   {
-   if(m_file_handle>0)
-     {
-      ulong size=FileSize(m_file_handle);
-      if(size<148)
-        {
-         return 0;
-        }
-      else
-        {
-         long number=(long)((size-HEADER_SIZE)/RECORD_SIZE);
-         return number<0?0:number;
-        }
-     }
-   else
+   if(m_handle==-1) return -1;
+   ulong size=FileSize(m_handle);
+   if(size<148)
      {
       return 0;
      }
-  }
-//+------------------------------------------------------------------+
-//|                                                                  |
-//+------------------------------------------------------------------+
-void ChartFile::gotoRecord(int shift)
-  {
-   if(m_file_handle>0 && shift>=0 && shift<m_numRecords)
+   else
      {
-      FileSeek(m_file_handle,HEADER_SIZE+RECORD_SIZE*shift,SEEK_SET);
+      long number=(long)((size-HEADER_SIZE)/RECORD_SIZE);
+      return number<0?0:number;
      }
   }
 //+------------------------------------------------------------------+
-//|                                                                  |
+//| Go to the start of the specified record                          |
 //+------------------------------------------------------------------+
-void ChartFile::readRecord(MqlRates &r)
+void HistoryFile::gotoRecord(int shift)
   {
-   if(m_file_handle>0)
+   if(m_handle>0 && shift>=0 && shift<m_numRecords)
      {
-      FileReadStruct(m_file_handle,r);
+      FileSeek(m_handle,HEADER_SIZE+RECORD_SIZE*shift,SEEK_SET);
      }
   }
 //+------------------------------------------------------------------+
-//|                                                                  |
+//| Read the value of current record to the parameter                |
 //+------------------------------------------------------------------+
-void ChartFile::writeRecord(const MqlRates &r)
+void HistoryFile::readRecord(MqlRates &r)
   {
-   if(m_file_handle>0)
+   if(m_handle>0)
      {
-      FileWriteStruct(m_file_handle,r);
+      FileReadStruct(m_handle,r);
+     }
+  }
+//+------------------------------------------------------------------+
+//| Write the record to current position                             |
+//+------------------------------------------------------------------+
+void HistoryFile::writeRecord(const MqlRates &r)
+  {
+   if(m_handle>0)
+     {
+      FileWriteStruct(m_handle,r);
       m_numRecords++;
      }
   }
 //+------------------------------------------------------------------+
-//|                                                                  |
+//| Update the record in current position                            |
 //+------------------------------------------------------------------+
-void ChartFile::updateRecord(const MqlRates &r)
+void HistoryFile::updateRecord(const MqlRates &r)
   {
-   if(m_file_handle>0 && m_numRecords>0)
+   if(m_handle>0 && m_numRecords>0)
      {
-      FileSeek(m_file_handle,-RECORD_SIZE,SEEK_CUR);
-      FileWriteStruct(m_file_handle,r);
+      FileSeek(m_handle,-RECORD_SIZE,SEEK_CUR);
+      FileWriteStruct(m_handle,r);
      }
   }
 //+------------------------------------------------------------------+
