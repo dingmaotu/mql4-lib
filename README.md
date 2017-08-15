@@ -745,6 +745,13 @@ int OnStart()
 }
 ```
 
+There is also a special kind of file called history file. They are the files
+that backs the MetaTrader chart display. There is a sepcial function for opening
+a history file: `HistoryFileOpen` and history files have a fixed structure. I
+wrapped operations on history files in a class `Utils/HistoryFile`. This
+component is very useful in implementing custom chart types as offline charts.
+You can see example usages in `Chart/PriceBreakChart` or `Chart/RenkoChart`.
+
 ### Serialization Formats
 
 It is very useful to have some fast and reliable serialization formats to do
@@ -875,8 +882,14 @@ from all levels of developers.
 
 ## Changes
 
-* 2017-07-14: Add 2 RESP protocol parsers: one for message oriented buffers, one
-  for stream buffers; they provide more specific error reporting
-* 2017-07-10: Event handling in `EventApp`; add `HashSet`; reimplement `HashMap`
+* 2017-08-15: Implemented Price Break Chart. Renamed ChartFile to HistoryFile
+  and made HistoryFile part of the File System API. Started the process toward a
+  unified library for MT4 and MT5 (top level include directory name is `Mql`
+  now).
+* 2017-07-14: Added 2 RESP protocol parsers: one for message oriented buffers,
+  one for stream buffers; they provide more specific error reporting than
+  hiredis parser.
+* 2017-07-10: Event handling in `EventApp`; added `HashSet`; reimplemented
+  `HashMap`.
 * Before 2017-07-10: A lot, and I will not list them. I decided to add a change
   log for future users to see what is going on at first sight.
