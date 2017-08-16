@@ -34,7 +34,8 @@ private:
    long              m_chartId;
 public:
                      Chart(long chartId=0);
-                     Chart(string symbol,ENUM_TIMEFRAMES period);
+
+   bool              isValid() const {return m_chartId>0;}
 
    void              setId(long chartId) {m_chartId=chartId;}
    long              getId() const {return m_chartId;}
@@ -44,7 +45,15 @@ public:
 
    bool              setSymbolPeriod(string symbol,ENUM_TIMEFRAMES period) {return ChartSetSymbolPeriod(m_chartId,symbol,period);}
 
+   bool              open(string symbol,int period)
+     {
+      long id=ChartOpen(symbol,period);
+      if(id>0) {m_chartId=id;return true;}
+      else return false;
+     }
    bool              close() {return ChartClose(m_chartId);}
+   bool              isOpen() const {return ChartPeriod(m_chartId)!=0;}
+
    void              redraw() {ChartRedraw(m_chartId);}
 
    static long       first() {return ChartFirst();}
@@ -160,12 +169,6 @@ public:
 //+------------------------------------------------------------------+
 Chart::Chart(long chartId)
    :m_chartId(chartId==0?ChartID():chartId)
-  {}
-//+------------------------------------------------------------------+
-//| Create by opening a new chart                                    |
-//+------------------------------------------------------------------+
-Chart::Chart(string symbol,ENUM_TIMEFRAMES period)
-   :m_chartId(ChartOpen(symbol,period))
   {}
 //+------------------------------------------------------------------+
 //| Macro to iterate every chart in the Terminal                     |

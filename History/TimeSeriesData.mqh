@@ -27,14 +27,17 @@ class TimeSeriesData: public HistoryData
   {
 private:
    string            m_symbol;
-   ENUM_TIMEFRAMES   m_period;
+   int               m_period;
    // new bars between updates; larger than 0 if has new bar
    long              m_newBars;
    datetime          m_lastBarDate;
 protected:
    void              updateNewBar(datetime date);
 public:
-                     TimeSeriesData(string symbol,ENUM_TIMEFRAMES period):m_symbol(symbol),m_period(period){}
+                     TimeSeriesData(string symbol,int period):m_symbol(symbol==""?_Symbol:symbol),m_period(period==0?_Period:period){}
+
+   string            getSymbol() const {return m_symbol;}
+   int               getPeriod() const {return m_period;}
 
    static bool       refresh() {return RefreshRates();}
 
