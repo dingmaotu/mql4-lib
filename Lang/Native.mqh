@@ -76,6 +76,9 @@ int lstrlenW(intptr_t psz);
 uintptr_t lstrcpynW(string &s1,uintptr_t s2,int length);
 uintptr_t lstrcpynW(uintptr_t s1,string &s2,int length);
 
+// close any kernel object handle
+bool CloseHandle(intptr_t hObject);
+
 int MultiByteToWideChar(uint   codePage,
                         uint   flags,
                         const  intptr_t multiByteString,
