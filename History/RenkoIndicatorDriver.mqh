@@ -31,8 +31,8 @@ private:
    IndicatorDriver *m_driver;
 
 public:
-                     RenkoIndicatorDriver(int barSize,IndicatorDriver &driver)
-   :Renko(barSize*_Point),m_driver(GetPointer(driver)){}
+                     RenkoIndicatorDriver(string symbol,int barSize,IndicatorDriver &driver)
+   :Renko(symbol,barSize),m_driver(GetPointer(driver)){}
    void              onNewBar(int total,int pBars,double const &pOpen[],double const &pHigh[],
                               double const &pLow[],double const &pClose[],long const &pVolume[])
      {

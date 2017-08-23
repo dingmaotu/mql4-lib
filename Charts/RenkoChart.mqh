@@ -46,7 +46,7 @@ public:
 //|                                                                  |
 //+------------------------------------------------------------------+
 RenkoChart::RenkoChart(string symbol,int period,int barSize,bool std)
-   :Renko(barSize*Point,std),m_file(symbol,period)
+   :Renko(symbol,barSize,std),m_file(symbol,period)
   {
    if(m_file.getNumberOfRecords()==0)
      {

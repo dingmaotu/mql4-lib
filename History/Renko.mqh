@@ -3,7 +3,7 @@
 //| This file is part of the mql4-lib project:                       |
 //|     https://github.com/dingmaotu/mql4-lib                        |
 //|                                                                  |
-//| Copyright 2015-2016 Li Ding <dingmaotu@126.com>                  |
+//| Copyright 2015-2017 Li Ding <dingmaotu@126.com>                  |
 //|                                                                  |
 //| Licensed under the Apache License, Version 2.0 (the "License");  |
 //| you may not use this file except in compliance with the License. |
@@ -21,6 +21,7 @@
 #property strict
 
 #include "HistoryData.mqh"
+#include "../Trade/FxSymbol.mqh"
 
 #define RENKO_DEFAULT_BUFFER_SIZE 1000
 //+------------------------------------------------------------------+
@@ -29,6 +30,7 @@
 class Renko: public HistoryData
   {
 private:
+   string            m_symbol;
    int               m_bars;
    int               m_newBars;
    bool              m_std;
@@ -48,11 +50,11 @@ protected:
    int               moveByRate(MqlRates &r);
 public:
    double const      BAR_SIZE;
-                     Renko(double barSize,bool std=false):BAR_SIZE(barSize),m_bars(0),m_std(std) {}
-   virtual          ~Renko() {}
+                     Renko(string symbol,int barSize,bool std=false);
+
+   string            getSymbol() const {return m_symbol;}
 
    long              getBars() const {return m_bars;}
-
    bool              isNewBar() const {return m_newBars>0;}
    long              getNewBars() const {return m_newBars;}
 
@@ -72,7 +74,18 @@ public:
    void              update(double price,long vol);
   };
 //+------------------------------------------------------------------+
-//|                                                                  |
+//| Initialize Renko                                                 |
+//| Renko Bar size is given in number of ticks (points)              |
+//+------------------------------------------------------------------+
+Renko::Renko(string symbol,int barSize,bool std)
+   :m_symbol(symbol==""?_Symbol:symbol),
+     BAR_SIZE(FxSymbol::getPoint(m_symbol)*barSize),
+     m_bars(0),
+     m_std(std)
+  {
+  }
+//+------------------------------------------------------------------+
+//| Resize all buffers                                               |
 //+------------------------------------------------------------------+
 void Renko::resize(int size)
   {
