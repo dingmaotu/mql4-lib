@@ -1,8 +1,26 @@
 //+------------------------------------------------------------------+
-//|                                                     UI/Mouse.mqh |
-//|                  Copyright 2017, Bear Two Technologies Co., Ltd. |
+//| Module: UI/Mouse.mqh                                             |
+//| This file is part of the mql4-lib project:                       |
+//|     https://github.com/dingmaotu/mql4-lib                        |
+//|                                                                  |
+//| Copyright 2015-2017 Li Ding <dingmaotu@126.com>                  |
+//|                                                                  |
+//| Licensed under the Apache License, Version 2.0 (the "License");  |
+//| you may not use this file except in compliance with the License. |
+//| You may obtain a copy of the License at                          |
+//|                                                                  |
+//|     http://www.apache.org/licenses/LICENSE-2.0                   |
+//|                                                                  |
+//| Unless required by applicable law or agreed to in writing,       |
+//| software distributed under the License is distributed on an      |
+//| "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,     |
+//| either express or implied.                                       |
+//| See the License for the specific language governing permissions  |
+//| and limitations under the License.                               |
 //+------------------------------------------------------------------+
 #property strict
+
+#include "../Lang/Native.mqh" // for SM_SWAPBUTTON and SM_MOUSEPRESENT
 
 #import "user32.dll"
 short GetAsyncKeyState(int nVirtKey);
@@ -11,10 +29,8 @@ int GetSystemMetrics(int nIndex);
 
 #define VK_LBUTTON 0x01
 #define VK_RBUTTON 0x02
-#define SM_MOUSEPRESENT 19
-#define SM_SWAPBUTTON 23
 //+------------------------------------------------------------------+
-//|                                                                  |
+//| Detecting Mouse input                                            |
 //+------------------------------------------------------------------+
 class Mouse
   {
