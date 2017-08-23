@@ -25,10 +25,72 @@
 #include "Cast.mqh"
 #include "Pointer.mqh"
 
+//+------------------------------------------------------------------+
+//| Murmur3 hash adapted from https://github.com/PeterScott/murmur3  |
+//+------------------------------------------------------------------+
+
 // uint32_t rotl32(uint32_t x,int8_t r)
 #define	ROTL32(x,r)	((x << r) | (x >> (32 - r)))
-//--- adapted from https://github.com/PeterScott/murmur3
-//--- directly process utf-16 characters instead of bytes
+//+------------------------------------------------------------------+
+//| Murmur3 on bytes array                                           |
+//+------------------------------------------------------------------+
+uint MurmurHash3_x86_32(const char &data[],uint seed)
+  {
+   const int len=ArraySize(data);
+   const int nblocks=len/4;
+   int i;
+   uint h1=seed;
+   uint c1 = 0xcc9e2d51;
+   uint c2 = 0x1b873593;
+
+// body
+   for(i=0; i<nblocks; i++)
+     {
+      // getblock (x86 little endian)
+      int k=i<<2;
+      uint k1=0;
+      for(int j=3; j!=0; j--)
+        {
+         k1|=data[k+j];
+         k1<<=8;
+        }
+
+      k1*=c1;
+      k1=ROTL32(k1,15);
+      k1*=c2;
+
+      h1^= k1;
+      h1 = ROTL32(h1,13);
+      h1 = h1*5+0xe6546b64;
+     }
+
+// tail
+   const int tail=nblocks*4;
+
+   uint k1=0;
+
+   switch(len&3)
+     {
+      case 3: k1 ^= data[tail+2] << 16;
+      case 2: k1 ^= data[tail+1] << 8;
+      case 1: k1 ^= data[tail];
+      k1*=c1; k1=ROTL32(k1,15); k1*=c2; h1^=k1;
+     };
+
+// finalization
+   h1^=len;
+
+   h1 ^= h1 >> 16;
+   h1 *= 0x85ebca6b;
+   h1 ^= h1 >> 13;
+   h1 *= 0xc2b2ae35;
+   h1 ^= h1 >> 16;
+
+   return h1;
+  }
+//+------------------------------------------------------------------+
+//| Murmur3 on utf-16 characters                                     |
+//+------------------------------------------------------------------+
 uint MurmurHash3_x86_32(const ushort &data[],uint seed)
   {
    const int len=ArraySize(data);
@@ -75,9 +137,9 @@ uint MurmurHash3_x86_32(const ushort &data[],uint seed)
    return h1;
   }
 //+------------------------------------------------------------------+
-//|                                                                  |
+//| Accept string directly                                           |
 //+------------------------------------------------------------------+
-uint MurmurHash3_x86_32_String(const string data,uint seed)
+uint MurmurHash3_x86_32(const string data,uint seed)
   {
    const int len=StringLen(data);
    const int nblocks=len/2;
@@ -129,9 +191,7 @@ uint MurmurHash3_x86_32_String(const string data,uint seed)
 //+------------------------------------------------------------------+
 int Hash(const string value)
   {
-// ushort a[];
-// StringToShortArray(value,a,0,StringLen(value));
-   return (int)MurmurHash3_x86_32_String(value,0x7e34a273);
+   return (int)MurmurHash3_x86_32(value,0x7e34a273);
   }
 //+------------------------------------------------------------------+
 //| expand to int                                                    |
