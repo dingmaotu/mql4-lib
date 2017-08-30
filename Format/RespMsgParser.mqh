@@ -25,6 +25,7 @@
 #include "RespString.mqh"
 #include "RespBytes.mqh"
 #include "RespParseError.mqh"
+#include "RespParser.mqh"
 //+------------------------------------------------------------------+
 //| A recursive descent parser for the RESP protocol                 |
 //| This parser take a complete buffer as input. For example, if you |
@@ -35,7 +36,7 @@
 //| If the parse failed, it returns NULL and delete any intermediate |
 //| objects.                                                         |
 //+------------------------------------------------------------------+
-class RespMsgParser
+class RespMsgParser: public RespParser
   {
 private:
    RespParseError    m_error;  // parse error

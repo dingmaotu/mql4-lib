@@ -25,6 +25,7 @@
 #include "RespString.mqh"
 #include "RespBytes.mqh"
 #include "RespParseError.mqh"
+#include "RespParser.mqh"
 //+------------------------------------------------------------------+
 //| State for a RESP parse task                                      |
 //+------------------------------------------------------------------+
@@ -96,7 +97,7 @@ public:
 //| If you are reading from a TCP stream, then it is best to use this|
 //| parser.                                                          |
 //+------------------------------------------------------------------+
-class RespStreamParser
+class RespStreamParser: public RespParser
   {
 private:
    RespParseError    m_error;  // error status
