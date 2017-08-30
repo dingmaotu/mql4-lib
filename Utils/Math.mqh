@@ -19,6 +19,7 @@
 //| and limitations under the License.                               |
 //+------------------------------------------------------------------+
 #property strict
+#include "../Lang/Mql.mqh"
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
@@ -39,6 +40,12 @@ public:
    static T abs(T value)
      {
       return value < 0 ? -value : value;
+     }
+
+   static double linearInterpolate(double x1,double x2,double y1,double y2,double x)
+     {
+      if(Mql::isEqual(x1,x2)) return Double::NaN;
+      return y1 + (y1-y2)*(x-x1)/(x1-x2);
      }
   };
 //+------------------------------------------------------------------+

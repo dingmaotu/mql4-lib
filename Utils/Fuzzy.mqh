@@ -22,6 +22,7 @@
 #include "../Lang/Mql.mqh"
 #include "../Lang/Array.mqh"
 #include "../Collection/Collection.mqh"
+#include "Math.mqh"
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
@@ -271,14 +272,6 @@ void NumericDiscretize(double &x[],double &y[],int begin,NumericFunction func,do
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-double LinearInterpolate(double x1,double x2,double y1,double y2,double x)
-  {
-   if(Mql::isEqual(x1,x2)) return Double::NaN;
-   return y1 + (y1-y2)*(x-x1)/(x1-x2);
-  }
-//+------------------------------------------------------------------+
-//|                                                                  |
-//+------------------------------------------------------------------+
 class FuzzyDSR: public FuzzySet<double>
   {
 private:
@@ -370,7 +363,7 @@ double FuzzyDSR::membership(double x) const
      }
    else
      {
-      return LinearInterpolate(m_x[i-1], m_x[i], m_y[i-1],m_y[i],x);
+      return Math::linearInterpolate(m_x[i-1], m_x[i], m_y[i-1],m_y[i],x);
      }
   }
 //+------------------------------------------------------------------+
