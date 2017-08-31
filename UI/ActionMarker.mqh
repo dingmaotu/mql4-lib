@@ -28,6 +28,8 @@ private:
    bool              m_actived;
 protected:
    void              ensureCreated();
+   double            calcDistance() const;
+
    Set<ActionEventHandler*>ActionEvent;
 public:
                      ActionMarker(string id,string label,int x,int y,long chart=0):m_chart(chart==0?ChartID():chart),m_id(id),m_label(label),m_ox(x),m_oy(y),m_actived(false)
@@ -40,7 +42,7 @@ public:
    void              operator-=(ActionEventHandler *handler) {ActionEvent.remove(handler);}
   };
 //+------------------------------------------------------------------+
-//|                                                                  |
+//| ensure the marker is created                                     |
 //+------------------------------------------------------------------+
 void ActionMarker::ensureCreated(void)
   {
@@ -61,41 +63,45 @@ void ActionMarker::ensureCreated(void)
    ObjectSetInteger(m_chart,m_id,OBJPROP_HIDDEN,1);
   }
 //+------------------------------------------------------------------+
-//|                                                                  |
+//| calculate distance from the origin                               |
+//+------------------------------------------------------------------+
+double ActionMarker::calcDistance() const
+  {
+   int x = (int)ObjectGetInteger(m_chart, m_id, OBJPROP_XDISTANCE);
+   int y = (int)ObjectGetInteger(m_chart, m_id, OBJPROP_YDISTANCE);
+   double xd = x-m_ox;
+   double yd = y-m_oy;
+   return MathSqrt(xd*xd+yd*yd);
+  }
+//+------------------------------------------------------------------+
+//| update and render                                                |
 //+------------------------------------------------------------------+
 void ActionMarker::check(void)
   {
    ensureCreated();
-   if(!m_actived)
+   double distance=calcDistance();
+   m_actived=distance>50.0;
+   ObjectSetInteger(m_chart,m_id,OBJPROP_COLOR,m_actived?clrRed:clrYellow);
+
+   if(distance>0.0 && !Mouse::isLeftDown())
      {
-      int x = (int)ObjectGetInteger(m_chart, m_id, OBJPROP_XDISTANCE);
-      int y = (int)ObjectGetInteger(m_chart, m_id, OBJPROP_YDISTANCE);
-      double xd = x-m_ox;
-      double yd = y-m_oy;
-      double distance=MathSqrt(xd*xd+yd*yd);
-      if(distance>50.0)
-        {
-         ObjectSetInteger(m_chart,m_id,OBJPROP_COLOR,clrRed);
-         m_actived=true;
-        }
-     }
-   else
-     {
-      if(Mouse::isLeftDown()) return;
       ObjectSetInteger(m_chart,m_id,OBJPROP_XDISTANCE,m_ox);
       ObjectSetInteger(m_chart,m_id,OBJPROP_YDISTANCE,m_oy);
       ObjectSetInteger(m_chart,m_id,OBJPROP_COLOR,clrYellow);
       ObjectSetInteger(m_chart,m_id,OBJPROP_SELECTED,0);
       ChartRedraw(m_chart);
-      if(ActionEvent.size()>0)
+
+      if(m_actived)
         {
-         foreach(ActionEventHandler*,ActionEvent)
+         if(ActionEvent.size()>0)
            {
-            ActionEventHandler *handler=it.current();
-            handler.onAction(m_id,m_label);
+            foreach(ActionEventHandler*,ActionEvent)
+              {
+               ActionEventHandler *handler=it.current();
+               handler.onAction(m_id,m_label);
+              }
            }
         }
-      m_actived=false;
      }
   }
 //+------------------------------------------------------------------+
