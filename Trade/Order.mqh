@@ -26,8 +26,13 @@ interface OrderMatcher
   {
    bool matches();
   };
-
+//+------------------------------------------------------------------+
+//| Some contant strings                                             |
+//+------------------------------------------------------------------+
 const string OrderTypeString[]={"buy","sell","buy limit","sell simit","buy stop","sell stop"};
+const string ORDER_FROM_STR="from #";
+const string ORDER_PARTIAL_CLOSE_STR="partial close";
+const string ORDER_CLOSE_HEDGE_BY_STR="close hedge by #";
 //+------------------------------------------------------------------+
 //| Order (immutable)                                                |
 //| Creating a new Order captures all properties of a current        |
@@ -92,6 +97,39 @@ public:
 
    static double     Profit() { return OrderProfit();}
    static double     Swap() { return OrderSwap();}
+
+   //+------------------------------------------------------------------+
+   //| The order must be open and there are two situations:             |
+   //| 1. If the original order is closed partially                     |
+   //| 2. If the original order is closed by hedge and it is larger     |
+   //|    than required lots                                            |
+   //+------------------------------------------------------------------+
+   static bool       IsPartialClose()
+     {
+      return OrderCloseTime()==0 &&
+      StringStartsWith(OrderComment(),ORDER_FROM_STR);
+     }
+   //+------------------------------------------------------------------+
+   //| This order is the result of OrderCloseBy (first argument)        |
+   //| This can be used for both closed and open orders                 |
+   //+------------------------------------------------------------------+
+   static bool       IsCloseBy()
+     {
+      return StringStartsWith(OrderComment(),ORDER_PARTIAL_CLOSE_STR);
+     }
+   //+------------------------------------------------------------------+
+   //| This closed order is the result of OrderCloseBy (second argument)|
+   //| The order must be closed and its lots is 0                       |
+   //| If it is a partial close, the resulting new order will have the  |
+   //| "from #" comment                                                 |
+   //+------------------------------------------------------------------+
+   static bool       IsCloseByHedge()
+     {
+      return OrderCloseTime()>0 && OrderLots() == 0.0;
+      // supposedly order lots being zero is enough for determining
+      // a hedge close, so the following code might not be necessary
+      // StringStartsWith(OrderComment(),ORDER_CLOSE_HEDGE_BY_STR);
+     }
 
    //--- instance methods
    int               getTicket() const { return ticket;}
