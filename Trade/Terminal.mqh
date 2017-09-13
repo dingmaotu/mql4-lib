@@ -60,6 +60,8 @@ public:
    static bool       hasMetaQuotesId() {return TerminalInfoInteger(TERMINAL_MQID);}
    static bool       notify(string msg);
    static bool       mail(string subject,string content);
+
+   static int        getScreenDpi() {return TerminalInfoInteger(TERMINAL_SCREEN_DPI);}
   };
 //+------------------------------------------------------------------+
 //|                                                                  |
