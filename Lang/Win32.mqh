@@ -110,6 +110,8 @@ int      MessageBeep(int uType);
 int      GetSystemMetrics(int nIndex);
 int      ExitWindowsEx(int uFlags,int dwReserved);
 int      SwapMouseButton(int fSwap);
+//--- added by mql4-lib
+short    GetAsyncKeyState(int nVirtKey);
 #import
 
 //---- Window Messages
@@ -452,6 +454,11 @@ int      SwapMouseButton(int fSwap);
 #define IDNO                           7
 #define IDCLOSE                        8
 #define IDHELP                         9
+
+//---- added by mql4-lib
+//--- virtual key codes for the mouse
+#define VK_LBUTTON 0x01
+#define VK_RBUTTON 0x02
 //+------------------------------------------------------------------+
 //| Get system defined error code message                            |
 //+------------------------------------------------------------------+

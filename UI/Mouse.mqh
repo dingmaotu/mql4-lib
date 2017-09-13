@@ -20,15 +20,7 @@
 //+------------------------------------------------------------------+
 #property strict
 
-#include "../Lang/Native.mqh" // for SM_SWAPBUTTON and SM_MOUSEPRESENT
-
-#import "user32.dll"
-short GetAsyncKeyState(int nVirtKey);
-int GetSystemMetrics(int nIndex);
-#import
-
-#define VK_LBUTTON 0x01
-#define VK_RBUTTON 0x02
+#include "../Lang/Win32.mqh"
 //+------------------------------------------------------------------+
 //| Detecting Mouse input                                            |
 //+------------------------------------------------------------------+
