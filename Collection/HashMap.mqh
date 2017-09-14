@@ -252,9 +252,11 @@ int HashMap::lookup(Key key) const
    int freeslot=-1;
    uint perturb=(uint)hash;
 
+/*
 #ifdef _DEBUG
    int seekLength=0;
 #endif
+*/
    uint i=hash&mask;
 // assert m_used < m_htsize so that we can exit this loop
    for(;;)
@@ -271,13 +273,17 @@ int HashMap::lookup(Key key) const
       // no valid slot found, probe next entry
       i=((i<<2)+i+perturb+1)&mask;
       perturb>>=5;
+/*
 #ifdef _DEBUG
       seekLength++;
 #endif
+*/
      }
+/*
 #ifdef _DEBUG
    PrintFormat(">>>DEBUG[%s,%d,%s]: seek length: %d",__FILE__,__LINE__,__FUNCTION__,seekLength);
 #endif
+*/
    return freeslot==-1 ? (int)i : freeslot;
   }
 //+------------------------------------------------------------------+
@@ -482,9 +488,13 @@ private:
    int               m_index;
 public:
                      HashMapIterator(const HashMapEntries<Key,Value>&entries)
-   :m_index(0),m_entries(GetPointer(entries)) {}
+   :m_index(0),m_entries(GetPointer(entries))
+     {
+      // seek to first non removed entry
+      while(!end() && m_entries.isRemoved(m_index)) m_index++;
+     }
    bool              end() const {return m_index>=m_entries.size();}
-   void              next() {if(!end()) {do{m_index++;}while(!end() && m_entries.isRemoved(m_index));}}
+   void              next() {if(!end()) {do{m_index++;} while(!end() && m_entries.isRemoved(m_index));}}
    Key               key() const {return m_entries.getKey(m_index);}
    Value             value() const {return m_entries.getValue(m_index);}
   };
