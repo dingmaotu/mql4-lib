@@ -5,7 +5,7 @@
 #property link      "dingmaotu@hotmail.com"
 #property strict
 
-#include "../Lang/Native.mqh"
+#include "../Lang/Win32.mqh"
 //+------------------------------------------------------------------+
 //| Records the show status of a chart                               |
 //+------------------------------------------------------------------+
