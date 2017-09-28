@@ -134,6 +134,10 @@ public:
      }
 
    //--- instance methods
+   bool              isPartialClose() const {return closeTime==0 && StringStartsWith(comment,ORDER_FROM_STR);}
+   bool              isCloseBy() const {return StringStartsWith(comment,ORDER_PARTIAL_CLOSE_STR);}
+   bool              isCloseByHedge() const {return closeTime>0 && lots==0.0;}
+
    int               getTicket() const { return ticket;}
 
    string            getSymbol() const { return symbol;}
