@@ -13,6 +13,7 @@ MQL Foundation Library For Professional Developers
   * [3.6 Maps](#maps)
   * [3.7 File System and IO](#file-system-and-io)
   * [3.8 Serialization Formats](#serialization-formats)
+  * [3.9 Order Access](#order-access)
 * [4. Contribution Guide](#contribution-guide)
 * [5. Changes](#changes)
 
@@ -841,6 +842,58 @@ your computer's memory (or MetaTrader's stack) is the limit. But overall, the
 `ReplyReader` will be faster than my parsers. It is C and it keeps a stack with
 a static array. And it does not aim to be a general encode/decode library.
 
+### Order Access
+
+In most MQL4 programs, you access orders by `OrdersHistoryTotal`, `OrdersTotal`,
+and `OrderSelect`. The code is usually messier as you have to filter certain
+orders. The basic logic is like this:
+
+```MQL5
+int total = OrdersTotal();
+
+for(int i=0; i<total; i++)
+{
+  if(!OrderSelect(i,SELECT_BY_POS,MODE_TRADES)) break;
+  if(!MatchesWhateverPredicatesYouSet()) break;
+  DoSomethingYouWantWithTheOrder();
+}
+```
+
+The point is, order filtering code is usually reusable and you don't want to
+rewrite it every time you need to filter orders.
+
+So in the `Trade/Order` and `Trade/OrderPool` modules, I provide an OrderPool
+class that can be derived by you and a convenient iterator to encapsulate the
+above convention for accessing orders. Here is an example showing the basic
+usage:
+
+```MQL5
+#include <Mql/Trade/OrderPool.mqh>
+//+------------------------------------------------------------------+
+//| Only matches the profit orders in the history pool               |
+//+------------------------------------------------------------------+
+class ProfitHistoryPool: public HistoryPool
+  {
+public:
+   bool              matches() const {return Order::Profit()>0;}
+  };
+
+void OnStart()
+  {
+   ProfitHistoryPool profitPool;
+   // the foreachorder macro can iterate order pools for you
+   // and take care of order filtering
+   // both pointers and references are accepted
+   foreachorder(profitPool)
+     {
+      //--- here you can directly use Order* function like this:
+      //--- OrderPrint();
+      //--- or create an Order class
+      Order o;
+      Print(o.toString());
+     }
+  }
+```
 
 ## Contribution Guide
 
@@ -882,14 +935,20 @@ from all levels of developers.
 
 ## Changes
 
+* 2017-09-28: Refined `OrderPool` code. Implemented order tracking module
+  `Trade/OrderTracker`
+
 * 2017-08-15: Implemented Price Break Chart. Renamed ChartFile to HistoryFile
   and made HistoryFile part of the File System API. Started the process toward a
   unified library for MT4 and MT5 (top level include directory name is `Mql`
   now).
+
 * 2017-07-14: Added 2 RESP protocol parsers: one for message oriented buffers,
   one for stream buffers; they provide more specific error reporting than
   hiredis parser.
+
 * 2017-07-10: Event handling in `EventApp`; added `HashSet`; reimplemented
   `HashMap`.
+
 * Before 2017-07-10: A lot, and I will not list them. I decided to add a change
   log for future users to see what is going on at first sight.

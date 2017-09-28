@@ -26,7 +26,8 @@
 //| and OrderSelect functions                                        |
 //| The OrderPool is an unordered collection of Orders, so you can   |
 //| not random access it. It is recommended that you use the class   |
-//| OrderPoolIter to iterate through an order pool.                  |
+//| OrderPoolIter or the macro foreachorder to iterate through an    |
+//| order pool.                                                      |
 //+------------------------------------------------------------------+
 class OrderPool: public OrderMatcher
   {
@@ -56,7 +57,7 @@ public:
    bool       matches() const {return true;}
   };
 //+------------------------------------------------------------------+
-//|                                                                  |
+//| For internal use: iterate through an OrderPool                   |
 //+------------------------------------------------------------------+
 class OrderPoolIter
   {
