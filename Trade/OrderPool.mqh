@@ -42,9 +42,9 @@ public:
 class HistoryPool: public OrderPool
   {
 public:
-   int        total() const {return OrdersHistoryTotal();}
-   bool       select(int i) const {return OrderSelect(i,SELECT_BY_POS,MODE_HISTORY);}
-   bool       matches() const {return true;}
+   int               total() const final {return OrdersHistoryTotal();}
+   bool              select(int i) const final {return OrderSelect(i,SELECT_BY_POS,MODE_HISTORY);}
+   virtual bool      matches() const {return true;}
   };
 //+------------------------------------------------------------------+
 //| Currently active orders                                          |
@@ -52,19 +52,20 @@ public:
 class TradingPool: public OrderPool
   {
 public:
-   int        total() const {return OrdersTotal();}
-   bool       select(int i) const {return OrderSelect(i,SELECT_BY_POS,MODE_TRADES);}
-   bool       matches() const {return true;}
+   int               total() const final {return OrdersTotal();}
+   bool              select(int i) const final {return OrderSelect(i,SELECT_BY_POS,MODE_TRADES);}
+   virtual bool      matches() const {return true;}
   };
 //+------------------------------------------------------------------+
 //| For internal use: iterate through an OrderPool                   |
 //+------------------------------------------------------------------+
-class OrderPoolIter
+class OrderPoolIter final
   {
 private:
    const OrderPool *m_pool;
    int               m_total;
    int               m_i;
+protected:
    void              searchNext() {while(m_i<m_total && !(m_pool.select(m_i) && m_pool.matches())) m_i++;}
 public:
                      OrderPoolIter(const OrderPool *pool):m_pool(pool),m_total(m_pool.total()),m_i(0) {next();}
