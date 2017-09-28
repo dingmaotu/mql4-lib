@@ -192,7 +192,7 @@ bool OrderManager::modify(int ticket,int stoploss,int takeprofit)
    bool modifyTakeprofit=takeprofit>0;
    if(!(modifyStoploss || modifyTakeprofit)) return false;
 
-   bool success=OrderPool::selectByTicket(ticket);
+   bool success=Order::Select(ticket);
 
    if(success)
      {
@@ -253,7 +253,7 @@ bool OrderManager::closeCurrent(void)
 //+------------------------------------------------------------------+
 bool OrderManager::close(int ticket)
   {
-   if(!OrderPool::selectByTicket(ticket)) {return false;}
+   if(!Order::Select(ticket)) {return false;}
    return closeCurrent();
   }
 //+------------------------------------------------------------------+

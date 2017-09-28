@@ -21,54 +21,56 @@
 #property strict
 
 #include "Order.mqh"
-#include "../Collection/Vector.mqh"
 //+------------------------------------------------------------------+
 //| This module wraps OrdersHistoryTotal, OrdersTotal,               |
 //| and OrderSelect functions                                        |
+//| The OrderPool is an unordered collection of Orders, so you can   |
+//| not random access it. It is recommended that you use the class   |
+//| OrderPoolIter to iterate through an order pool.                  |
 //+------------------------------------------------------------------+
-class OrderPool
+class OrderPool: public OrderMatcher
   {
 public:
-   static bool       selectByTicket(int ticket) {return OrderSelect(ticket,SELECT_BY_TICKET);}
-
    virtual int       total() const=0;
    virtual bool      select(int i) const=0;
-
-   int               filter(OrderMatcher &matcher,Vector<int>&group) const;
+   virtual bool      matches() const=0;
   };
 //+------------------------------------------------------------------+
-//| Put matched order tickets to group                               |
-//+------------------------------------------------------------------+
-int OrderPool::filter(OrderMatcher &matcher,Vector<int>&group) const
-  {
-   int t=total();
-   int matched=0;
-   for(int i=0; i<t; i++)
-     {
-      if(select(i) && matcher.matches())
-        {
-         group.add(Order::Ticket());
-         matched++;
-        }
-     }
-   return matched;
-  }
-//+------------------------------------------------------------------+
-//|                                                                  |
+//| The pool of orders from the Terminal order history tab           |
 //+------------------------------------------------------------------+
 class HistoryPool: public OrderPool
   {
 public:
    int        total() const {return OrdersHistoryTotal();}
    bool       select(int i) const {return OrderSelect(i,SELECT_BY_POS,MODE_HISTORY);}
+   bool       matches() const {return true;}
   };
 //+------------------------------------------------------------------+
-//|                                                                  |
+//| Currently active orders                                          |
 //+------------------------------------------------------------------+
 class TradingPool: public OrderPool
   {
 public:
    int        total() const {return OrdersTotal();}
    bool       select(int i) const {return OrderSelect(i,SELECT_BY_POS,MODE_TRADES);}
+   bool       matches() const {return true;}
   };
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+class OrderPoolIter
+  {
+private:
+   const OrderPool *m_pool;
+   int               m_total;
+   int               m_i;
+   void              searchNext() {while(m_i<m_total && !(m_pool.select(m_i) && m_pool.matches())) m_i++;}
+public:
+                     OrderPoolIter(const OrderPool *pool):m_pool(pool),m_total(m_pool.total()),m_i(0) {next();}
+                     OrderPoolIter(const OrderPool &pool):m_pool(GetPointer(pool)),m_total(m_pool.total()),m_i(0) {searchNext();}
+
+   bool              end() const {return m_i>=m_total;}
+   void              next() { m_i++; searchNext(); }
+  };
+#define foreachorder(OrderPoolVar) for(OrderPoolIter __it__(OrderPoolVar); !__it__.end(); __it__.next())
 //+------------------------------------------------------------------+

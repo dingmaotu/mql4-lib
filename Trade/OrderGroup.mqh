@@ -62,7 +62,7 @@ double OrderGroup::groupDoubleProperty(OrderDoubleProperty func)
    int s=size();
    for(int i=0; i<s; i++)
      {
-      OrderPool::selectByTicket(get(i));
+      Order::Select(get(i));
       total+=func();
      }
    return total;
@@ -78,7 +78,7 @@ double OrderGroup::groupAvg(void)
    if(s==0) return 0.0;
    for(int i=0; i<s; i++)
      {
-      OrderPool::selectByTicket(get(i));
+      Order::Select(get(i));
       lotSum+=OrderLots();
       lotPriceSum+=OrderLots()*OrderOpenPrice();
      }
@@ -120,7 +120,7 @@ void OrderGroup::clearClosed(void)
    int s=size();
    for(int i=0; i<s; i++)
      {
-      OrderPool::selectByTicket(get(i));
+      Order::Select(get(i));
       if(Order::CloseTime()!=0)
         {
          set(i,NULL);
