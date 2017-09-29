@@ -853,8 +853,8 @@ int total = OrdersTotal();
 
 for(int i=0; i<total; i++)
 {
-  if(!OrderSelect(i,SELECT_BY_POS,MODE_TRADES)) break;
-  if(!MatchesWhateverPredicatesYouSet()) break;
+  if(!OrderSelect(i,SELECT_BY_POS,MODE_TRADES)) continue;
+  if(!MatchesWhateverPredicatesYouSet()) continue;
   DoSomethingYouWantWithTheOrder();
 }
 ```
