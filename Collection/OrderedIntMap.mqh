@@ -5,7 +5,7 @@
 #property link      "dingmaotu@hotmail.com"
 #property strict
 
-#include "Algorithm.mqh"
+#include "../Lang/Array.mqh"
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
