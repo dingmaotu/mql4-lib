@@ -48,6 +48,7 @@ public:
 RenkoChart::RenkoChart(string symbol,int period,int barSize,bool std)
    :Renko(symbol,barSize,std),m_file(symbol,period)
   {
+   m_file.open();
    if(m_file.getNumberOfRecords()==0)
      {
       m_file.writeHeader();
