@@ -64,10 +64,21 @@ public:
 
    void              track();
 
+   int               getOrders(Vector<Order*>&orders)
+     {
+      foreachm(int,ticket,TrackedOrder*,order,m_orders)
+        {
+         orders.add(order);
+        }
+      return orders.size();
+     }
+
+   virtual void      onStart() {}
    virtual void      onChange(const Order *oldOrder,const Order *newOrder,bool stopLossChanges,bool takeProfitChanges) {}
    virtual void      onNew(const Order *order) {}
    virtual void      onClose(const Order *order) {}
    virtual void      onPartialClose(const Order *oldOrder,const Order *newOrder) {}
+   virtual void      onEnd() {}
   };
 //+------------------------------------------------------------------+
 //| Sender initialization:                                           |
@@ -81,7 +92,6 @@ OrderTracker::OrderTracker(TradingPool *pool)
      {
       TrackedOrder *o=new TrackedOrder();
       m_orders.set(o.getTicket(),o);
-      onNew(o);
      }
   }
 //+------------------------------------------------------------------+
@@ -89,6 +99,8 @@ OrderTracker::OrderTracker(TradingPool *pool)
 //+------------------------------------------------------------------+
 void OrderTracker::track(void)
   {
+   onStart();
+
    foreachm(int,ticket,TrackedOrder*,order,m_orders) {order.setTracked(false);}
 
    foreachorder(m_pool)
@@ -150,5 +162,7 @@ void OrderTracker::track(void)
      }
 
    m_removeList.clear();
+
+   onEnd();
   }
 //+------------------------------------------------------------------+
