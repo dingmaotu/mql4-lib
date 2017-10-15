@@ -25,6 +25,9 @@ protected:
 public:
                     ~FreeFormElement() {deleteSelf();}
    //--- Position and Shape
+   bool              setCorner(ENUM_BASE_CORNER value) {return setInteger(OBJPROP_CORNER,value);}
+   ENUM_BASE_CORNER  getCorner() const {return(ENUM_BASE_CORNER)getInteger(OBJPROP_CORNER);}
+
    virtual int       getX() const {return(int)getInteger(OBJPROP_XDISTANCE);}
    virtual bool      setX(int value) {return setInteger(OBJPROP_XDISTANCE,value);}
    virtual int       getY() const {return(int)getInteger(OBJPROP_YDISTANCE);}
@@ -81,19 +84,32 @@ public:
       setText(text);
      }
    bool              setWidth(int value) {return false;}  // read only, thus do nothing
-   bool              setHeight(int value) {return false;}  // read only, thus do nothing   
+   bool              setHeight(int value) {return false;}  // read only, thus do nothing
+
+   //--- only to OBJ_LABEL: number of degrees to rotate
+   bool              setAngle(double value) {return setDouble(OBJPROP_ANGLE,value);}
+   double            getAngle() const {return getDouble(OBJPROP_ANGLE);}
+
+   bool              setAnchor(ENUM_ANCHOR_POINT value) {return setInteger(OBJPROP_ANCHOR,value);}
+   ENUM_ANCHOR_POINT getAnchor() const {return(ENUM_ANCHOR_POINT)getInteger(OBJPROP_ANCHOR);}
   };
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
 class Bitmap: public FreeFormElement
   {
+public:
                      Bitmap(Panel *parent,string name)
    :FreeFormElement(parent,name,OBJ_BITMAP_LABEL)
      {}
 
-   bool              setWidth(int value) {return false;}  // read only, thus do nothing
-   bool              setHeight(int value) {return false;}  // read only, thus do nothing
+   bool              setAnchor(ENUM_ANCHOR_POINT value) {return setInteger(OBJPROP_ANCHOR,value);}
+   ENUM_ANCHOR_POINT getAnchor() const {return(ENUM_ANCHOR_POINT)getInteger(OBJPROP_ANCHOR);}
+
+   bool              setXOffset(int value) {return setInteger(OBJPROP_XOFFSET,value);}
+   bool              setYOffset(int value) {return setInteger(OBJPROP_YOFFSET,value);}
+   bool              setImageOn(string path) {return setString(OBJPROP_BMPFILE,0,path);}
+   bool              setImageOff(string path) {return setString(OBJPROP_BMPFILE,1,path);}
   };
 //+------------------------------------------------------------------+
 //|                                                                  |
