@@ -66,11 +66,10 @@ private:
 
    double            profit;
    double            swap;
-
 public:
                      Order();
    string            toString() const;
-   int               hash() const;
+   int               hash() const {return ticket;}
 
    static bool       Select(int ticket) {return OrderSelect(ticket,SELECT_BY_TICKET);}
 
@@ -161,7 +160,51 @@ public:
 
    double            getProfit() const { return profit;}
    double            getSwap() const { return swap;}
+
+   //--- Order semantics
+private:
+   static ENUM_SYMBOL_INFO_DOUBLE ST[2];
+   static ENUM_SYMBOL_INFO_DOUBLE ET[2];
+   static int        DT[2];
+   int               st,et,d;
+protected:
+   static int        D() {return DT[OrderType()&1];}
+public:
+   // the price to start an order
+   double            s() const {return SymbolInfoDouble(symbol,st);}
+   static double     S() {return SymbolInfoDouble(OrderSymbol(),ST[OrderType()&1]);}
+
+   // the price to end an order
+   double            e() const {return SymbolInfoDouble(symbol,et);}
+   static double     E() {return SymbolInfoDouble(OrderSymbol(),ET[OrderType()&1]);}
+
+   // the profit (in absolute price difference) from price `s` to price `e`
+   double            p(double s,double e) const {return d*(e-s);}
+   static double     P(double s,double e) {return D()*(e-s);}
+
+   // absolute price difference of point value `p`
+   double            ap(int p) const {return p*SymbolInfoDouble(symbol,SYMBOL_POINT);}
+   static double     AP(int p) {return p*SymbolInfoDouble(OrderSymbol(),SYMBOL_POINT);}
+
+   // the target price if we start from `p` and we want to profit `pr`
+   double            pp(double p,double pr) const {return p+d*pr;}
+   static double     PP(double p,double pr) {return p+D()*pr;}
+
+   // same but use point value as the profit
+   double            pp(double p,int pr) const {return p+d*ap(pr);}
+   static double     PP(double p,int pr) {return p+D()*AP(pr);}
+
+   // format the price with respect to current order symbol digits
+   string            f(double p) const {return DoubleToString(p,(int)SymbolInfoInteger(symbol,SYMBOL_DIGITS));}
+   static string     F(double p) {return DoubleToString(p,(int)SymbolInfoInteger(OrderSymbol(),SYMBOL_DIGITS));}
+
+   // normalize the price with respect to current order symbol digits
+   double            n(double p) const {return NormalizeDouble(p,(int)SymbolInfoInteger(symbol,SYMBOL_DIGITS));}
+   static double     N(double p) {return NormalizeDouble(p,(int)SymbolInfoInteger(OrderSymbol(),SYMBOL_DIGITS));}
   };
+static ENUM_SYMBOL_INFO_DOUBLE Order::ST[2]={SYMBOL_ASK,SYMBOL_BID};
+static ENUM_SYMBOL_INFO_DOUBLE Order::ET[2]={SYMBOL_BID,SYMBOL_ASK};
+static int Order::DT[2]={1,-1};
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
@@ -190,46 +233,27 @@ Order::Order(void)
 
    profit=Order::Profit();
    swap=Order::Swap();
+
+//--- order semantics
+
+   st=Order::ST[type&1];
+   et=Order::ET[type&1];
+   d=D();
   }
 //+------------------------------------------------------------------+
 //| mimic OrderPrint but return a string instead                     |
 //+------------------------------------------------------------------+
 string Order::toString(void) const
   {
-   int digits=(int)SymbolInfoInteger(symbol,SYMBOL_DIGITS);
-   string res= StringFormat("#%d %s %s %.2f %s "
-                            "%s %s %s",
-                            ticket,TimeToString(openTime,TIME_DATE|TIME_SECONDS),OrderTypeString[type],lots,symbol,
-                            DoubleToString(openPrice,digits),DoubleToString(stopLoss,digits),DoubleToString(takeProfit,digits));
-
-   if(closeTime!=0)
-     {
-      res+=" "+TimeToString(closeTime);
-     }
-
-   res+=StringFormat(" %s %.2f %.2f %.2f",
-                     DoubleToString(closePrice,digits),
-                     commission,swap,profit);
-
-   if(comment!="")
-     {
-      res+=" "+comment;
-     }
-
+   string res=StringFormat("#%d %s %s %.2f %s "
+                           "%s %s %s",
+                           ticket,TimeToString(openTime,TIME_DATE|TIME_SECONDS),OrderTypeString[type],lots,symbol,
+                           f(openPrice),f(stopLoss),f(takeProfit));
+   if(closeTime!=0) res+=" "+TimeToString(closeTime);
+   res+=StringFormat(" %s %.2f %.2f %.2f",f(closePrice),commission,swap,profit);
+   if(comment!="") res+=" "+comment;
    res+=" "+IntegerToString(magicNumber);
-
-   if(expiration!=0)
-     {
-      res+=" expiration "+TimeToString(expiration);
-     }
-
+   if(expiration!=0) res+=" expiration "+TimeToString(expiration);
    return res;
-  }
-//+------------------------------------------------------------------+
-//|                                                                  |
-//+------------------------------------------------------------------+
-int Order::hash(void) const
-  {
-   return ticket;
   }
 //+------------------------------------------------------------------+
