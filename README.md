@@ -1006,9 +1006,9 @@ because they have enough differences. And it is also hard to tell what logic you
 are using because they are buried in the calculation detail. It is error prone
 to write like this, as you may forget to change some minus or plus signs when
 copy the almost same code. Furthur more, we frequently use price formatting,
-point value to absolute price difference conversions,and price normalization,
-etc. What if we can write the logic clearly only once, and it can automatically
-deal with both BUY and SELL orders?
+point value to absolute price difference conversions, and price normalization,
+etc. What if we can write the logic clearly only once and automatically deal
+with both BUY and SELL orders?
 
 The solution is *symetric order semantics*: it is a set of methods (with both
 instance and static versions) in the `Order` class. The method names are pretty
@@ -1027,8 +1027,8 @@ value based on the order symbol.
     
 2. Current price level
 
-It is very common to get the correspond ask/bid value based on order type. For
-buy order, open with ask, close with bid; and vice versa for sell order. I
+It is very common to get the corresponding ask/bid value based on order type.
+For buy order, open with ask, close with bid; and vice versa for sell order. I
 provide 2 basic operations to get this value.
 
     * s() get the correct price to *start* an order
@@ -1049,7 +1049,7 @@ value. It is just for convenience and not essential for the semantics.
 
 With these basic opperations, we can express most semantics about an order
 symetrically. For example, how do we express *breakeven*? It is
-`order.p(order.getOpenPrice(),order.getStoploss())>=0`, this evaluates to
+`order.p(order.getOpenPrice(),order.getStoploss())>=0`. This evaluates to
 `order.getOpenPrice() <= order.getStopLoss()` for BUY order, and
 `order.getOpenPrice() >= order.getStoploss()` for SELL order. Literally, we can
 understand this by "if we move from open price to stop loss price, we still
@@ -1072,7 +1072,7 @@ void TrailToBreakeven(const Order &o,OrderAttributes &attr)
       //--- if not breakeven
       if(o.p(o.getOpenPrice(),o.getStopLoss())<0)
         {
-         //--- how many do we already profit?
+         //--- how much do we already profit?
          double pp=o.p(o.getOpenPrice(),o.e());
          //--- if we profit more than those points set in input parameter
          if(pp>o.ap(InpBreakevenPoints))
