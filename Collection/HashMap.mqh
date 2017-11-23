@@ -184,9 +184,13 @@ public:
 
    Value             operator[](Key key) const
      {
+      return get(key,NULL);
+     }
+   Value             get(Key key,Value def) const
+     {
       int ix=m_slots[lookup(key)];
       if(ix>=0 && !m_entries.isRemoved(ix)) return m_entries.getValue(ix);
-      else return NULL;
+      else return def;
      }
 
    void              set(Key key,Value value);

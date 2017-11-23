@@ -47,6 +47,7 @@ interface Map
    bool              values(Collection<Value>&col) const;
 
    Value             operator[](Key key) const;
+   Value             get(Key key,Value def) const;
 
    void              set(Key key,Value value);
    bool              setIfExist(Key key,Value value);
