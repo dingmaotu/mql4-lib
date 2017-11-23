@@ -46,7 +46,7 @@ public:
       return result;
      }
 
-   int               encode(char &a[],int index) const
+   int               encode(uchar &a[],int index) const
      {
       char buf[20];
       int length=ArraySize(m_array);
@@ -87,7 +87,7 @@ public:
    RespType          getType() const {return RespTypeNil;}
    string            toString() const {return "Nil";}
 
-   int               encode(char &a[],int index) const
+   int               encode(uchar &a[],int index) const
      {
       static const int size=ArraySize(NilArray);
       if(ArraySize(a)<index+size)

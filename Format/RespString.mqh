@@ -23,7 +23,7 @@
 //+------------------------------------------------------------------+
 //| Common simple string encoding for Error and String               |
 //+------------------------------------------------------------------+
-int EncodeRespString(const string &s,char prefix,char &a[],int index)
+int EncodeRespString(const string &s,char prefix,uchar &a[],int index)
   {
    char u8[];
    StringToUtf8(s,u8,false);
@@ -53,7 +53,7 @@ public:
    RespType          getType() const {return RespTypeString;}
    string            toString() const {return StringFormat("\"%s\"",m_value);}
 
-   int               encode(char &a[],int index) const
+   int               encode(uchar &a[],int index) const
      {
       return EncodeRespString(m_value,'+',a,index);
      }
@@ -124,7 +124,7 @@ public:
    RespType          getType() const {return RespTypeError;}
    string            toString() const {return StringFormat("{Error: %s}",m_value);}
 
-   int               encode(char &a[],int index) const
+   int               encode(uchar &a[],int index) const
      {
       return EncodeRespString(m_value,'-',a,index);
      }

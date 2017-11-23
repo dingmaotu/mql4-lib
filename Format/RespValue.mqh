@@ -115,6 +115,6 @@ public:
    //--- return a string representation of this value
    virtual string    toString() const=0;
    //--- encode this value to array `a`, start from index `i`
-   virtual int       encode(char &a[],int i) const=0;
+   virtual int       encode(uchar &a[],int i) const=0;
   };
 //+------------------------------------------------------------------+

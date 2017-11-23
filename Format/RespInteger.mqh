@@ -31,7 +31,7 @@ public:
    RespType          getType() const {return RespTypeInteger;}
    string            toString() const {return IntegerToString(m_value);}
 
-   int               encode(char &a[],int index) const
+   int               encode(uchar &a[],int index) const
      {
       char buf[20];
       int length=IntegerToCharArray(m_value,buf);
