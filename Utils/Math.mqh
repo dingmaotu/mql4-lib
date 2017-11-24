@@ -20,6 +20,7 @@
 //+------------------------------------------------------------------+
 #property strict
 #include "../Lang/Mql.mqh"
+#include "../Lang/Number.mqh"
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
@@ -40,6 +41,24 @@ public:
    static T abs(T value)
      {
       return value < 0 ? -value : value;
+     }
+   template<typename T>
+   static int sign(T value)
+     {
+      return value < 0 ? -1 : 1;
+     }
+
+   //--- round value up to a multiple of min
+   static double roundUpToMultiple(double value,double min)
+     {
+      double r=MathMod(value,min);
+      return Mql::isEqual(r,0.0) ? value : (value-r+min);
+     }
+   //--- round value down to a multiple of min
+   static double roundDownToMultiple(double value,double min)
+     {
+      double r=MathMod(value,min);
+      return Mql::isEqual(r,0.0) ? value : (value-r);
      }
 
    static double linearInterpolate(double x1,double x2,double y1,double y2,double x)

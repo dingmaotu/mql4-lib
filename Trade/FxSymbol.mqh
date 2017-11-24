@@ -21,19 +21,12 @@
 #property strict
 
 #include "../Lang/Mql.mqh"
+#include "../Utils/Math.mqh"
 #include "../Collection/Vector.mqh"
 #include "../Collection/HashMap.mqh"
 #include "Account.mqh"
 //+------------------------------------------------------------------+
-//|                                                                  |
-//+------------------------------------------------------------------+
-double NormalizeLots(double lots,double minLot)
-  {
-   double r=MathMod(lots,minLot);
-   return Mql::isEqual(r,0.0) ? lots : (lots -r + minLot);
-  }
-//+------------------------------------------------------------------+
-//|                                                                  |
+//| FxSymbol wraps most functions for getting symbol info            |
 //+------------------------------------------------------------------+
 class FxSymbol
   {
@@ -110,7 +103,7 @@ public:
    static double     getMaxLot(string symbol) {return SymbolInfoDouble(symbol,SYMBOL_VOLUME_MAX);}
 
    //-- utility methods
-   static double     normalizeLots(string symbol,double lots) {return NormalizeLots(lots,getMinLot(symbol));}
+   static double     normalizeLots(string symbol,double lots) {return Math::roundUpToMultiple(lots,getMinLot(symbol));}
    static double     normalizePrice(string symbol,double price) {return NormalizeDouble(price,getDigits(symbol));}
 
    static double     addPoints(string symbol,double price,int points) {return NormalizeDouble(price+points*getPoint(symbol),getDigits(symbol));}
