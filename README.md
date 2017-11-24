@@ -1168,6 +1168,8 @@ from all levels of developers.
 
 ## Changes
 
+* 2017-11-24: Improve and stablize OrderManager using *Symetric Order Semantics*
+
 * 2017-11-23: Designed and Implemented *Symetric Order Semantics*
 
 * 2017-09-28: Refined `OrderPool` code. Implemented order tracking module
