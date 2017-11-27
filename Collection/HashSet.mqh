@@ -253,7 +253,7 @@ int HashSet::lookup(Key key) const
 //| If key actually removed returns true                             |
 //+------------------------------------------------------------------+
 template<typename Key>
-bool HashSet::remove(Key key)
+bool HashSet::remove(const Key key)
   {
    int i=lookup(key);
    int ix=m_slots[i];
