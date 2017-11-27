@@ -54,11 +54,17 @@ public:
    bool              isNewBar() const {return m_newBars>0;}
    long              getNewBars() const {return m_newBars;}
 
+   datetime          getTime(int shift) const {return iTime(m_symbol,m_period,shift);}
    double            getHigh(int shift) const {return iHigh(m_symbol,m_period,shift);}
    double            getLow(int shift) const {return iLow(m_symbol,m_period,shift);}
    double            getOpen(int shift) const {return iOpen(m_symbol,m_period,shift);}
    double            getClose(int shift) const {return iClose(m_symbol,m_period,shift);}
    long              getVolume(int shift) const {return iVolume(m_symbol,m_period,shift);}
+
+   int               getLowestIndex(int mode,int count) const {return iLowest(m_symbol,m_period,mode,count);}
+   double            getLowestPrice(int count) const {return iLow(m_symbol,m_period,getLowestIndex(MODE_LOW,count));}
+   int               getHighestIndex(int mode,int count) const {return iHighest(m_symbol,m_period,mode,count);}
+   double            getHighestPrice(int count) const {return iHigh(m_symbol,m_period,getHighestIndex(MODE_HIGH,count));}
 
 #define COPY_POS_COUNT(WHAT,TYPE) \
    int               copy##WHAT(int pos,int count,TYPE &array[]) const {return Copy##WHAT(m_symbol,m_period,pos,count,array);}
