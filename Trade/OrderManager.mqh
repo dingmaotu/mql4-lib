@@ -151,7 +151,7 @@ int OrderManager::send(int cmd,double lots,double price,double stoploss,double t
    if(ticket<0)
      {
       int err=Mql::getLastError();
-      Alert(">>> Error OrderSend[%d]: %s",err,Mql::getErrorMessage(err));
+      Alert(StringFormat(">>> Error OrderSend[%d]: %s",err,Mql::getErrorMessage(err)));
      }
 
    return ticket;

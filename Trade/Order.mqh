@@ -212,10 +212,12 @@ public:
    // operations that take order open price as the first parameter
    static double     PPO(double pr) {return PP(OrderType(),OrderOpenPrice(),pr);}
    static double     PPO(int pr) {return PP(OrderSymbol(),OrderType(),OrderOpenPrice(),pr);}
+   static bool       IsBreakeven() { return(OrderStopLoss()!=0 && P(OrderOpenPrice(),OrderStopLoss())>=0);}
 
    //--- instance methods
    double            ppo(double pr) const {return pp(openPrice,pr);}
    double            ppo(int pr) const {return pp(openPrice,pr);}
+   bool              isBreakeven() {return(stopLoss!=0 && p(openPrice,stopLoss)>=0);}
 
    bool              isPartialClose() const {return closeTime==0 && StringStartsWith(comment,ORDER_FROM_STR);}
    bool              isCloseBy() const {return StringStartsWith(comment,ORDER_PARTIAL_CLOSE_STR);}
