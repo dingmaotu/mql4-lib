@@ -23,7 +23,6 @@
 #include "../Collection/Vector.mqh"
 #include "Order.mqh"
 #include "FxSymbol.mqh"
-#include "OrderPool.mqh"
 
 typedef double(*OrderDoubleProperty)(void);
 typedef void(*OrderOperation)(int);
