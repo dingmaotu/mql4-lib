@@ -121,7 +121,7 @@ private:\
 //| Print debug messages: only generate code for debugging runs      |
 //+------------------------------------------------------------------+
 #ifdef _DEBUG
-#define Debug(msg) Print(">>> DEBUG: In ",__FUNCTION__,"(",__FILE__,":",__LINE__,") [", msg, "]")
+#define Debug(msg) PrintFormat(">>> DEBUG[%s,%d,%s]: %s",__FILE__,__LINE__,__FUNCTION__,msg);
 #else
 #define Debug(msg)
 #endif
