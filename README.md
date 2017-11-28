@@ -591,7 +591,7 @@ has their hash functions implemented in `Lang/Hash` module.
 The HashMap interface is very simple. Below is a simple example counting words
 of the famous opera `Hamlet`:
 
-```c++
+```MQL5
 #include <Mql/Lang/Script.mqh>
 #include <Mql/Collection/HashMap.mqh>
 #include <Mql/Utils/File.mqh>
@@ -634,6 +634,31 @@ public:
      }
   };
 DECLARE_SCRIPT(CountHamletWords,false)
+```
+
+After a recent update (2017-11-28), the Map iterator is no longer const and
+supports two addtional operations: remove and replace (setValue). So in the
+previous version, if you want to remove some elements from a map, you had to
+store the keys in a separate place, and remove these keys later. It is neither
+elegant nor efficient. The following example shows the difference:
+
+```MQL5
+HashMap<int,int> m;
+//--- before the update
+Vector<int> v;
+foreachm(int,key,int,value,m)
+{
+  if(value%2==0) v.push(key);
+}
+foreachv(int,key,v)
+{
+  m.remove(key);
+}
+//--- after the update
+foreachm(int,key,int,value,m)
+{
+  if(value%2==0) it.remove();
+}
 ```
 
 ### File System and IO 
@@ -1167,6 +1192,11 @@ from all levels of developers.
    much as I can.
 
 ## Changes
+
+* 2017-11-28: Major refactoring of hash table based containers. The HashMap and
+  HashSet now shares the same code base for hashing and entry managements. The
+  compacting algorithm is improved. Map iterators support 2 addional operations
+  in a loop: remove and replace (setValue).
 
 * 2017-11-24: Improve and stablize OrderManager using *Symetric Order Semantics*
 
