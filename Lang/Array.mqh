@@ -52,6 +52,25 @@ void ArrayDelete(T &array[],int index)
    ArrayResize(array,size-1);
   }
 //+------------------------------------------------------------------+
+//| Remove all elements with value `value` and return number removed |
+//+------------------------------------------------------------------+
+template<typename T>
+int ArrayDeleteAll(T &array[],const T value)
+  {
+   int s=ArraySize(array);
+   int i=0;
+   for(int j=0; j<s; j++)
+     {
+      if(array[j]!=value)
+        {
+         if(i!=j) { array[i]=array[j]; }
+         i++;
+        }
+     }
+   if(i<s) ArrayResize(array,i);
+   return s-i;
+  }
+//+------------------------------------------------------------------+
 //| Find the index where array[index] == value                       |
 //+------------------------------------------------------------------+
 template<typename T>
@@ -68,43 +87,6 @@ int ArrayFind(const T &array[],const T value)
         }
      }
    return index;
-  }
-//+------------------------------------------------------------------+
-//|                                                                  |
-//+------------------------------------------------------------------+
-void ArrayCompact(double &array[])
-  {
-   int s=ArraySize(array);
-   int i=0;
-   for(; i<s; i++)
-     {
-      if(MathIsValidNumber(array[i])) continue;
-      int j=i+1;
-      while(j<s && !MathIsValidNumber(array[j])) {j++;}
-      if(j==s) break;
-      array[i] = array[j];
-      array[j] = Double::NaN;
-     }
-   ArrayResize(array,i);
-  }
-//+------------------------------------------------------------------+
-//| Remove all elements that are marked as `comapre` (default NULL)  |
-//+------------------------------------------------------------------+
-template<typename T>
-void ArrayCompact(T &array[],T compare=NULL)
-  {
-   int s=ArraySize(array);
-   int i=0;
-   for(; i<s; i++)
-     {
-      if(array[i]!=compare) continue;
-      int j=i+1;
-      while(j<s && array[j]==compare) {j++;}
-      if(j==s) break;
-      array[i] = array[j];
-      array[j] = compare;
-     }
-   ArrayResize(array,i);
   }
 //+------------------------------------------------------------------+
 //| Generic binary search                                            |
@@ -134,6 +116,21 @@ int BinarySearch(const T &array[],T value)
         }
      }
    return mid;
+  }
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+void ArrayCompact(double &array[])
+  {
+   ArrayDeleteAll(array,Double::NaN);
+  }
+//+------------------------------------------------------------------+
+//| Remove all elements that are marked as `comapre` (default NULL)  |
+//+------------------------------------------------------------------+
+template<typename T>
+void ArrayCompact(T &array[],T compare=NULL)
+  {
+   ArrayDeleteAll(array,compare);
   }
 //+------------------------------------------------------------------+
 //| Find the first matching element                                  |
@@ -190,6 +187,7 @@ public:
    void              set(const int index,T value) {m_array[index]=value;}
    void              insertAt(int index,T value) {ArrayInsert(m_array,index,value,m_extraBuffer);}
    void              removeAt(int index) {ArrayDelete(m_array,index);}
+   int               removeAll(T value) {return ArrayDeleteAll(m_array,value);}
 
    int               index(const T value) const;
 
