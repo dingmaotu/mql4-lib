@@ -20,88 +20,41 @@
 //+------------------------------------------------------------------+
 #property strict
 
-#include "EqualityComparer.mqh"
+#include "HashEntries.mqh"
+#include "HashSlots.mqh"
 #include "Collection.mqh"
 //+------------------------------------------------------------------+
 //| storage for actual entries                                       |
 //+------------------------------------------------------------------+
 template<typename Key>
-class HashSetEntries
+class HashSetEntries: public HashEntriesBase<Key>
   {
 private:
-   // `m_removed` and `m_keys` array are of same length
-   // to reuse existing storage units, a removed entry will
-   // keep its index in `slots`, but mark removed in `m_removed`
-   bool              m_removed[];
    Key               m_keys[];
-   int               m_realSize;
-   const int         m_buffer;
 public:
-                     HashSetEntries(int buffer=8):m_realSize(0),m_buffer(buffer)
+                     HashSetEntries(int buffer=8):HashEntriesBase<Key>(buffer)
      {
-      ArrayResize(m_removed,0,m_buffer);
-      ArrayResize(m_keys,0,m_buffer);
-     }
-   int               size() const {return ArraySize(m_keys);}
-   Key               get(int i) const {return m_keys[i];}
-   void              set(int i,Key key) {m_keys[i]=key;}
-   bool              isRemoved(int i) const {return m_removed[i];}
-
-   bool              isCompacted() const {return m_realSize==ArraySize(m_keys);}
-   bool              shouldCompact() const
-     {
-      int size=ArraySize(m_keys);
-      return size > 8 && m_realSize <= (size>>1);
-     }
-
-   void              clear()
-     {
-      m_realSize=0;
-      ArrayResize(m_removed,0,m_buffer);
       ArrayResize(m_keys,0,m_buffer);
      }
 
-   int               getRealSize() const {return m_realSize;}
+   Key               getKey(int i) const {return m_keys[i];}
+
+   //--- implmentation needed
+   void              onResize(int size,int buffer) { ArrayResize(m_keys,size,buffer); }
+   void              onCompactMove(int i,int j) { m_keys[i]=m_keys[j]; }
+   void              onRemove(int i) { m_keys[i]=NULL; }
 
    int               append(Key key)
      {
-      int ni=ArraySize(m_keys);
-      ArrayResize(m_keys,ni+1);
-      ArrayResize(m_removed,ni+1);
+      int ni=append();
       m_keys[ni]=key;
-      m_removed[ni]=false;
-      m_realSize++;
       return ni;
      }
-   void              remove(int i)
-     {
-      m_removed[i]=true;
-      m_keys[i]=NULL;
-      m_realSize--;
-     }
+
    void              unremove(int i,Key key)
      {
-      m_removed[i]=false;
+      unremove(i);
       m_keys[i]=key;
-      m_realSize++;
-     }
-   void              compact()
-     {
-      //--- assert ArraySize(array) == ArraySize(removed)
-      int s=ArraySize(m_keys);
-      int i=0,j=1;
-      for(; i<s; i++,j++)
-        {
-         if(!m_removed[i]) continue;
-         //--- seek next valid item
-         while(j<s && m_removed[j]) {j++;}
-         if(j==s) break;
-         m_keys[i]=m_keys[j];
-         m_removed[i]=false;
-         m_removed[j]=true;
-        }
-      ArrayResize(m_keys,i,m_buffer);
-      ArrayResize(m_removed,i,m_buffer);
      }
   };
 //+------------------------------------------------------------------+
@@ -111,34 +64,16 @@ template<typename Key>
 class HashSet: public Collection<Key>
   {
 private:
-   EqualityComparer<Key>*m_comparer;
-   bool              m_owned;
-   // `m_slots` store the indexes of `m_keys` array
-   //   1. -1 not used;
-   //   2. >=0 normal entries (need check `m_removed` if it is still in use).
-   int               m_slots[];
-
    HashSetEntries<Key>m_entries;
-
-   // this is number of slots (hash table size)
-   int               m_htsize;
-   // this is used (including removed, thus non -1) number of slots
-   int               m_htused;
-
-   void              initState();
-   int               lookup(Key key) const;
-   void              rehash();
-   void              upsize();
+   HashSlots<Key>m_slots;
+   bool              m_owned;
 public:
    //--- `owned` parameter determines if this collection owns its elements 
    //--- (i.e. release their resources in destructor or on removal)
    //--- by default the HashSet do not own its elements
    //--- if the hash elements are pointers and the real owner wants to
    //--- transfer the ownership to this collection, then she need to explicitly `new HashSet(NULL,true)`
-                     HashSet(EqualityComparer<Key>*comparer=NULL,bool owned=false):m_comparer((comparer==NULL)?(new GenericEqualityComparer<Key>()):comparer),m_owned(owned)
-     {
-      initState();
-     }
+                     HashSet(EqualityComparer<Key>*comparer=NULL,bool owned=false):m_slots((comparer==NULL)?(new GenericEqualityComparer<Key>()):comparer,GetPointer(m_entries)),m_owned(owned) {}
                     ~HashSet()
      {
       if(m_owned)
@@ -148,10 +83,9 @@ public:
            {
             // delete possble pointers
             if(!m_entries.isRemoved(i))
-               SafeDelete(m_entries.get(i));
+               SafeDelete(m_entries.getKey(i));
            }
         }
-      SafeDelete(m_comparer);
      }
 
    // Iterator interface
@@ -159,95 +93,27 @@ public:
 
    // Collection interface
    int               size() const {return m_entries.getRealSize();}
-   bool              contains(const Key key) const {int ix=m_slots[lookup(key)];return ix>=0 && !m_entries.isRemoved(ix);}
+   bool              contains(const Key key) const {return m_slots.contains(key);}
 
    bool              add(Key key);
    bool              remove(const Key key);
    void              clear();
   };
 //+------------------------------------------------------------------+
-//| restore internal state to initial                                |
+//| If the key does not exist and get added, return true             |
 //+------------------------------------------------------------------+
 template<typename Key>
-void HashSet::initState()
+bool HashSet::add(Key key)
   {
-   m_htsize=8;
-   m_htused=0;
-   ArrayResize(m_slots,m_htsize);
-   ArrayInitialize(m_slots,-1);
-  }
-//+------------------------------------------------------------------+
-//| relocate entries in slots                                        |
-//+------------------------------------------------------------------+
-template<typename Key>
-void HashSet::rehash()
-  {
-   ArrayInitialize(m_slots,-1);
-   for(int i=0; i<m_entries.size() && !IsStopped(); i++)
-     {
-      int si=lookup(m_entries.get(i));
-      m_slots[si]=i;
-     }
-  }
-//+------------------------------------------------------------------+
-//| if used slot is larger than 2/3 of the total slots, then upsize  |
-//| to keep performance high                                         |
-//+------------------------------------------------------------------+
-template<typename Key>
-void HashSet::upsize()
-  {
-   if(m_htused>((m_htsize<<1)/3))
-     {
-#ifdef _DEBUG
-      PrintFormat(">>>DEBUG[%s,%d,%s]: Trigger upsize for hash table size: %d",__FILE__,__LINE__,__FUNCTION__,m_htused);
-#endif
-      // since we need to relocate entries after slot resize, empty slot must be reclaimed
-      if(!m_entries.isCompacted()) m_entries.compact();
-      // double slots
-      m_htsize<<=1;
-      ArrayResize(m_slots,m_htsize);
-      rehash();
-     }
-  }
-//+------------------------------------------------------------------+
-//| Lookup the slot index for the key                                |
-//| Uses the Python dictobject probing algorithm                     |
-//+------------------------------------------------------------------+
-template<typename Key>
-int HashSet::lookup(Key key) const
-  {
-   int hash=m_comparer.hash(key);
-   int mask=ArraySize(m_slots)-1;
-   int freeslot=-1;
-   uint perturb=(uint)hash;
-
-#ifdef _DEBUG
-   int seekLength=0;
-#endif
-   uint i=hash&mask;
-// assert m_used < m_htsize so that we can exit this loop
-   for(;;)
-     {
-      int ix=m_slots[i];
-      // slot is not used: lucky!
-      if(ix==-1) break;
-      // slot is used but deleted
-      else if(m_entries.isRemoved(ix)) freeslot=(int)i;
-      else if(m_comparer.equals(m_entries.get(ix),key))
-        {
-         freeslot=-1; break;
-        }
-      // no valid slot found, probe next entry
-      i=((i<<2)+i+perturb+1)&mask;
-      perturb>>=5;
-#ifdef _DEBUG
-      seekLength++;
-#endif
-     }
-#ifdef _DEBUG
-   PrintFormat(">>>DEBUG[%s,%d,%s]: seek length: %d",__FILE__,__LINE__,__FUNCTION__,seekLength);
-#endif
-   return freeslot==-1 ? (int)i : freeslot;
+// we need to make sure that used slots is always smaller than
+// certain percentage of total slots (m_htused <= (m_htsize*2)/3)
+   m_slots.upsize();
+   int i=m_slots.lookup(key);
+   int ix=m_slots[i];
+   if(ix==-1) m_slots.addSlot(i,m_entries.append(key));
+   else if(m_entries.isRemoved(ix)) m_entries.unremove(ix,key);
+   else return false;
+   return true;
   }
 //+------------------------------------------------------------------+
 //| If key actually removed returns true                             |
@@ -255,25 +121,22 @@ int HashSet::lookup(Key key) const
 template<typename Key>
 bool HashSet::remove(const Key key)
   {
-   int i=lookup(key);
-   int ix=m_slots[i];
+   int ix=m_slots.lookupIndex(key);
    if(ix==-1) return false;
 // empty slot
    if(m_entries.isRemoved(ix)) return false;
    if(m_owned)
      {
       // delete possble pointers
-      SafeDelete(m_entries.get(ix));
+      SafeDelete(m_entries.getKey(ix));
      }
    m_entries.remove(ix);
 // if half of the keys is empty, then compact the storage
    if(m_entries.shouldCompact())
      {
-#ifdef _DEBUG
-      PrintFormat(">>>DEBUG[%s,%d,%s]: should compact: real: %d, buffer: %d",__FILE__,__LINE__,__FUNCTION__,m_entries.getRealSize(),m_entries.size());
-#endif
+      Debug(StringFormat("should compact: real: %d, buffer: %d",m_entries.getRealSize(),m_entries.size()));
       m_entries.compact();
-      rehash();
+      m_slots.rehash();
      }
    return true;
   }
@@ -291,32 +154,12 @@ void HashSet::clear()
          // delete possble pointers
          if(!m_entries.isRemoved(i))
            {
-            SafeDelete(m_entries.get(i));
+            SafeDelete(m_entries.getKey(i));
            }
         }
      }
    m_entries.clear();
-   initState();
-  }
-//+------------------------------------------------------------------+
-//| If the key does not exist and get added, return true             |
-//+------------------------------------------------------------------+
-template<typename Key>
-bool HashSet::add(Key key)
-  {
-// we need to make sure that used slots is always smaller than
-// certain percentage of total slots (m_htused <= (m_htsize*2)/3)
-   upsize();
-   int i=lookup(key);
-   int ix=m_slots[i];
-   if(ix==-1)
-     {
-      m_slots[i]=m_entries.append(key);
-      m_htused++;
-     }
-   else if(m_entries.isRemoved(ix)) m_entries.unremove(ix,key);
-   else return false;
-   return true;
+   m_slots.initState();
   }
 //+------------------------------------------------------------------+
 //| Iterator implementation for HashSet                              |
@@ -333,7 +176,7 @@ public:
    :m_index(0),m_entries(GetPointer(entries)) {}
    bool              end() const {return m_index>=m_entries.size();}
    void              next() {if(!end()) {do{m_index++;}while(!end() && m_entries.isRemoved(m_index));}}
-   T                 current() const {return m_entries.get(m_index);}
+   T                 current() const {return m_entries.getKey(m_index);}
 
    // you can not set something to a hash entry
    bool              set(T value) {return false;}

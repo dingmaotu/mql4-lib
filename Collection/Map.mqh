@@ -29,6 +29,9 @@ interface MapIterator
    Value     value() const;
    void      next();
    bool      end() const;
+
+   void      setValue(Value v);
+   bool      remove();
   };
 //+------------------------------------------------------------------+
 //| Map interface                                                    |
@@ -42,7 +45,7 @@ interface Map
    bool              remove(Key key);
    void              clear();
 
-   MapIterator<Key,Value>*iterator() const;
+   MapIterator<Key,Value>*iterator();
    bool              keys(Collection<Key>&col) const;
    bool              values(Collection<Value>&col) const;
 
@@ -68,12 +71,15 @@ private:
    MapIterator<Key,Value>*m_it;
    int               m_condition;
 public:
-                     MapIter(const Map<Key,Value>&m):m_it(m.iterator()),m_condition(2) {}
+                     MapIter(Map<Key,Value>&m):m_it(m.iterator()),m_condition(2) {}
                     ~MapIter() {SafeDelete(m_it);}
    void              next() {m_it.next();}
    Key               key() const {return m_it.key();}
    Value             value() const {return m_it.value();}
    bool              end() const {return m_it.end();}
+
+   void              setValue(Value v) {m_it.setValue(v);}
+   bool              remove() {return m_it.remove();}
 
    bool              testTrue() {if(m_condition==0)return false;else {m_condition--;return true;}}
    bool              assignKey(Key &var) {var=m_it.key();return true;}
