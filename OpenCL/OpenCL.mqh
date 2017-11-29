@@ -7,6 +7,7 @@
 #property link      "dingmaotu@hotmail.com"
 #property strict
 
+#include "../Lang/Mql.mqh"
 #include "Definitions.mqh"
 
 #import "OpenCL.dll"
@@ -840,17 +841,6 @@ clEnqueueTask(cl_command_queue   command_queue,
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-struct ByteBuffer
-  {
-   char              _[];
-                     ByteBuffer(int size=0) {ArrayResize(_,size);}
-                    ~ByteBuffer() {ArrayFree(_);}
-   void              resize(int value) {ArrayResize(_,value);}
-   int               size() const {return ArraySize(_);}
-  };
-//+------------------------------------------------------------------+
-//|                                                                  |
-//+------------------------------------------------------------------+
 class CLPlatform
   {
 private:
@@ -904,9 +894,10 @@ string CLPlatform::getInfo(cl_platform_info info) const
    size_t ret=-1;
    if(clGetPlatformInfo(current(),info,0,0,ret)!=CL_SUCCESS) {return NULL;}
 
-   ByteBuffer buf((int)ret);
-   if(clGetPlatformInfo(current(),info,buf.size(),buf._,0)!=CL_SUCCESS) {return NULL;}
-   string res=StringFromUtf8(buf._);
+   char buf[];
+   ArrayResize(buf,(int)ret);
+   if(clGetPlatformInfo(current(),info,ret,buf,0)!=CL_SUCCESS) {return NULL;}
+   string res=StringFromUtf8(buf);
    return res;
   }
 //+------------------------------------------------------------------+
