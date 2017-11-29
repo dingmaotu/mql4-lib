@@ -58,7 +58,6 @@ class OrderTracker
 private:
    TradingPool      *m_pool;
    HashMap<int,TrackedOrder*>m_orders;
-   Vector<int>m_removeList;
 public:
                      OrderTracker(TradingPool *pool);
 
@@ -152,16 +151,9 @@ void OrderTracker::track(void)
       if(!order.isTracked())
         {
          onClose(order);
-         m_removeList.add(ticket);
+         it.remove();
         }
      }
-
-   foreachv(int,ticket,m_removeList)
-     {
-      m_orders.remove(ticket);
-     }
-
-   m_removeList.clear();
 
    onEnd();
   }
