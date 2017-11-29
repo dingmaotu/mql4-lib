@@ -86,13 +86,14 @@ public:
    bool              add(T value) {push(value); return true;}
    // returns true if the collection changed because of removing the value
    bool              remove(const T value);
+   // returns number of deleted items
+   int               removeAll(const T value);
 
    // Sequence interface
    T                 get(int i) const {LinkedNode<T>*on=at(i);return on==m_tail?NULL:on.get();}
    void              set(int i,T o) {LinkedNode<T>*on=at(i);if(on!=m_tail){on.set(o);}}
    void              insertAt(int i,T o) {insert(at(i),new LinkedNode<T>(o));}
    void              removeAt(int i) {detach(at(i));}
-   void              compact();
 
    // Stack and Queue interface
    void              push(T o) {insert(m_tail,new LinkedNode<T>(o));}
@@ -187,44 +188,40 @@ LinkedList::clear(void)
    m_size=0;
   }
 //+------------------------------------------------------------------+
-//|                                                                  |
+//| Remove one elment from list                                      |
 //+------------------------------------------------------------------+
 template<typename T>
 bool LinkedList::remove(const T value)
   {
-   LinkedNode<T>*toDetach=NULL;
    for(LinkedNode<T>*p=m_head.next(); p!=m_tail; p=p.next())
      {
       if(value==p.get())
         {
-         toDetach=p;
-         break;
+         detach(p);
+         return true;
         }
      }
-   if(toDetach!=NULL)
-     {
-      detach(toDetach);
-      return true;
-     }
-   else
-      return false;
+   return false;
   }
 //+------------------------------------------------------------------+
-//|                                                                  |
+//| Remove all elements from list that equal `value`                 |
 //+------------------------------------------------------------------+
 template<typename T>
-void LinkedList::compact()
+int LinkedList::removeAll(const T value)
   {
+   int n=0;
    LinkedNode<T>*p=m_head.next();
    while(p!=m_tail)
      {
-      LinkedNode<T>*toTest=p;
+      LinkedNode<T>*t=p;
       p=p.next();
-      if(NULL==toTest.get())
+      if(value==t.get())
         {
-         detach(toTest);
+         n++;
+         detach(t);
         }
      }
+   return n;
   }
 //+------------------------------------------------------------------+
 //|                                                                  |

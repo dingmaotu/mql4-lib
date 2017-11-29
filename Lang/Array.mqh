@@ -19,8 +19,6 @@
 //| and limitations under the License.                               |
 //+------------------------------------------------------------------+
 #property strict
-
-#include "Number.mqh"
 //+------------------------------------------------------------------+
 //| Generic array insert                                             |
 //+------------------------------------------------------------------+
@@ -118,21 +116,6 @@ int BinarySearch(const T &array[],T value)
    return mid;
   }
 //+------------------------------------------------------------------+
-//|                                                                  |
-//+------------------------------------------------------------------+
-void ArrayCompact(double &array[])
-  {
-   ArrayDeleteAll(array,Double::NaN);
-  }
-//+------------------------------------------------------------------+
-//| Remove all elements that are marked as `comapre` (default NULL)  |
-//+------------------------------------------------------------------+
-template<typename T>
-void ArrayCompact(T &array[],T compare=NULL)
-  {
-   ArrayDeleteAll(array,compare);
-  }
-//+------------------------------------------------------------------+
 //| Find the first matching element                                  |
 //+------------------------------------------------------------------+
 template<typename T>
@@ -187,11 +170,9 @@ public:
    void              set(const int index,T value) {m_array[index]=value;}
    void              insertAt(int index,T value) {ArrayInsert(m_array,index,value,m_extraBuffer);}
    void              removeAt(int index) {ArrayDelete(m_array,index);}
-   int               removeAll(T value) {return ArrayDeleteAll(m_array,value);}
+   int               removeAll(const T value) {return ArrayDeleteAll(m_array,value);}
 
    int               index(const T value) const;
-
-   void              compact() {ArrayCompact(m_array);}
   };
 //+------------------------------------------------------------------+
 //| Deallocate array elements if necessary                           |

@@ -41,13 +41,13 @@ public:
    int               size() const {return m_array.size();}
    bool              add(T value) {push(value); return true;}
    bool              remove(const T value);
+   int               removeAll(const T value) {return m_array.removeAll(value);}
 
    // Sequence interface
    void              insertAt(int i,T val) {m_array.insertAt(i,val);}
    T                 removeAt(int i) {T val=m_array[i];m_array.removeAt(i);return val;}
    T                 get(int i) const {return m_array[i];}
    void              set(int i,T val) {m_array.set(i,val);}
-   void              compact() {m_array.compact();}
 
    // Stack and Queue interface: alias for Sequence interface
    void              push(T val) {insertAt(size(),val);}

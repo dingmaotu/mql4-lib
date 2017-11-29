@@ -73,14 +73,15 @@ public:
    double            very(T x) const {double a=membership(x); return a*a;}
    double            fairly(T x) const {return MathSqrt(membership(x));}
 
+   //--- Fuzzy Operations
    // fuzzy negation
-   double            complement(T x) const {return 1.0-membership(x);}
+   static double     Complement(const FuzzySet<T>&set,T x) {return 1.0-set.membership(x);}
    // fuzzy disjunction
-   double            union(const FuzzySet<T>&set,T x) const {return MathMax(membership(x),set.membership(x));}
+   static double     Union(const FuzzySet<T>&set1,const FuzzySet<T>&set2,T x) {return MathMax(set1.membership(x),set2.membership(x));}
    // fuzzy conjunction
-   double            intersect(const FuzzySet<T>&set,T x) const {return MathMin(membership(x),set.membership(x));}
+   static double     Intersect(const FuzzySet<T>&set1,const FuzzySet<T>&set2,T x) {return MathMin(set1.membership(x),set2.membership(x));}
    // fuzzy implication
-   double            include(const FuzzySet<T>&set,T x) consot {return MathMin(1.0,1.0+set.membership(x)-membership(x));}
+   static double     Include(const FuzzySet<T>&set1,const FuzzySet<T>&set2,T x) {return MathMin(1.0,1.0+set2.membership(x)-set1.membership(x));}
   };
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -401,87 +402,40 @@ FuzzySSR *FuzzyAverage(const Collection<FuzzySSR*>&sets)
      {\
       double x[];\
       double y[];\
-      int size=2*steps+2;\
+      Interval intv=set1.alphacut(1.0) op set2.alphacut(1.0);\
+      int size=2*steps+1;\
+      if(!Mql::isEqual(intv.L,intv.R)) size++;\
       ArrayResize(x,size);\
       ArrayResize(y,size);\
+      x[steps]=intv.L;\
+      y[steps]=1.0;\
+      if((size&1)==0)\
+        {\
+         x[steps+1]=intv.R;\
+         y[steps+1]=1.0;\
+        }\
       double incr=1.0/steps;\
       for(int i=0; i<steps; i++)\
         {\
          double a=i*incr;\
-         Interval intv=set1.alphacut(a) op set2.alphacut(a);\
-         x[i]=intv.L;\
-         x[size-i-1]=intv.R;\
+         Interval v=set1.alphacut(a) op set2.alphacut(a);\
+         x[i]=v.L;\
+         x[size-i-1]=v.R;\
          y[i]=a;\
          y[size-i-1]=a;\
-        }\
-      Interval intv=set1.alphacut(1.0) op set2.alphacut(1.0);\
-      x[steps]=intv.L;\
-      y[steps+1]=intv.R;\
-      bool compact=false;\
-      for(int i=1; i<size; i++)\
-        {\
-         if(Mql::isEqual(x[i-1],x[i]))\
-           {\
-            x[i]=NULL;\
-            y[i]=NULL;\
-            compact=true;\
-           }\
-        }\
-      if(compact)\
-        {\
-         ArrayCompact(x);\
-         ArrayCompact(y);\
         }\
       res=new FuzzyDSR(x,y);\
      }\
 return res;
 //+------------------------------------------------------------------+
-//|                                                                  |
+//| Multiplication of two fuzzy numbers                              |
 //+------------------------------------------------------------------+
 FuzzyDSR *FuzzyMult(const FuzzySSR &set1,const FuzzySSR &set2,int steps)
   {
-   FuzzyDSR *res=NULL;
-   if(steps>0)
-     {
-      double x[];
-      double y[];
-      int size=2*steps+2;
-      ArrayResize(x,size);
-      ArrayResize(y,size);
-      double incr=1.0/steps;
-      for(int i=0; i<steps; i++)
-        {
-         double a=i*incr;
-         Interval intv=set1.alphacut(a)*set2.alphacut(a);
-         x[i]=intv.L;
-         x[size-i-1]=intv.R;
-         y[i]=a;
-         y[size-i-1]=a;
-        }
-      Interval intv=set1.alphacut(1.0)*set2.alphacut(1.0);
-      x[steps]=intv.L;
-      y[steps+1]=intv.R;
-      bool compact=false;
-      for(int i=1; i<size; i++)
-        {
-         if(Mql::isEqual(x[i-1],x[i]))
-           {
-            x[i]=Double::NaN;
-            y[i]=Double::NaN;
-            compact=true;
-           }
-        }
-      if(compact)
-        {
-         ArrayCompact(x);
-         ArrayCompact(y);
-        }
-      res=new FuzzyDSR(x,y);
-     }
-   return res;
+   __FUZZY_OP__(*)
   }
 //+------------------------------------------------------------------+
-//|                                                                  |
+//| Division of two fuzzy numbers                                    |
 //+------------------------------------------------------------------+
 FuzzyDSR *FuzzyDiv(const FuzzySSR &set1,const FuzzySSR &set2,int steps)
   {
