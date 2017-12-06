@@ -251,7 +251,7 @@ private:
 protected:
    void              buildCurrencyIndex(void);
 public:
-                     SymbolAnalyzer() {buildCurrencyIndex();}
+                     SymbolAnalyzer():m_index(NULL,true) {buildCurrencyIndex();}
 
    const Vector<string>*getSymbols() const { return GetPointer(m_symbols); }
    const Vector<string>*getSpecials() const { return GetPointer(m_specials); }
