@@ -161,7 +161,8 @@ When you create an indicator with this lib, it can be used as both standalone
 (controlled by the Terminal runtime) or driven by your programs. This is a
 powerful concept in that you can write your indicator once, and use it in your
 EA and Script, or as a standalone Indicator. You can use the indicator in normal
-time series chart, or let it driven by a RenkoIndicatorDriver.
+time series chart, or let it driven by a `HistoryData` derived class
+(TimeSeriesData, Renko, or TimeFrame).
 
 Let me show you with an example Indicator `DeMarker`. First we define the common
 reusable Indicator module in a header file `DeMarker.mqh`
@@ -315,33 +316,31 @@ DECLARE_INDICATOR(DeMarker,true);
 
 Or if you want to use it in your EA, driven by a Renko chart:
 ```MQL5
-//--- code snippets for using an indicator with IndicatorDriver
+//--- code snippets for using an indicator with Renko
 
 //--- OnInit
 //--- create the indicator manually, its runtime controlled flag is false by default
-   DeMarkerParam param;
+   DeMarkerParam *param=new DeMarkerParam;
    param.setAvgPeriod(14);
-   deMarker=new DeMarker(GetPointer(param));
+   deMarker=new DeMarker(param);
 
-//--- indicator driver is a container for indicators
-   IndicatorDriver *driver=new IndicatorDriver; 
+//--- HistoryData::OnUpdate is an event that can be subscribed by Indicators
+   renko = new Renko(_Symbol,300);
 //--- add indicator to the driver: you can add multiple indicators
-   driver.add(deMarker);
+//--- the OnUpdate event will delete its subscribers when destructed
+   renko.OnUpdate+=deMarker;
 //--- create the real driver that provide history data
-   renkoDriver = new RenkoIndicatorDriver(300,driver);
    
 //--- OnTick
-   renkoDriver.update(Close[0]);
+   renko.update(Close[0]);
    
-//--- after update, all indicators attached to the IndicatorDriver will be updated
+//--- after update, all indicators attached to the renko.OnUpdate event will be updated
 //--- access DeMarker
    double value = deMarker[0];
    
 //--- OnDeinit
 //--- need to release resources
-   delete deMarker;
-   delete driver;
-   delete renkoDriver;
+   delete renko;
 ```
 
 ### Event Handling
@@ -1192,6 +1191,8 @@ from all levels of developers.
    much as I can.
 
 ## Changes
+* 2017-12-13: Deprecate and remove `RenkoIndicatorDriver`; use
+  `HistoryData::OnUpdate` event instead
 
 * 2017-11-28: Major refactoring of hash table based containers. The HashMap and
   HashSet now shares the same code base for hashing and entry managements. The

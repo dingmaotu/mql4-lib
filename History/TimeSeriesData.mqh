@@ -29,20 +29,27 @@ private:
    string            m_symbol;
    int               m_period;
    // new bars between updates; larger than 0 if has new bar
-   long              m_newBars;
+   int               m_newBars;
    datetime          m_lastBarDate;
+
+   long              m_realVolume[];
+   int               m_spread[];
 protected:
    void              updateNewBar(datetime date);
 public:
-                     TimeSeriesData(string symbol,int period):m_symbol(symbol==""?_Symbol:symbol),m_period(period==0?_Period:period){}
+                     TimeSeriesData(string symbol,int period):m_symbol(symbol==""?_Symbol:symbol),m_period(period==0?_Period:period)
+     {
+      ArraySetAsSeries(m_realVolume,true);
+      ArraySetAsSeries(m_spread,true);
+     }
 
    string            getSymbol() const {return m_symbol;}
    int               getPeriod() const {return m_period;}
 
    static bool       refresh() {return RefreshRates();}
 
-   long              getBars() const {return SeriesInfoInteger(m_symbol,m_period,SERIES_BARS_COUNT);}
-   long              getBars(datetime startDate,datetime stopDate) const {return Bars(m_symbol,m_period,startDate,stopDate);}
+   int               getBars() const {return(int)SeriesInfoInteger(m_symbol,m_period,SERIES_BARS_COUNT);}
+   int               getBars(datetime startDate,datetime stopDate) const {return Bars(m_symbol,m_period,startDate,stopDate);}
    datetime          getFirstDate() const {return(datetime)SeriesInfoInteger(m_symbol,m_period,SERIES_FIRSTDATE); }
    datetime          getLastBarDate() const {return(datetime)SeriesInfoInteger(m_symbol,m_period,SERIES_LASTBAR_DATE); }
    datetime          getServerFirstDate() const {return(datetime)SeriesInfoInteger(m_symbol,m_period,SERIES_SERVER_FIRSTDATE); }
@@ -52,7 +59,7 @@ public:
    void              updateCurrent() {updateNewBar(getCurrentBarDate());}
 
    bool              isNewBar() const {return m_newBars>0;}
-   long              getNewBars() const {return m_newBars;}
+   int               getNewBars() const {return m_newBars;}
 
    datetime          getTime(int shift) const {return iTime(m_symbol,m_period,shift);}
    double            getHigh(int shift) const {return iHigh(m_symbol,m_period,shift);}
@@ -104,7 +111,7 @@ public:
    COPY_STARTTIME_ENDTIME(Rates,MqlRates)
   };
 //+------------------------------------------------------------------+
-//|                                                                  |
+//| Internal method to update history data                           |
 //+------------------------------------------------------------------+
 void TimeSeriesData::updateNewBar(datetime current)
   {
@@ -112,10 +119,8 @@ void TimeSeriesData::updateNewBar(datetime current)
      {
       m_newBars=getBars();
       m_lastBarDate=current;
-      return;
      }
-
-   if(m_lastBarDate<current)
+   else if(m_lastBarDate<current)
      {
       m_newBars=getBars(m_lastBarDate,current)-1;
       m_lastBarDate=current;
@@ -124,5 +129,8 @@ void TimeSeriesData::updateNewBar(datetime current)
      {
       m_newBars=0;
      }
+   copyRealVolume(0,getBars(),m_realVolume);
+   copySpread(0,getBars(),m_spread);
+   OnUpdate.calculate(getBars(),Time,Open,High,Low,Close,Volume,m_realVolume,m_spread);
   }
 //+------------------------------------------------------------------+

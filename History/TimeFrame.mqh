@@ -97,6 +97,7 @@ public:
    int               update(const MqlRates &rate)
      {
       m_newBars=updateOne(rate);
+      OnUpdate.calculate(m_bars,m_time,m_open,m_high,m_low,m_close,m_tickVolume,m_realVolume,m_spread);
       onNewBar(m_bars,m_newBars,m_time,m_open,m_high,m_low,m_close,m_tickVolume,m_realVolume,m_spread);
       return m_newBars;
      }
@@ -108,6 +109,7 @@ public:
         {
          m_newBars+=updateOne(rates[i]);
         }
+      OnUpdate.calculate(m_bars,m_time,m_open,m_high,m_low,m_close,m_tickVolume,m_realVolume,m_spread);
       onNewBar(m_bars,m_newBars,m_time,m_open,m_high,m_low,m_close,m_tickVolume,m_realVolume,m_spread);
       return m_newBars;
      }
@@ -123,9 +125,9 @@ public:
    //--- HistoryData interface
    string            getSymbol() const {return m_symbol;}
 
-   long              getBars() const {return m_bars;}
+   int               getBars() const {return m_bars;}
    bool              isNewBar() const {return m_newBars>0;}
-   long              getNewBars() const {return m_newBars;}
+   int               getNewBars() const {return m_newBars;}
 
    double            getHigh(int shift) const {return m_high[m_bars-shift-1];}
    double            getLow(int shift) const {return m_low[m_bars-shift-1];}

@@ -20,6 +20,8 @@
 //+------------------------------------------------------------------+
 #property strict
 
+#include "IndicatorDriver.mqh"
+
 int STANDARD_TIMEFRAMES[]={1,5,15,30,60,240,1440,10080,43200};
 //+------------------------------------------------------------------+
 //| Check if the given timeframe is a standard one                   |
@@ -43,20 +45,25 @@ bool IsStandardTimeframe(int period)
      }
   }
 //+------------------------------------------------------------------+
-//| interface for all kinds of OHLC based history data               |
+//| virtual base class for all kinds of OHLC based history data      |
 //+------------------------------------------------------------------+
-interface HistoryData
+class HistoryData
   {
-   string            getSymbol() const;
+public:
+   virtual string    getSymbol() const=0;
 
-   long              getBars() const;
-   bool              isNewBar() const;
-   long              getNewBars() const;
+   virtual int       getBars() const=0;
+   virtual bool      isNewBar() const=0;
+   virtual int       getNewBars() const=0;
 
-   double            getHigh(int shift) const;
-   double            getLow(int shift) const;
-   double            getOpen(int shift) const;
-   double            getClose(int shift) const;
-   long              getVolume(int shift) const;
+   virtual double    getHigh(int shift) const=0;
+   virtual double    getLow(int shift) const=0;
+   virtual double    getOpen(int shift) const=0;
+   virtual double    getClose(int shift) const=0;
+   virtual long      getVolume(int shift) const=0;
+
+   //--- update event
+   //--- indicators can subscribe to this event can receive OnCalculate events
+   IndicatorDriver   OnUpdate;
   };
 //+------------------------------------------------------------------+

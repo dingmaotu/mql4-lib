@@ -20,23 +20,31 @@
 //+------------------------------------------------------------------+
 #property strict
 
-#include "../Lang/Array.mqh"
 #include "../Lang/Indicator.mqh"
+#include "../Collection/HashMap.mqh"
 //+------------------------------------------------------------------+
-//| drives indicators                                                |
+//| drives indicator update                                          |
 //+------------------------------------------------------------------+
 class IndicatorDriver
   {
 private:
-   Array<Indicator*>m_callbacks;
-   Array<int>m_prev;
+   HashMap<Indicator*,int>m_callbacks;
 
 public:
-   bool              add(Indicator *callback);
-   bool              remove(Indicator *callback);
-   bool              contains(Indicator *callback) const {return m_callbacks.index(callback)>=0;}
+   //--- IndicatorDriver owns the indicators
+                     IndicatorDriver():m_callbacks(NULL,true) {}
+
+   bool              add(Indicator *callback) {return m_callbacks.setIfNotExist(callback,0);}
+   bool              remove(Indicator *callback) {return m_callbacks.remove(callback);}
+
+   bool              operator+=(Indicator *callback) {return m_callbacks.setIfNotExist(callback,0);}
+   bool              operator-=(Indicator *callback) {return m_callbacks.remove(callback);}
+
+   bool              contains(Indicator *callback) const {return m_callbacks.contains(callback);}
+
    void              clear() {m_callbacks.clear();}
    int               size() const {return m_callbacks.size();}
+
    void              calculate(const int total,
                                const datetime &time[],
                                const double &open[],
@@ -45,61 +53,16 @@ public:
                                const double &close[],
                                const long &tickVolume[],
                                const long &volume[],
-                               const int &spread[]);
+                               const int &spread[])
+     {
+      if(m_callbacks.size()>0)
+        {
+         for(MapIter<Indicator*,int>it(m_callbacks); !it.end(); it.next())
+           {
+            int prev=it.value();
+            it.setValue(prev+it.key().main(total,prev,time,open,high,low,close,tickVolume,volume,spread));
+           }
+        }
+     }
   };
-//+------------------------------------------------------------------+
-//|                                                                  |
-//+------------------------------------------------------------------+
-bool IndicatorDriver::add(Indicator *callback)
-  {
-   int index = m_callbacks.index(callback);
-   if(index >= 0)
-     {
-      return false;
-     }
-   else
-     {
-      int s=size();
-      m_callbacks.insertAt(s,callback);
-      m_prev.insertAt(s,0);
-      return true;
-     }
-  }
-//+------------------------------------------------------------------+
-//|                                                                  |
-//+------------------------------------------------------------------+
-bool IndicatorDriver::remove(Indicator *callback)
-  {
-   int index = m_callbacks.index(callback);
-   if(index >= 0)
-     {
-      m_callbacks.removeAt(index);
-      m_prev.removeAt(index);
-      return true;
-     }
-   else
-     {
-      return false;
-     }
-  }
-//+------------------------------------------------------------------+
-//|                                                                  |
-//+------------------------------------------------------------------+
-void IndicatorDriver::calculate(const int total,
-                                const datetime &time[],
-                                const double &open[],
-                                const double &high[],
-                                const double &low[],
-                                const double &close[],
-                                const long &tickVolume[],
-                                const long &volume[],
-                                const int &spread[])
-  {
-   int size = m_callbacks.size();
-   for(int i=0; i<size; i++)
-     {
-      Indicator *callback=m_callbacks[i];
-      m_prev.set(i,callback.main(total,m_prev[i],time,open,high,low,close,tickVolume,volume,spread));
-     }
-  }
 //+------------------------------------------------------------------+

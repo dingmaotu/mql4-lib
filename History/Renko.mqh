@@ -41,6 +41,11 @@ private:
    double            m_close[];
    long              m_volume[];
 
+   //--- dummy arrays for OnUpdate event
+   datetime          m_time[];
+   long              m_realVolume[];
+   int               m_spread[];
+
    void              resize(int size);
 
    void              makeNewBars(double p,double &base[],double &target[],double step,int newBars,long vol);
@@ -54,9 +59,9 @@ public:
 
    string            getSymbol() const {return m_symbol;}
 
-   long              getBars() const {return m_bars;}
+   int               getBars() const {return m_bars;}
    bool              isNewBar() const {return m_newBars>0;}
-   long              getNewBars() const {return m_newBars;}
+   int               getNewBars() const {return m_newBars;}
 
    double            getHigh(int shift) const {return m_high[m_bars-1-shift];}
    double            getLow(int shift) const {return m_low[m_bars-1-shift];}
@@ -210,6 +215,7 @@ void Renko::updateByRates(MqlRates &rs[],int shift,int size)
         {
          m_newBars+=moveByRate(rs[i]);
         }
+      OnUpdate.calculate(m_bars,m_time,m_open,m_high,m_low,m_close,m_volume,m_realVolume,m_spread);
       onNewBar(m_bars,m_newBars,m_open,m_high,m_low,m_close,m_volume);
      }
   }
@@ -219,6 +225,7 @@ void Renko::updateByRates(MqlRates &rs[],int shift,int size)
 void Renko::update(double price,long vol=0)
   {
    m_newBars=move(price,vol);
+   OnUpdate.calculate(m_bars,m_time,m_open,m_high,m_low,m_close,m_volume,m_realVolume,m_spread);
    onNewBar(m_bars,m_newBars,m_open,m_high,m_low,m_close,m_volume);
   }
 //+------------------------------------------------------------------+
