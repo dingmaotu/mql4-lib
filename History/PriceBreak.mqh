@@ -20,6 +20,9 @@
 //+------------------------------------------------------------------+
 #property strict
 
+#include "../Lang/Mql.mqh"
+#include "../Utils/Math.mqh"
+
 #define DEFAULT_BUFFER_SIZE 1000
 //+------------------------------------------------------------------+
 //| General buffer resizing                                          |
@@ -42,7 +45,6 @@ class PriceBreak
   {
 private:
    int               m_bars;
-   int               m_trend;
 
    double            m_reversalHigh;
    double            m_reversalLow;
@@ -185,4 +187,27 @@ int PriceBreak::moveTo(double price,long volume=0)
    onNewBar(m_bars,newBars,m_open,m_high,m_low,m_close,m_volume);
    return newBars;
   }
+//+------------------------------------------------------------------+
+//| Provides standard 3 line break signal                            |
+//+------------------------------------------------------------------+
+class PriceBreakSignal: public PriceBreak
+  {
+   ObjectAttrRead(int,lastBarDir,LastBarDir);
+   ObjectAttrRead(int,newBarDir,NewBarDir);
+public:
+                     PriceBreakSignal():PriceBreak(3),m_newBarDir(0),m_lastBarDir(0){}
+   void              onNewBar(int bars,int newBars,double const &open[],double const &high[],
+                              double const &low[],double const &close[],long const &volume[]) override
+     {
+      if(newBars>0)
+        {
+         m_newBarDir=Math::sign(close[bars-1]-open[bars-1]);
+         m_lastBarDir=m_newBarDir;
+        }
+      else
+        {
+         m_newBarDir=0;
+        }
+     }
+  };
 //+------------------------------------------------------------------+
