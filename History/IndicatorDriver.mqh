@@ -60,7 +60,7 @@ public:
          for(MapIter<Indicator*,int>it(m_callbacks); !it.end(); it.next())
            {
             int prev=it.value();
-            it.setValue(prev+it.key().main(total,prev,time,open,high,low,close,tickVolume,volume,spread));
+            it.setValue(it.key().main(total,prev,time,open,high,low,close,tickVolume,volume,spread));
            }
         }
      }
