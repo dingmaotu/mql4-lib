@@ -21,7 +21,7 @@
 #property strict
 #include "Cast.mqh"
 
-//--- define number of bits for common interger types
+//--- define number of bits for common number types
 #define CHAR_BITS 8
 #define SHORT_BITS 16
 #define INT_BITS 32
@@ -65,6 +65,13 @@ struct Single
    static bool IsInfinity(const float value)
      {
       return (Single::IsNegativeInfinity(value) || Single::IsPositiveInfinity(value));
+     }
+   //+------------------------------------------------------------------+
+   //| Whether the 2 floats are equal                                   |
+   //+------------------------------------------------------------------+
+   static bool IsEqual(const float left,const float right)
+     {
+      return NormalizeDouble(left-right,8)==0;
      }
   };
 const float Single::NegativeInfinity=(float)-MathExp(DBL_MAX);
@@ -116,6 +123,13 @@ struct Double
    static bool IsNaN(const double value)
      {
       return (!MathIsValidNumber(value) && !IsInfinity(value));
+     }
+   //+------------------------------------------------------------------+
+   //| Whether the 2 doubles are equal                                  |
+   //+------------------------------------------------------------------+
+   static bool IsEqual(const double left,const double right)
+     {
+      return NormalizeDouble(left-right,8)==0;
      }
   };
 const double Double::NegativeInfinity=-MathExp(DBL_MAX);

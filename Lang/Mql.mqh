@@ -19,14 +19,7 @@
 //| and limitations under the License.                               |
 //+------------------------------------------------------------------+
 #property strict
-
-#import "stdlib.ex4"
-string ErrorDescription(int error_code);
-int    RGB(int red_value,int green_value,int blue_value);
-bool   CompareDoubles(double number1,double number2);
-string DoubleToStrMorePrecision(double number,int precision);
-string IntegerToHexString(int integer_number);
-#import
+#include "Error.mqh"
 //+------------------------------------------------------------------+
 //| Mql language specific methods                                    |
 //+------------------------------------------------------------------+
@@ -34,13 +27,29 @@ class Mql
   {
 public:
    static int        getLastError() {return GetLastError();}
-   static string     getErrorMessage(int errorCode) {return ErrorDescription(errorCode);}
+   static string     getErrorMessage(int errorCode) {return GetErrorDescription(errorCode);}
 
-   static string     doubleToString(double value,int precision) {return DoubleToStrMorePrecision(value,precision);}
-   static string     integerToHexString(int value) {return IntegerToHexString(value);}
-   static int        rgb(int red,int green,int blue) {return RGB(red,green,blue);}
+   //--- Prefer global DoubleToString function
+   static string     doubleToString(double value,int precision) {return DoubleToString(value,precision);}
+   //--- Adapted from stdlib.mq4 by using `StringSetCharacter` instead of `StringSetChar`
+   static string     integerToHexString(int value)
+     {
+      static const string digits="0123456789ABCDEF";
+      string hex="00000000";
+      int    digit,shift=28;
+      for(int i=0; i<8; i++)
+        {
+         digit=(value>>shift)&0x0F;
+         StringSetCharacter(hex,i,digits[digit]);
+         shift-=4;
+        }
+      return(hex);
+     }
+   //--- Prefer Canvas/Canvas.mqh XRGB
+   static int        rgb(int r,int g,int b) {return int(0xFF000000|(uchar(r)<<16)|(uchar(g)<<8)|uchar(b));}
 
-   static bool       isEqual(double a,double b) {return CompareDoubles(a,b);}
+   //--- Prefer Lang/Number.mqh Double::IsEqual
+   static bool       isEqual(double a,double b) {return NormalizeDouble(a-b,8)==0;}
 
    static bool       isStopped() {return IsStopped();}
 
