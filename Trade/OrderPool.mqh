@@ -68,7 +68,7 @@ private:
 protected:
    void              searchNext() {while(m_i<m_total && !(m_pool.select(m_i) && m_pool.matches())) m_i++;}
 public:
-                     OrderPoolIter(const OrderPool *pool):m_pool(pool),m_total(m_pool.total()),m_i(0) {next();}
+                     OrderPoolIter(const OrderPool *pool):m_pool(pool),m_total(m_pool.total()),m_i(0) {searchNext();}
                      OrderPoolIter(const OrderPool &pool):m_pool(GetPointer(pool)),m_total(m_pool.total()),m_i(0) {searchNext();}
 
    bool              end() const {return m_i>=m_total;}
