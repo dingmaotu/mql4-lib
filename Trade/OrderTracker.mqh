@@ -73,9 +73,15 @@ public:
      }
 
    virtual void      onStart() {}
-   virtual void      onChange(const Order *oldOrder,const Order *newOrder,bool stopLossChanges,bool takeProfitChanges) {}
+   //--- order stoploss or takeprofit change or pending order open price or expiring date change
+   virtual void      onChange(const Order *oldOrder,const Order *newOrder) {}
+   //--- new opened order: market or pending
    virtual void      onNew(const Order *order) {}
+   //--- pending order activation
+   virtual void      onActivation(const Order *pendingOrder,const Order *marketOrder) {}
+   //--- market order close or pending order delete
    virtual void      onClose(const Order *order) {}
+   //--- market order partial close
    virtual void      onPartialClose(const Order *oldOrder,const Order *newOrder) {}
    virtual void      onEnd() {}
   };
@@ -109,19 +115,33 @@ void OrderTracker::track(void)
       if(m_orders.contains(no.getTicket()))
         {
          TrackedOrder *oo=m_orders[no.getTicket()];
-         // see if tp/sl changes
-         bool takeProfitChanges=!Mql::isEqual(no.getTakeProfit(),oo.getTakeProfit());
-         bool stopLossChanges=!Mql::isEqual(no.getStopLoss(),oo.getStopLoss());
-         if(takeProfitChanges || stopLossChanges)
+
+         // pending order activation
+         if(oo.isPending() && !no.isPending())
            {
-            onChange(oo,no,stopLossChanges,takeProfitChanges);
+            onActivation(oo,no);
             m_orders.set(no.getTicket(),no);
             SafeDelete(oo);
            }
          else
            {
-            oo.setTracked(true);
-            SafeDelete(no);
+            // see if there are changes
+            bool takeProfitChanges=!Mql::isEqual(no.getTakeProfit(),oo.getTakeProfit());
+            bool stopLossChanges=!Mql::isEqual(no.getStopLoss(),oo.getStopLoss());
+            bool openPriceChanges=no.isPending() && !Mql::isEqual(no.getOpenPrice(),oo.getOpenPrice());
+            bool expirationChanges=no.isPending() && no.getExpiration()!=oo.getExpiration();
+
+            if(takeProfitChanges || stopLossChanges || openPriceChanges || expirationChanges)
+              {
+               onChange(oo,no);
+               m_orders.set(no.getTicket(),no);
+               SafeDelete(oo);
+              }
+            else
+              {
+               oo.setTracked(true);
+               SafeDelete(no);
+              }
            }
         }
       else if(no.isPartialClose())
