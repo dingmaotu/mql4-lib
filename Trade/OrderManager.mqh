@@ -94,9 +94,9 @@ public:
    int               pendSell(double price,double lots,double stoploss,double takeprofit) {return pend(OP_SELL,price,lots,stoploss,takeprofit);}
 
    int               buy(double lots,int stoploss=0,int takeprofit=0) {return market(OP_BUY,lots,stoploss,takeprofit);}
-   int               sell(double lots,int stoploss=0,int takeprofit=0) {return market(OP_BUY,lots,stoploss,takeprofit);}
+   int               sell(double lots,int stoploss=0,int takeprofit=0) {return market(OP_SELL,lots,stoploss,takeprofit);}
    int               pendBuy(double price,double lots,int stoploss=0,int takeprofit=0) {return pend(OP_BUY,price,lots,stoploss,takeprofit);}
-   int               pendSell(double price,double lots,int stoploss=0,int takeprofit=0) {return pend(OP_BUY,price,lots,stoploss,takeprofit);}
+   int               pendSell(double price,double lots,int stoploss=0,int takeprofit=0) {return pend(OP_SELL,price,lots,stoploss,takeprofit);}
 
    //--- Order modification
    bool              modify(int ticket,double stoploss,double takeprofit);
