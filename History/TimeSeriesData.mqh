@@ -129,8 +129,13 @@ void TimeSeriesData::updateNewBar(datetime current)
      {
       m_newBars=0;
      }
-   copyRealVolume(0,getBars(),m_realVolume);
-   copySpread(0,getBars(),m_spread);
+//--- copy these data on large charts can be very expensive
+//--- however MQL does not provide a way to copy data directly to a dynamic array with custom start point
+//--- we can only first copy to a temporary array and then use ArrayCopy to copy the temporary array to the destination
+//--- this is expensive and no good for normal applications
+//--- since for Forex these values are zero, we will disable them
+//   copyRealVolume(0,getBars(),m_realVolume);
+//   copySpread(0,getBars(),m_spread);
    OnUpdate.calculate(getBars(),Time,Open,High,Low,Close,Volume,m_realVolume,m_spread);
   }
 //+------------------------------------------------------------------+
