@@ -53,6 +53,7 @@ void ReadOnlyLabel::render(string content,string tooltip)
    ObjectSetString(m_chart,m_id,OBJPROP_TEXT,content);
    if(tooltip!="")
       ObjectSetString(m_chart,m_id,OBJPROP_TOOLTIP,tooltip);
-   ChartRedraw(m_chart);
+//--- no need to force redraw as the chart will redraw itself on next tick
+//--- ChartRedraw(m_chart);
   }
 //+------------------------------------------------------------------+
