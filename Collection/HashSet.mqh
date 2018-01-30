@@ -173,7 +173,11 @@ private:
    int               m_index;
 public:
                      HashSetIterator(const HashSetEntries<T>&entries)
-   :m_index(0),m_entries(GetPointer(entries)) {}
+   :m_index(0),m_entries(GetPointer(entries)) 
+     {
+      // seek to first non removed entry
+      while(!end() && m_entries.isRemoved(m_index)) m_index++;
+     }
    bool              end() const {return m_index>=m_entries.size();}
    void              next() {if(!end()) {do{m_index++;}while(!end() && m_entries.isRemoved(m_index));}}
    T                 current() const {return m_entries.getKey(m_index);}
