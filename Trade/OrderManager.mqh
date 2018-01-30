@@ -1,4 +1,4 @@
-//+------------------------------------------------------------------+
+﻿//+------------------------------------------------------------------+
 //| Module: Trade/OrderManager.mqh                                   |
 //| This file is part of the mql4-lib project:                       |
 //|     https://github.com/dingmaotu/mql4-lib                        |
@@ -23,6 +23,8 @@
 #include "../Lang/Mql.mqh"
 #include "../Utils/Math.mqh"
 #include "Order.mqh"
+#include "Terminal.mqh"
+#include "Account.mqh"
 //+------------------------------------------------------------------+
 //| OrderManager wraps order sending/modification/closing functions  |
 //+------------------------------------------------------------------+
@@ -69,6 +71,36 @@ public:
      {
       m_color[0]=clrBlue;
       m_color[1]=clrRed;
+     }
+
+   static bool       IsTradeAllowed(void)
+     {
+      if(!Terminal::isTradeAllowed())
+        {
+         Alert(">>> Error: please allow EA trading in Terminal settings!");
+         return false;
+        }
+
+      if(!Mql::isTradeAllowed())
+        {
+         Alert(">>> Error: please allow trading in EA settings!");
+         return false;
+        }
+
+      if(!Mql::isTesting())
+        {
+         if(!Account::allowsExpertTrade())
+           {
+            Alert(StringFormat(">>> Error: your server %s does not allow EA trading!",Account::getServerName()));
+            return false;
+           }
+         if(!Account::allowsTrade())
+           {
+            Alert(StringFormat(">>> Error：your account %s does not allow EA trading!",Account::getLogin()));
+            return false;
+           }
+        }
+      return true;
      }
 
    //--- Order opening
