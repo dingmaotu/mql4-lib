@@ -15,7 +15,27 @@ class BaseElement: public UIElement
   {
 protected:
    UIRoot           *m_root;
-   long              getInteger(int propId,int propModifier=0) const
+#ifdef __MQL5__   
+   long              getInteger(ENUM_OBJECT_PROPERTY_INTEGER propId,int propModifier=0) const 
+     {return ObjectGetInteger(m_root.getChartId(),getName(),propId,propModifier);}
+   bool              setInteger(ENUM_OBJECT_PROPERTY_INTEGER propId,long value)
+     {return ObjectSetInteger(m_root.getChartId(),getName(),propId,value);}
+   bool              setInteger(ENUM_OBJECT_PROPERTY_INTEGER propId,int propModifier,long value)
+     {return ObjectSetInteger(m_root.getChartId(),getName(),propId,propModifier,value);}
+   double            getDouble(ENUM_OBJECT_PROPERTY_DOUBLE propId,int propModifier=0) const
+     {return ObjectGetDouble(m_root.getChartId(),getName(),propId,propModifier);}
+   bool              setDouble(ENUM_OBJECT_PROPERTY_DOUBLE propId,double value)
+     {return ObjectSetDouble(m_root.getChartId(),getName(),propId,value);}
+   bool              setDouble(ENUM_OBJECT_PROPERTY_DOUBLE propId,int propModifier,double value)
+     {return ObjectSetDouble(m_root.getChartId(),getName(),propId,propModifier,value);}
+   string            getString(ENUM_OBJECT_PROPERTY_STRING propId,int propModifier=0) const
+     {return ObjectGetString(m_root.getChartId(),getName(),propId,propModifier);}
+   bool              setString(ENUM_OBJECT_PROPERTY_STRING propId,string value)
+     {return ObjectSetString(m_root.getChartId(),getName(),propId,value);}
+   bool              setString(ENUM_OBJECT_PROPERTY_STRING propId,int propModifier,string value)
+     {return ObjectSetString(m_root.getChartId(),getName(),propId,propModifier,value);}
+#else
+   long              getInteger(int propId,int propModifier=0) const 
      {return ObjectGetInteger(m_root.getChartId(),getName(),propId,propModifier);}
    bool              setInteger(int propId,long value)
      {return ObjectSetInteger(m_root.getChartId(),getName(),propId,value);}
@@ -33,6 +53,7 @@ protected:
      {return ObjectSetString(m_root.getChartId(),getName(),propId,value);}
    bool              setString(int propId,int propModifier,string value)
      {return ObjectSetString(m_root.getChartId(),getName(),propId,propModifier,value);}
+#endif     
 
    bool              deleteSelf()
      {
