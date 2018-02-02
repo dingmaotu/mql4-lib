@@ -122,9 +122,9 @@ void OrderGroup::clearClosed(void)
       Order::Select(get(i));
       if(Order::CloseTime()!=0)
         {
-         set(i,NULL);
+         set(i,0);
         }
      }
-   compact();
+   removeAll(0);
   }
 //+------------------------------------------------------------------+
