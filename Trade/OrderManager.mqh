@@ -52,12 +52,12 @@ private:
 protected:
    int               deducePendType(int op,double price);
 
-   int               send(int cmd,double lots,double price,double stoploss,double takeprofit);
-   int               send(int cmd,double lots,double price,int stoploss,int takeprofit)
+   int               send(int cmd,double lots,double price,double stoploss,double takeprofit,string comment=NULL);
+   int               send(int cmd,double lots,double price,int stoploss,int takeprofit,string comment=NULL)
      {
       double sl=stoploss>0 ? OS::PP(s,cmd,price,-stoploss):0.0;
       double tp=takeprofit>0 ? OS::PP(s,cmd,price,takeprofit):0.0;
-      return send(cmd,lots,price,sl,tp);
+      return send(cmd,lots,price,sl,tp,comment);
      }
 public:
                      OrderManager(string symbol)
@@ -107,28 +107,28 @@ public:
 
    // market order T=double|int op=OP_BUY|OP_SELL
    template<typename T>
-   int               market(int op,double lots,T stoploss,T takeprofit)
+   int               market(int op,double lots,T stoploss,T takeprofit,string comment=NULL)
      {
-      return send(op,lots,OS::S(s,op),stoploss,takeprofit);
+      return send(op,lots,OS::S(s,op),stoploss,takeprofit,comment);
      }
    // pending order T=double|int op=OP_BUY|OP_SELL
    template<typename T>
-   int               pend(int op,double price,double lots,T stoploss,T takeprofit)
+   int               pend(int op,double price,double lots,T stoploss,T takeprofit,string comment=NULL)
      {
       double p=OS::N(s,price);
-      return send(deducePendType(op,p),lots,p,stoploss,takeprofit);
+      return send(deducePendType(op,p),lots,p,stoploss,takeprofit,comment);
      }
 
    // aliases for easier using
-   int               buy(double lots,double stoploss,double takeprofit) {return market(OP_BUY,lots,stoploss,takeprofit);}
-   int               sell(double lots,double stoploss,double takeprofit) {return market(OP_SELL,lots,stoploss,takeprofit);}
-   int               pendBuy(double price,double lots,double stoploss,double takeprofit) {return pend(OP_BUY,price,lots,stoploss,takeprofit);}
-   int               pendSell(double price,double lots,double stoploss,double takeprofit) {return pend(OP_SELL,price,lots,stoploss,takeprofit);}
+   int               buy(double lots,double stoploss,double takeprofit,string comment=NULL) {return market(OP_BUY,lots,stoploss,takeprofit,comment);}
+   int               sell(double lots,double stoploss,double takeprofit,string comment=NULL) {return market(OP_SELL,lots,stoploss,takeprofit,comment);}
+   int               pendBuy(double price,double lots,double stoploss,double takeprofit,string comment=NULL) {return pend(OP_BUY,price,lots,stoploss,takeprofit,comment);}
+   int               pendSell(double price,double lots,double stoploss,double takeprofit,string comment=NULL) {return pend(OP_SELL,price,lots,stoploss,takeprofit,comment);}
 
-   int               buy(double lots,int stoploss=0,int takeprofit=0) {return market(OP_BUY,lots,stoploss,takeprofit);}
-   int               sell(double lots,int stoploss=0,int takeprofit=0) {return market(OP_SELL,lots,stoploss,takeprofit);}
-   int               pendBuy(double price,double lots,int stoploss=0,int takeprofit=0) {return pend(OP_BUY,price,lots,stoploss,takeprofit);}
-   int               pendSell(double price,double lots,int stoploss=0,int takeprofit=0) {return pend(OP_SELL,price,lots,stoploss,takeprofit);}
+   int               buy(double lots,int stoploss=0,int takeprofit=0,string comment=NULL) {return market(OP_BUY,lots,stoploss,takeprofit,comment);}
+   int               sell(double lots,int stoploss=0,int takeprofit=0,string comment=NULL) {return market(OP_SELL,lots,stoploss,takeprofit,comment);}
+   int               pendBuy(double price,double lots,int stoploss=0,int takeprofit=0,string comment=NULL) {return pend(OP_BUY,price,lots,stoploss,takeprofit,comment);}
+   int               pendSell(double price,double lots,int stoploss=0,int takeprofit=0,string comment=NULL) {return pend(OP_SELL,price,lots,stoploss,takeprofit,comment);}
 
    //--- Order modification
    bool              modify(int ticket,double stoploss,double takeprofit);
@@ -172,13 +172,13 @@ int OrderManager::deducePendType(int op,double price)
 //| Takes care of normaling lots and prices                          |
 //| Internal use only. `price` parameter should always be normalized |
 //+------------------------------------------------------------------+
-int OrderManager::send(int cmd,double lots,double price,double stoploss,double takeprofit)
+int OrderManager::send(int cmd,double lots,double price,double stoploss,double takeprofit,string comment=NULL)
   {
    int ticket=OrderSend(s,cmd,Math::roundUpToMultiple(lots,MINLOT),
                         price,m_slippage,
                         OS::N(s,stoploss),
                         OS::N(s,takeprofit),
-                        "",m_magic,0,m_color[cmd&1]);
+                        comment,m_magic,0,m_color[cmd&1]);
 
    if(ticket<0)
      {
