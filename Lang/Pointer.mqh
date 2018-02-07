@@ -62,7 +62,7 @@ public:
 //| value, not the actual pointer address of objects.                |
 //| But numeric values of different pointers have to be distinct.    |
 //+------------------------------------------------------------------+
-long GetAddress(void *pointer)
+long GetAddress(const void *pointer)
   {
    return long(StringFormat("%I64d",pointer));
   }
