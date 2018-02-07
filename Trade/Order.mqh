@@ -36,9 +36,9 @@ const string ORDER_FROM_STR="from #";
 const string ORDER_PARTIAL_CLOSE_STR="partial close";
 const string ORDER_CLOSE_HEDGE_BY_STR="close hedge by #";
 //+------------------------------------------------------------------+
-//| Order Semantics: needs symbol and type to function               |
+//| Implements Order Semantics: needs symbol and type to function    |
 //+------------------------------------------------------------------+
-class OS
+class OrderBase
   {
 private:
    static ENUM_SYMBOL_INFO_DOUBLE ST[2];
@@ -50,7 +50,7 @@ protected:
    int               type;
 public:
 
-                     OS(string s,int t):symbol(s),type(t)
+                     OrderBase(string s,int t):symbol(s),type(t)
      {
       //--- order semantics
       st=ST[t&1];
@@ -99,15 +99,15 @@ public:
    static double     PP(int t,double p,double pr) {return p+D(t)*pr;}
    static double     PP(string s,int t,double p,int pr) {return p+D(t)*AP(s,pr);}
   };
-static ENUM_SYMBOL_INFO_DOUBLE OS::ST[2]={SYMBOL_ASK,SYMBOL_BID};
-static ENUM_SYMBOL_INFO_DOUBLE OS::ET[2]={SYMBOL_BID,SYMBOL_ASK};
-static int OS::DT[2]={1,-1};
+static ENUM_SYMBOL_INFO_DOUBLE OrderBase::ST[2]={SYMBOL_ASK,SYMBOL_BID};
+static ENUM_SYMBOL_INFO_DOUBLE OrderBase::ET[2]={SYMBOL_BID,SYMBOL_ASK};
+static int OrderBase::DT[2]={1,-1};
 //+------------------------------------------------------------------+
 //| Order (immutable)                                                |
 //| Creating a new Order captures all properties of a current        |
 //| selected order                                                   |
 //+------------------------------------------------------------------+
-class Order: public OS
+class Order: public OrderBase
   {
 protected:
    int               ticket;
@@ -249,7 +249,7 @@ public:
 //| Initialize an Order from current order information               |
 //+------------------------------------------------------------------+
 Order::Order(void)
-   :OS(OrderSymbol(),OrderType())
+   :OrderBase(OrderSymbol(),OrderType())
   {
    ticket=OrderTicket();
    lots=OrderLots();

@@ -55,8 +55,8 @@ protected:
    int               send(int cmd,double lots,double price,double stoploss,double takeprofit,string comment=NULL);
    int               send(int cmd,double lots,double price,int stoploss,int takeprofit,string comment=NULL)
      {
-      double sl=stoploss>0 ? OS::PP(s,cmd,price,-stoploss):0.0;
-      double tp=takeprofit>0 ? OS::PP(s,cmd,price,takeprofit):0.0;
+      double sl=stoploss>0 ? OrderBase::PP(s,cmd,price,-stoploss):0.0;
+      double tp=takeprofit>0 ? OrderBase::PP(s,cmd,price,takeprofit):0.0;
       return send(cmd,lots,price,sl,tp,comment);
      }
 public:
@@ -109,13 +109,13 @@ public:
    template<typename T>
    int               market(int op,double lots,T stoploss,T takeprofit,string comment=NULL)
      {
-      return send(op,lots,OS::S(s,op),stoploss,takeprofit,comment);
+      return send(op,lots,OrderBase::S(s,op),stoploss,takeprofit,comment);
      }
    // pending order T=double|int op=OP_BUY|OP_SELL
    template<typename T>
    int               pend(int op,double price,double lots,T stoploss,T takeprofit,string comment=NULL)
      {
-      double p=OS::N(s,price);
+      double p=OrderBase::N(s,price);
       return send(deducePendType(op,p),lots,p,stoploss,takeprofit,comment);
      }
 
@@ -149,7 +149,7 @@ int OrderManager::deducePendType(int op,double price)
    static int PriceBelowMarket[2] = {OP_BUYLIMIT,OP_SELLSTOP};
    static int PriceAboveMarket[2] = {OP_BUYSTOP,OP_SELLLIMIT};
 
-   double marketPrice=OS::S(s,op);
+   double marketPrice=OrderBase::S(s,op);
 
    double minPrice = marketPrice-STOPLEVEL*POINT;
    double maxPrice = marketPrice+STOPLEVEL*POINT;
@@ -176,8 +176,8 @@ int OrderManager::send(int cmd,double lots,double price,double stoploss,double t
   {
    int ticket=OrderSend(s,cmd,Math::roundUpToMultiple(lots,MINLOT),
                         price,m_slippage,
-                        OS::N(s,stoploss),
-                        OS::N(s,takeprofit),
+                        OrderBase::N(s,stoploss),
+                        OrderBase::N(s,takeprofit),
                         comment,m_magic,0,m_color[cmd&1]);
 
    if(ticket<0)
@@ -193,7 +193,7 @@ int OrderManager::send(int cmd,double lots,double price,double stoploss,double t
 //+------------------------------------------------------------------+
 bool OrderManager::modify(int ticket,double stoploss,double takeprofit)
   {
-   bool success=OrderModify(ticket,0,OS::N(s,stoploss),OS::N(s,takeprofit),0);
+   bool success=OrderModify(ticket,0,OrderBase::N(s,stoploss),OrderBase::N(s,takeprofit),0);
    if(!success)
      {
       Alert(">>> Error modifying #",ticket,": ",Mql::getErrorMessage(Mql::getLastError()));
@@ -219,7 +219,7 @@ bool OrderManager::modify(int ticket,int stoploss,int takeprofit)
 //+------------------------------------------------------------------+
 bool OrderManager::modifyPending(int ticket,double price,datetime expiration)
   {
-   bool success=OrderModify(ticket,OS::N(s,price),0,0,expiration);
+   bool success=OrderModify(ticket,OrderBase::N(s,price),0,0,expiration);
    if(!success)
      {
       int err=Mql::getLastError();
