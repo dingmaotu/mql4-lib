@@ -60,20 +60,19 @@ public:
 //+------------------------------------------------------------------+
 //| Set based on open addressing hash table                          |
 //+------------------------------------------------------------------+
-template<typename Key>
-class HashSet: public Collection<Key>
+template<typename T>
+class HashSet: public Collection<T>
   {
 private:
-   HashSetEntries<Key>m_entries;
-   HashSlots<Key>m_slots;
-   bool              m_owned;
+   HashSetEntries<T>m_entries;
+   HashSlots<T>m_slots;
 public:
    //--- `owned` parameter determines if this collection owns its elements 
    //--- (i.e. release their resources in destructor or on removal)
    //--- by default the HashSet do not own its elements
    //--- if the hash elements are pointers and the real owner wants to
    //--- transfer the ownership to this collection, then she need to explicitly `new HashSet(NULL,true)`
-                     HashSet(EqualityComparer<Key>*comparer=NULL,bool owned=false):m_slots((comparer==NULL)?(new GenericEqualityComparer<Key>()):comparer,GetPointer(m_entries)),m_owned(owned) {}
+                     HashSet(EqualityComparer<T>*comparer=NULL,bool owned=false):Collection<T>(owned,comparer),m_slots(m_comparer,GetPointer(m_entries)) {}
                     ~HashSet()
      {
       if(m_owned)
@@ -88,22 +87,25 @@ public:
         }
      }
 
+   // CosntIterator interface
+   ConstIterator<T>*constIterator() const {return new ConstHashSetIterator<T>(GetPointer(m_entries));}
+
    // Iterator interface
-   Iterator<Key>*iterator() const {return new HashSetIterator<Key>(m_entries);}
+   Iterator<T>*iterator() {return new HashSetIterator<T>(GetPointer(m_entries),GetPointer(m_slots),m_owned);}
 
    // Collection interface
    int               size() const {return m_entries.getRealSize();}
-   bool              contains(const Key key) const {return m_slots.contains(key);}
+   bool              contains(const T key) const {return m_slots.contains(key);}
 
-   bool              add(Key key);
-   bool              remove(const Key key);
+   bool              add(T key);
+   bool              remove(const T key);
    void              clear();
   };
 //+------------------------------------------------------------------+
 //| If the key does not exist and get added, return true             |
 //+------------------------------------------------------------------+
-template<typename Key>
-bool HashSet::add(Key key)
+template<typename T>
+bool HashSet::add(T key)
   {
 // we need to make sure that used slots is always smaller than
 // certain percentage of total slots (m_htused <= (m_htsize*2)/3)
@@ -118,8 +120,8 @@ bool HashSet::add(Key key)
 //+------------------------------------------------------------------+
 //| If key actually removed returns true                             |
 //+------------------------------------------------------------------+
-template<typename Key>
-bool HashSet::remove(const Key key)
+template<typename T>
+bool HashSet::remove(const T key)
   {
    int ix=m_slots.lookupIndex(key);
    if(ix==-1) return false;
@@ -143,7 +145,7 @@ bool HashSet::remove(const Key key)
 //+------------------------------------------------------------------+
 //| clear all entries and return to initial state                    |
 //+------------------------------------------------------------------+
-template<typename Key>
+template<typename T>
 void HashSet::clear()
   {
    if(m_owned)
@@ -162,6 +164,28 @@ void HashSet::clear()
    m_slots.initState();
   }
 //+------------------------------------------------------------------+
+//| ConstIterator implementation for HashSet                         |
+//+------------------------------------------------------------------+
+template<typename T>
+class ConstHashSetIterator: public ConstIterator<T>
+  {
+private:
+   // ref to hash set entries
+   const             HashSetEntries<T>*m_entries;
+   int               m_index;
+public:
+                     ConstHashSetIterator(const HashSetEntries<T>*entries)
+   :m_index(0),m_entries(entries)
+     {
+      // seek to first non removed entry
+      while(!end() && m_entries.isRemoved(m_index)) m_index++;
+     }
+
+   bool              end() const {return m_index>=m_entries.size();}
+   void              next() {if(!end()) {do{m_index++;}while(!end() && m_entries.isRemoved(m_index));}}
+   T                 current() const {return m_entries.getKey(m_index);}
+  };
+//+------------------------------------------------------------------+
 //| Iterator implementation for HashSet                              |
 //+------------------------------------------------------------------+
 template<typename T>
@@ -169,20 +193,42 @@ class HashSetIterator: public Iterator<T>
   {
 private:
    // ref to hash set entries
-   const             HashSetEntries<T>*m_entries;
+   HashSetEntries<T>*m_entries;
+   HashSlots<T>*m_slots;
    int               m_index;
+   const bool        m_owned;
 public:
-                     HashSetIterator(const HashSetEntries<T>&entries)
-   :m_index(0),m_entries(GetPointer(entries)) 
+                     HashSetIterator(HashSetEntries<T>*entries,HashSlots<T>*slots,bool owned)
+   :m_index(0),m_entries(entries),m_slots(slots),m_owned(owned)
      {
       // seek to first non removed entry
       while(!end() && m_entries.isRemoved(m_index)) m_index++;
      }
+                    ~HashSetIterator()
+     {
+      // if half of the keys is empty, then compact the storage
+      if(m_entries.shouldCompact())
+        {
+         Debug(StringFormat("should compact: real: %d, buffer: %d",m_entries.getRealSize(),m_entries.size()));
+         m_entries.compact();
+         m_slots.rehash();
+        }
+     }
+
    bool              end() const {return m_index>=m_entries.size();}
    void              next() {if(!end()) {do{m_index++;}while(!end() && m_entries.isRemoved(m_index));}}
    T                 current() const {return m_entries.getKey(m_index);}
 
    // you can not set something to a hash entry
    bool              set(T value) {return false;}
+
+   bool              remove()
+     {
+      // this line is needed in case of repeated call of remove
+      if(m_entries.isRemoved(m_index)) return false;
+      if(m_owned) SafeDelete(m_entries.getKey(m_index));
+      m_entries.remove(m_index);
+      return true;
+     }
   };
 //+------------------------------------------------------------------+

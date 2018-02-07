@@ -135,6 +135,35 @@ bool ArrayFindMatch(const T &a[],const T &b[],T &result)
    return false;
   }
 //+------------------------------------------------------------------+
+//| Remove array elements based on removed index                     |
+//| The removed index array is in ascending order                    |
+//+------------------------------------------------------------------+
+template<typename T>
+int ArrayBatchRemove(T &array[],const int &removed[])
+  {
+   int s=ArraySize(array);
+   int i=0;
+   int k=0;
+   for(int j=0; j<s; j++)
+     {
+      if(k>=ArraySize(removed) || j!=removed[k])
+        {
+         if(i!=j)
+           {
+            array[i]=array[j];
+           }
+         i++;
+        }
+      else k++;
+     }
+   if(i<s)
+     {
+      ArrayResize(array,i);
+      return s-i;
+     }
+   else return 0;
+  }
+//+------------------------------------------------------------------+
 //| Wraps array                                                      |
 //+------------------------------------------------------------------+
 template<typename T>

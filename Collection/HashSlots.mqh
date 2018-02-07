@@ -51,7 +51,7 @@ public:
                     ~HashSlots() { SafeDelete(m_comparer); }
 
    void              initState();
-   int               lookup(Key key) const;
+   int               lookup(const Key key) const;
    void              rehash();
    void              upsize();
 
@@ -63,8 +63,8 @@ public:
 
    int               operator[](int i) const {return m_slots[i];}
 
-   int               lookupIndex(Key key) const {return m_slots[lookup(key)];}
-   bool              contains(Key key) const {int ix=lookupIndex(key);return ix>=0 && !m_entries.isRemoved(ix);}
+   int               lookupIndex(const Key key) const {return m_slots[lookup(key)];}
+   bool              contains(const Key key) const {int ix=lookupIndex(key);return ix>=0 && !m_entries.isRemoved(ix);}
   };
 //+------------------------------------------------------------------+
 //| restore internal state to initial                                |
@@ -114,7 +114,7 @@ void HashSlots::upsize()
 //| Uses the Python dictobject probing algorithm                     |
 //+------------------------------------------------------------------+
 template<typename Key>
-int HashSlots::lookup(Key key) const
+int HashSlots::lookup(const Key key) const
   {
    int hash=m_comparer.hash(key);
    int mask=ArraySize(m_slots)-1;

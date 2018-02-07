@@ -21,57 +21,138 @@
 #property strict
 
 #include "../Lang/Array.mqh"
-#include "Collection.mqh"
+#include "List.mqh"
 //+------------------------------------------------------------------+
 //| Generic Vector                                                   |
 //+------------------------------------------------------------------+
 template<typename T>
-class Vector: public Collection<T>
+class Vector: public List<T>
   {
 private:
-   Array<T>m_array;
+   int               m_extraBuffer;
+   T                 m_array[];
+protected:
+   void              resize(int size)
+     {
+      ArrayResize(m_array,size,m_extraBuffer);
+     }
+   void              clearArray()
+     {
+      int s=ArraySize(m_array);
+      if(m_owned && s>0)
+        {
+         for(int i=0;i<s;i++){SafeDelete(m_array[i]);}
+        }
+     }
 public:
-                     Vector(int extraBuffer=50):m_array(extraBuffer) {}
+                     Vector(bool owned=true,int extraBuffer=10,EqualityComparer<T>*comparer=NULL):List<T>(owned,comparer),m_extraBuffer(extraBuffer)
+     {
+      resize(0);
+     }
+                    ~Vector()
+     {
+      clearArray();
+     }
 
+   // ConstIterator interface
+   ConstIterator<T>*constIterator() const {return new ConstVectorIterator<T>(GetPointer(this));}
    // Iterator interface
-   Iterator<T>*iterator() const {return new VectorIterator<T>(this);}
+   Iterator<T>*iterator() {return new VectorIterator<T>(GetPointer(this),m_owned);}
+
+   // Vector specific
+   void              setExtraBuffer(int value) {m_extraBuffer=value;resize(size());}
+   int               getExtraBuffer() const {return m_extraBuffer;}
+   int               removeByAscendingIndex(int &removed[])
+     {
+      if(m_owned)
+        {
+         for(int i=0; i<ArraySize(removed); i++)
+           {
+            SafeDelete(m_array[removed[i]]);
+           }
+        }
+      int s=ArraySize(m_array);
+      int i=0;
+      int k=0;
+      for(int j=0; j<s; j++)
+        {
+         if(k>=ArraySize(removed) || j!=removed[k])
+           {
+            if(i!=j)
+              {
+               m_array[i]=m_array[j];
+              }
+            i++;
+           }
+         else k++;
+        }
+      if(i<s)
+        {
+         ArrayResize(m_array,i,m_extraBuffer);
+         return s-i;
+        }
+      else return 0;
+     }
 
    // Collection interface
-   void              clear() {m_array.clear();}
-   int               size() const {return m_array.size();}
+   void              clear() {clearArray(); resize(0);}
+   int               size() const {return ArraySize(m_array);}
    bool              add(T value) {push(value); return true;}
-   bool              remove(const T value);
-   int               removeAll(const T value) {return m_array.removeAll(value);}
+   bool              remove(const T value)
+     {
+      int s=ArraySize(m_array);
+      int i=0;
+      for(int j=0; j<s; j++)
+        {
+         if(!m_comparer.equals(m_array[j],value))
+           {
+            if(i!=j) { m_array[i]=m_array[j]; }
+            i++;
+           }
+         // in this case, it is no point to check m_owned and SafeDelete value
+        }
+      if(i<s) ArrayResize(m_array,i);
+      return ((s-i)> 0);
+     }
 
    // Sequence interface
-   void              insertAt(int i,T val) {m_array.insertAt(i,val);}
-   T                 removeAt(int i) {T val=m_array[i];m_array.removeAt(i);return val;}
+   void              insertAt(int i,T val)
+     {
+      ArrayInsert(m_array,i,val,m_extraBuffer);
+     }
+   T                 removeAt(int i)
+     {
+      T val=m_array[i];
+      ArrayDelete(m_array,i);
+      return val;
+     }
+   T                 operator[](int i) const {return m_array[i];}
    T                 get(int i) const {return m_array[i];}
-   void              set(int i,T val) {m_array.set(i,val);}
+   void              set(int i,T val) {m_array[i]=val;}
 
    // Stack and Queue interface: alias for Sequence interface
    void              push(T val) {insertAt(size(),val);}
    T                 pop() {return removeAt(size()-1);}
-   T                 peek() const {return get(size()-1);}
+   T                 peek() const {return m_array[size()-1];}
    void              unshift(T val) {insertAt(0,val);}
    T                 shift() {return removeAt(0);}
   };
 //+------------------------------------------------------------------+
-//| Remove the first element that is equal to value                  |
+//| ConstIterator implementation for Vector                          |
 //+------------------------------------------------------------------+
 template<typename T>
-bool Vector::remove(const T value)
+class ConstVectorIterator: public ConstIterator<T>
   {
-   int index=m_array.index(value);
-   if(index>=0)
-     {
-      SafeDelete(m_array[index]);
-      m_array.removeAt(index);
-      return true;
-     }
-   else
-      return false;
-  }
+private:
+   int               m_index;
+   const int         m_size;
+   const             Vector<T>*m_vector;
+public:
+                     ConstVectorIterator(const Vector<T>*v):m_index(0),m_size(v.size()),m_vector(v) {}
+   bool              end() const {return m_index>=m_size;}
+   void              next() {if(!end()){m_index++;}}
+   T                 current() const {return m_vector[m_index];}
+  };
 //+------------------------------------------------------------------+
 //| Iterator implementation for Vector                               |
 //+------------------------------------------------------------------+
@@ -82,11 +163,35 @@ private:
    int               m_index;
    const int         m_size;
    Vector<T>*m_vector;
+   int               m_removed[];
+protected:
+   bool              removed() const
+     {
+      int s=ArraySize(m_removed);
+      return (s>0 && m_removed[s-1]==m_index);
+     }
 public:
-                     VectorIterator(const Vector<T>&v):m_index(0),m_size(v.size()),m_vector((Vector<T>*)GetPointer(v)) {}
+                     VectorIterator(Vector<T>*v,bool owned):m_index(0),m_size(v.size()),m_vector(v){}
+                    ~VectorIterator()
+     {
+      if(ArraySize(m_removed)>0)
+        {
+         m_vector.removeByAscendingIndex(m_removed);
+        }
+     }
    bool              end() const {return m_index>=m_size;}
    void              next() {if(!end()){m_index++;}}
-   T                 current() const {return m_vector.get(m_index);}
-   bool              set(T value) {m_vector.set(m_index,value);return true;}
+   T                 current() const {if(removed()) return NULL; else return m_vector[m_index];}
+
+   bool              set(T value) {if(removed()) return false; m_vector.set(m_index,value);return true;}
+   bool              remove()
+     {
+      if(end()) return false;
+      if(removed()) return false;
+      int s=ArraySize(m_removed);
+      ArrayResize(m_removed,s+1,5);
+      m_removed[s]=m_index;
+      return true;
+     }
   };
 //+------------------------------------------------------------------+

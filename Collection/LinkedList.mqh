@@ -21,7 +21,7 @@
 #property strict
 
 #include "../Lang/Pointer.mqh"
-#include "Collection.mqh"
+#include "List.mqh"
 //+------------------------------------------------------------------+
 //| LinkedNode implementation as a base class for specific           |
 //| node types.                                                      |
@@ -53,9 +53,10 @@ public:
 //| collections.                                                     |
 //+------------------------------------------------------------------+
 template<typename T>
-class LinkedList: public Collection<T>
+class LinkedListBase
   {
-protected:
+public:
+   bool              m_owned;
    LinkedNode<T>*m_head;
    LinkedNode<T>*m_tail;
    int               m_size;
@@ -68,52 +69,28 @@ protected:
 
    T                 getAndDetach(LinkedNode<T>*n){if(n==m_tail){return NULL;}T o=n.release();detach(n);return o;}
 
-public:
-
-                     LinkedList()
-   :m_size(0),m_head(new LinkedNode<T>(NULL)),m_tail(new LinkedNode<T>(NULL))
+                     LinkedListBase(bool owned):m_owned(owned),m_size(0),m_head(new LinkedNode<T>(NULL)),m_tail(new LinkedNode<T>(NULL))
      {
       m_head.next(m_tail);
       m_tail.prev(m_head);
      }
-   virtual          ~LinkedList();
-
-   Iterator<T>*iterator() const {return new ListIterator<T>(m_head,m_tail);}
-
-   int               size() const {return m_size;}
-   void              clear();
-   // returns true if the collection changed because of adding the value
-   bool              add(T value) {push(value); return true;}
-   // returns true if the collection changed because of removing the value
-   bool              remove(const T value);
-   // returns number of deleted items
-   int               removeAll(const T value);
-
-   // Sequence interface
-   T                 get(int i) const {LinkedNode<T>*on=at(i);return on==m_tail?NULL:on.get();}
-   void              set(int i,T o) {LinkedNode<T>*on=at(i);if(on!=m_tail){on.set(o);}}
-   void              insertAt(int i,T o) {insert(at(i),new LinkedNode<T>(o));}
-   void              removeAt(int i) {detach(at(i));}
-
-   // Stack and Queue interface
-   void              push(T o) {insert(m_tail,new LinkedNode<T>(o));}
-   T                 pop() {LinkedNode<T>*n=last(); return n==NULL?NULL:getAndDetach(n);}
-   T                 peek() const {LinkedNode<T>*n=last(); return n==NULL?NULL:n.get();}
-   void              unshift(T o) {insert(m_head.next(),new LinkedNode<T>(o));}
-   T                 shift() {LinkedNode<T>*n=m_head.next(); return getAndDetach(n);}
+                    ~LinkedListBase();
   };
 //+------------------------------------------------------------------+
 //| release all memory used by the list                              |
 //+------------------------------------------------------------------+
 template<typename T>
-LinkedList::~LinkedList()
+LinkedListBase::~LinkedListBase()
   {
-   LinkedNode<T>*n=m_head.next();
-   while(n!=m_tail)
+   if(m_owned)
      {
-      LinkedNode<T>*tempNode=n.next();
-      SafeDelete(n);
-      n=tempNode;
+      LinkedNode<T>*n=m_head.next();
+      while(n!=m_tail)
+        {
+         LinkedNode<T>*tempNode=n.next();
+         SafeDelete(n);
+         n=tempNode;
+        }
      }
    SafeDelete(m_head);
    SafeDelete(m_tail);
@@ -122,7 +99,7 @@ LinkedList::~LinkedList()
 //| detach node from list                                            |
 //+------------------------------------------------------------------+
 template<typename T>
-void LinkedList::detach(LinkedNode<T>*node)
+void LinkedListBase::detach(LinkedNode<T>*node)
   {
    if(CheckPointer(node) != POINTER_DYNAMIC) return;
    if(node==m_tail) return;
@@ -135,7 +112,7 @@ void LinkedList::detach(LinkedNode<T>*node)
 //| insert a node before ref node                                    |
 //+------------------------------------------------------------------+
 template<typename T>
-void LinkedList::insert(LinkedNode<T>*ref,LinkedNode<T>*node)
+void LinkedListBase::insert(LinkedNode<T>*ref,LinkedNode<T>*node)
   {
    if(CheckPointer(node) != POINTER_DYNAMIC) return;
 
@@ -151,7 +128,7 @@ void LinkedList::insert(LinkedNode<T>*ref,LinkedNode<T>*node)
 //| last node of the list                                            |
 //+------------------------------------------------------------------+
 template<typename T>
-LinkedNode<T>*LinkedList::last() const
+LinkedNode<T>*LinkedListBase::last() const
   {
    LinkedNode<T>*node=m_tail.prev();
    return (node == m_head) ? NULL : node;
@@ -163,7 +140,7 @@ LinkedNode<T>*LinkedList::last() const
 //| m_tail                                                           |
 //+------------------------------------------------------------------+
 template<typename T>
-LinkedNode<T>*LinkedList::at(int i) const
+LinkedNode<T>*LinkedListBase::at(int i) const
   {
    int j=0;
    LinkedNode<T>*node=m_head.next();
@@ -171,72 +148,120 @@ LinkedNode<T>*LinkedList::at(int i) const
    return node;
   }
 //+------------------------------------------------------------------+
-//|                                                                  |
+//| LinkedList implementation as a base class for specific           |
+//| collections.                                                     |
+//+------------------------------------------------------------------+
+template<typename T>
+class LinkedList: public List<T>
+  {
+private:
+   LinkedListBase<T>m_base;
+public:
+                     LinkedList(bool owned=true,EqualityComparer<T>*comparer=NULL):List<T>(owned,comparer),m_base(owned) {}
+
+   ConstIterator<T>*constIterator() const {return new ConstListIterator<T>(m_base.m_head,m_base.m_tail);}
+   Iterator<T>*iterator() {return new ListIterator<T>(GetPointer(m_base));}
+
+   int               size() const {return m_base.m_size;}
+   void              clear();
+   // returns true if the collection changed because of adding the value
+   bool              add(T value) {push(value); return true;}
+   // returns true if the collection changed because of removing the value
+   bool              remove(const T value);
+
+   // Sequence interface
+   T                 get(int i) const {LinkedNode<T>*on=m_base.at(i);return on==m_base.m_tail?NULL:on.get();}
+   void              set(int i,T o) {LinkedNode<T>*on=m_base.at(i);if(on!=m_base.m_tail){on.set(o);}}
+   void              insertAt(int i,T o) {m_base.insert(m_base.at(i),new LinkedNode<T>(o));}
+   T                 removeAt(int i) {return m_base.getAndDetach(m_base.at(i));}
+
+   // Stack and Queue interface
+   void              push(T o) {m_base.insert(m_base.m_tail,new LinkedNode<T>(o));}
+   T                 pop() {LinkedNode<T>*n=m_base.last(); return n==NULL?NULL:m_base.getAndDetach(n);}
+   T                 peek() const {LinkedNode<T>*n=m_base.last(); return n==NULL?NULL:n.get();}
+   void              unshift(T o) {m_base.insert(m_base.m_head.next(),new LinkedNode<T>(o));}
+   T                 shift() {LinkedNode<T>*n=m_base.m_head.next(); return m_base.getAndDetach(n);}
+  };
+//+------------------------------------------------------------------+
+//| Remove all elements of the LinkedList                            |
 //+------------------------------------------------------------------+
 template<typename T>
 LinkedList::clear(void)
   {
-   LinkedNode<T>*node=m_head.next();
-   while(node!=m_tail)
+   LinkedNode<T>*node=m_base.m_head.next();
+   while(node!=m_base.m_tail)
      {
       LinkedNode<T>*tempNode=node.next();
       SafeDelete(node);
       node=tempNode;
      }
-   m_head.next(m_tail);
-   m_tail.prev(m_head);
-   m_size=0;
-  }
-//+------------------------------------------------------------------+
-//| Remove one elment from list                                      |
-//+------------------------------------------------------------------+
-template<typename T>
-bool LinkedList::remove(const T value)
-  {
-   for(LinkedNode<T>*p=m_head.next(); p!=m_tail; p=p.next())
-     {
-      if(value==p.get())
-        {
-         detach(p);
-         return true;
-        }
-     }
-   return false;
+   m_base.m_head.next(m_base.m_tail);
+   m_base.m_tail.prev(m_base.m_head);
+   m_base.m_size=0;
   }
 //+------------------------------------------------------------------+
 //| Remove all elements from list that equal `value`                 |
 //+------------------------------------------------------------------+
 template<typename T>
-int LinkedList::removeAll(const T value)
+bool LinkedList::remove(const T value)
   {
    int n=0;
-   LinkedNode<T>*p=m_head.next();
-   while(p!=m_tail)
+   LinkedNode<T>*p=m_base.m_head.next();
+   while(p!=m_base.m_tail)
      {
       LinkedNode<T>*t=p;
       p=p.next();
-      if(value==t.get())
+      if(m_comparer.equals(value,t.get()))
         {
          n++;
-         detach(t);
+         m_base.detach(t);
         }
      }
-   return n;
+   return n>0;
   }
 //+------------------------------------------------------------------+
-//|                                                                  |
+//| ConstIterator Implementation                                     |
+//+------------------------------------------------------------------+
+template<typename T>
+class ConstListIterator: public ConstIterator<T>
+  {
+private:
+   LinkedNode<T>*m_tail;
+   LinkedNode<T>*m_p;
+public:
+                     ConstListIterator(LinkedNode<T>*head,LinkedNode<T>*tail)
+   :m_tail(tail),m_p(head.next())
+     {}
+   bool              end() const {return m_p==m_tail;}
+   void              next() {m_p=m_p.next();}
+   T                 current() const {return m_p.get();}
+  };
+//+------------------------------------------------------------------+
+//| Iterator Implementation                                          |
 //+------------------------------------------------------------------+
 template<typename T>
 class ListIterator: public Iterator<T>
   {
 private:
+   LinkedListBase<T>*m_base;
+   LinkedNode<T>*m_prev;
    LinkedNode<T>*m_p;
-   const             LinkedNode<T>*m_tail;
 public:
-                     ListIterator(const LinkedNode<T>*head,const LinkedNode<T>*tail):m_p(head.next()),m_tail(tail){}
-   bool              end() const {return m_p==m_tail;}
-   void              next() {m_p=m_p.next();}
-   T                 current() const {return m_p.get();}
-   bool              set(T value) {m_p.set(value); return true;}
+                     ListIterator(LinkedListBase<T>*base)
+   :m_base(base),m_prev(base.m_head),m_p(m_prev.next())
+     {}
+   bool              end() const {return m_p==m_base.m_tail;}
+   void              next() {if(m_p==NULL){m_p=m_prev.next();} else {m_prev=m_p;m_p=m_p.next();}}
+   T                 current() const {return m_p==NULL?NULL:m_p.get();}
+   bool              set(T value) {if(m_p==NULL)return false; m_p.set(value); return true;}
+
+   bool              remove()
+     {
+      int size=m_base.m_size;
+      m_base.detach(m_p);
+      if(size==m_base.m_size) return false;
+      m_p=NULL;
+      return true;
+     }
   };
 //+------------------------------------------------------------------+

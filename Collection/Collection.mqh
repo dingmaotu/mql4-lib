@@ -21,16 +21,25 @@
 #property strict
 
 #include "../Lang/Pointer.mqh"
+#include "EqualityComparer.mqh"
 //+------------------------------------------------------------------+
-//| Standard Iterator for all collections                            |
+//| ConstIterator (readonly) for all collections                     |
 //+------------------------------------------------------------------+
 template<typename T>
-interface Iterator
+interface ConstIterator
   {
    void      next();
    T         current() const;
    bool      end() const;
+  };
+//+------------------------------------------------------------------+
+//| Standard Iterator for all collections                            |
+//+------------------------------------------------------------------+
+template<typename T>
+interface Iterator: public ConstIterator<T>
+  {
    bool      set(T value);  // replace current value in target collection
+   bool      remove();      // safely remove current element
   };
 //+------------------------------------------------------------------+
 //| Do something on each elements of an iterable                     |
@@ -48,10 +57,40 @@ public:
 //| A collection must be iterable                                    |
 //+------------------------------------------------------------------+
 template<typename T>
-interface Iterable
+interface ConstIterable
   {
-   Iterator<T>*iterator() const;
+   ConstIterator<T>*constIterator() const;
   };
+//+------------------------------------------------------------------+
+//| A collection must be iterable                                    |
+//+------------------------------------------------------------------+
+template<typename T>
+interface Iterable: public ConstIterable<T>
+  {
+   Iterator<T>*iterator();
+  };
+//+------------------------------------------------------------------+
+//| This is the utility class for implementing iterator RAII         |
+//| assign and trueForOnce is for implementing foreach               |
+//+------------------------------------------------------------------+
+template<typename T>
+class ConstIter:public ConstIterator<T>
+  {
+private:
+   ConstIterator<T>*m_it;
+   int               m_condition;
+public:
+                     ConstIter(const ConstIterable<T>&it):m_it(it.constIterator()),m_condition(1) {}
+                    ~ConstIter() {SafeDelete(m_it);}
+   void              next() {m_it.next();}
+   T                 current() const {return m_it.current();}
+   bool              end() const {return m_it.end();}
+
+   bool              testTrue() {if(m_condition==0)return false;else {m_condition--;return true;}}
+   bool              assign(T &var) {if(m_it.end()) return false; else {var=m_it.current();return true;}}
+  };
+#define cforeach(Type,Iterable) for(ConstIter<Type> it(Iterable);!it.end();it.next())
+#define cforeachv(Type,Var,Iterable) for(ConstIter<Type> it(Iterable);it.testTrue();) for(Type Var;it.assign(Var);it.next())
 //+------------------------------------------------------------------+
 //| This is the utility class for implementing iterator RAII         |
 //| assign and trueForOnce is for implementing foreach               |
@@ -63,12 +102,13 @@ private:
    Iterator<T>*m_it;
    int               m_condition;
 public:
-                     Iter(const Iterable<T>&it):m_it(it.iterator()),m_condition(1) {}
+                     Iter(Iterable<T>&it):m_it(it.iterator()),m_condition(1) {}
                     ~Iter() {SafeDelete(m_it);}
    void              next() {m_it.next();}
    T                 current() const {return m_it.current();}
    bool              end() const {return m_it.end();}
    bool              set(T value) {return m_it.set(value);}
+   bool              remove() {return m_it.remove();}
 
    bool              testTrue() {if(m_condition==0)return false;else {m_condition--;return true;}}
    bool              assign(T &var) {if(m_it.end()) return false; else {var=m_it.current();return true;}}
@@ -81,7 +121,13 @@ public:
 template<typename T>
 class Collection: public Iterable<T>
   {
+protected:
+   EqualityComparer<T>*m_comparer;
+   bool              m_owned;
 public:
+                     Collection(bool owned,EqualityComparer<T>*comparer):m_owned(owned),m_comparer(comparer==NULL?new GenericEqualityComparer<T>:comparer) {}
+                    ~Collection() {SafeDelete(m_comparer);}
+
    // remove all elements of the collection
    virtual void      clear()=0;
    // returns true if the collection changed because of adding the value
@@ -105,9 +151,9 @@ public:
 template<typename T>
 bool Collection::contains(const T value) const
   {
-   foreach(T,this)
+   cforeach(T,this)
      {
-      if(it.current()==value) return true;
+      if(m_comparer.equals(it.current(),value)) return true;
      }
    return false;
   }
@@ -133,7 +179,7 @@ template<typename T>
 bool Collection::addAll(const Collection<T>&collection)
   {
    bool added=false;
-   foreach(T,collection)
+   cforeach(T,collection)
      {
       bool tmp=add(it.current());
       if(!added) added=tmp;
@@ -150,14 +196,8 @@ void Collection::toArray(T &array[]) const
    if(s>0)
      {
       ArrayResize(array,s);
-      Iterator<T>*iter=this.iterator();
-      int i=0;
-      while(!iter.end())
-        {
-         array[i]=iter.current();
-         iter.next();
-         i++;
-        }
+      ConstIterator<T>*iter=constIterator();
+      for(int i=0; !iter.end(); i++,iter.next()) array[i]=iter.current();
       delete iter;
      }
   }
