@@ -151,6 +151,7 @@ public:
    uint              writeString(string value) {return FileWriteString(m_handle,value);}
    uint              writeDateTime(datetime value) {return FileWriteString(m_handle,TimeToString(value));}
    uint              writeNumber(double value) {return FileWriteString(m_handle,DoubleToString(value,8));}
+   uint              writeInteger(int value) {return FileWriteString(m_handle,IntegerToString(value));}
    uint              writeBool(bool value) {return FileWriteString(m_handle,value?"true":"false");}
 
    uint              writeLine(string value) {return FileWriteString(m_handle,value+"\n");}
