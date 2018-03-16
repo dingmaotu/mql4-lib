@@ -1,4 +1,4 @@
-﻿//+------------------------------------------------------------------+
+//+------------------------------------------------------------------+
 //| Module: Trade/OrderManager.mqh                                   |
 //| This file is part of the mql4-lib project:                       |
 //|     https://github.com/dingmaotu/mql4-lib                        |
@@ -34,6 +34,12 @@ class OrderManager
    ObjectAttr(int,slippage,Slippage);
    ObjectAttr(color,closeColor,CloseColor);
 
+   // last error implementation
+private:
+   int               m_lastError;
+public:
+   int               getLastError() {int err=m_lastError;m_lastError=0;return err;}
+
    // custom implementation of BuyColor/SellColor properties
 private:
    color             m_color[2];
@@ -67,6 +73,7 @@ public:
         STOPLEVEL((int)SymbolInfoInteger(symbol,SYMBOL_TRADE_STOPS_LEVEL)),
         m_magic(0),
         m_slippage(3),
+        m_lastError(0),
         m_closeColor(clrWhite)
      {
       m_color[0]=clrBlue;
@@ -138,7 +145,12 @@ public:
    //--- Order closing
    bool              closeCurrent();
    bool              close(int ticket);
-   bool              closeBy(int ticket,int other) {return OrderCloseBy(ticket,other,m_closeColor);}
+   bool              closeBy(int ticket,int other)
+     {
+      bool res=OrderCloseBy(ticket,other,m_closeColor);
+      m_lastError=Mql::getLastError();
+      return res;
+     }
   };
 //+------------------------------------------------------------------+
 //| Determine the pending order command based on the price           |
@@ -183,6 +195,7 @@ int OrderManager::send(int cmd,double lots,double price,double stoploss,double t
    if(ticket<0)
      {
       int err=Mql::getLastError();
+      m_lastError=err;
       Alert(StringFormat(">>> Error OrderSend[%d]: %s",err,Mql::getErrorMessage(err)));
      }
 
@@ -196,7 +209,9 @@ bool OrderManager::modify(int ticket,double stoploss,double takeprofit)
    bool success=OrderModify(ticket,0,OrderBase::N(s,stoploss),OrderBase::N(s,takeprofit),0);
    if(!success)
      {
-      Alert(">>> Error modifying #",ticket,": ",Mql::getErrorMessage(Mql::getLastError()));
+      int err=Mql::getLastError();
+      m_lastError=err;
+      Alert(">>> Error modifying #",ticket,": ",Mql::getErrorMessage(err));
      }
    return success;
   }
@@ -223,6 +238,7 @@ bool OrderManager::modifyPending(int ticket,double price,datetime expiration)
    if(!success)
      {
       int err=Mql::getLastError();
+      m_lastError=err;
       Alert(StringFormat(">>> Error modify pending order #%d[%s]: %s",
             ticket,err,Mql::getErrorMessage(err)));
      }
@@ -237,7 +253,9 @@ bool OrderManager::closeCurrent(void)
      {
       if(!OrderDelete(Order::Ticket(),m_closeColor))
         {
-         Alert(">>> Error OrderDelete #",Order::Ticket(),": ",Mql::getErrorMessage(Mql::getLastError()));
+         int err=Mql::getLastError();
+         m_lastError=err;
+         Alert(">>> Error OrderDelete #",Order::Ticket(),": ",Mql::getErrorMessage(err));
          return false;
         }
      }
@@ -245,7 +263,9 @@ bool OrderManager::closeCurrent(void)
      {
       if(!OrderClose(Order::Ticket(),Order::Lots(),Order::E(),m_slippage,m_closeColor))
         {
-         Alert(">>> Error OrderClose #",Order::Ticket(),": ",Mql::getErrorMessage(Mql::getLastError()));
+         int err=Mql::getLastError();
+         m_lastError=err;
+         Alert(">>> Error OrderClose #",Order::Ticket(),": ",Mql::getErrorMessage(err));
          return false;
         }
      }
