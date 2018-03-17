@@ -225,8 +225,13 @@ bool OrderManager::modify(int ticket,int stoploss,int takeprofit)
    bool modifyStoploss=stoploss>0;
    bool modifyTakeprofit=takeprofit>0;
    if(!(modifyStoploss || modifyTakeprofit)) return false;
-   if(!Order::Select(ticket)) return false;
-
+   if(!Order::Select(ticket))
+     {
+      int err=Mql::getLastError();
+      m_lastError=err;
+      Alert(">>> Error modifying order with invalid ticket #",ticket,": ",Mql::getErrorMessage(err));
+      return false;
+     }
    double sl=modifyStoploss ? Order::PPO(-stoploss) : Order::StopLoss();
    double tp=modifyTakeprofit ? Order::PPO(takeprofit) : Order::TakeProfit();
    return modify(ticket,sl,tp);
@@ -280,7 +285,9 @@ bool OrderManager::close(int ticket)
   {
    if(!Order::Select(ticket))
      {
-      Alert(">>> Error closing order with invalid ticket #",Order::Ticket(),": ",Mql::getErrorMessage(Mql::getLastError()));
+      int err=Mql::getLastError();
+      m_lastError=err;
+      Alert(">>> Error closing order with invalid ticket #",ticket,": ",Mql::getErrorMessage(err));
       return false;
      }
    return closeCurrent();
@@ -293,6 +300,7 @@ bool OrderManager::closeCurrent(double lots)
    if(Order::IsPending())
      {
       Alert(">>> Use close() on pending order #",Order::Ticket());
+      m_lastError=ERR_NO_RESULT; // signal the failure
       return false;
      }
    if(!OrderClose(Order::Ticket(),lots,Order::E(),m_slippage,m_closeColor))
@@ -311,7 +319,9 @@ bool OrderManager::close(int ticket,double lots)
   {
    if(!Order::Select(ticket))
      {
-      Alert(">>> Error closing order with invalid ticket #",Order::Ticket(),": ",Mql::getErrorMessage(Mql::getLastError()));
+      int err=Mql::getLastError();
+      m_lastError=err;
+      Alert(">>> Error closing order with invalid ticket #",ticket,": ",Mql::getErrorMessage(err));
       return false;
      }
    return closeCurrent(lots);
