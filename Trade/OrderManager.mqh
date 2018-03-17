@@ -144,7 +144,9 @@ public:
 
    //--- Order closing
    bool              closeCurrent();
+   bool              closeCurrent(double lots);
    bool              close(int ticket);
+   bool              close(int ticket,double lots);
    bool              closeBy(int ticket,int other)
      {
       bool res=OrderCloseBy(ticket,other,m_closeColor);
@@ -282,5 +284,36 @@ bool OrderManager::close(int ticket)
       return false;
      }
    return closeCurrent();
+  }
+//+------------------------------------------------------------------+
+//| Partially close current selected market order                    |
+//+------------------------------------------------------------------+
+bool OrderManager::closeCurrent(double lots)
+  {
+   if(Order::IsPending())
+     {
+      Alert(">>> Use close() on pending order #",Order::Ticket());
+      return false;
+     }
+   if(!OrderClose(Order::Ticket(),lots,Order::E(),m_slippage,m_closeColor))
+     {
+      int err=Mql::getLastError();
+      m_lastError=err;
+      Alert(">>> Error OrderClose #",Order::Ticket(),": ",Mql::getErrorMessage(err));
+      return false;
+     }
+   return true;
+  }
+//+------------------------------------------------------------------+
+//| Partially close the market order with specified ticket           |
+//+------------------------------------------------------------------+
+bool OrderManager::close(int ticket,double lots)
+  {
+   if(!Order::Select(ticket))
+     {
+      Alert(">>> Error closing order with invalid ticket #",Order::Ticket(),": ",Mql::getErrorMessage(Mql::getLastError()));
+      return false;
+     }
+   return closeCurrent(lots);
   }
 //+------------------------------------------------------------------+
