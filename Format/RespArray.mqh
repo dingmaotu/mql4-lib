@@ -71,7 +71,7 @@ protected:
       int size=ArraySize(m_array);
       for(int i=0; i<size; i++)
         {
-         SafeDelete(m_array[i]);
+         if(m_array[i]!=Nil) SafeDelete(m_array[i]);
         }
      }
 public:
