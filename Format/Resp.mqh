@@ -51,10 +51,10 @@
 //| with "\r\n" (CRLF).                                              |
 //+------------------------------------------------------------------+
 #include "RespValue.mqh"
+#include "RespBytes.mqh"
 #include "RespArray.mqh"
 #include "RespInteger.mqh"
 #include "RespString.mqh"
-#include "RespBytes.mqh"
 #include "RespMsgParser.mqh"
 #include "RespStreamParser.mqh"
 //+------------------------------------------------------------------+

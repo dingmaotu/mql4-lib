@@ -20,6 +20,7 @@
 //+------------------------------------------------------------------+
 #property strict
 #include "RespValue.mqh"
+#include "RespBytes.mqh" // for Nil reference
 //+------------------------------------------------------------------+
 //| RespArray                                                        |
 //+------------------------------------------------------------------+
@@ -71,6 +72,7 @@ protected:
       int size=ArraySize(m_array);
       for(int i=0; i<size; i++)
         {
+         // check for Nil singleton 
          if(m_array[i]!=Nil) SafeDelete(m_array[i]);
         }
      }
