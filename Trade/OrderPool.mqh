@@ -29,32 +29,43 @@
 //| OrderPoolIter or the macro foreachorder to iterate through an    |
 //| order pool.                                                      |
 //+------------------------------------------------------------------+
-class OrderPool: public OrderMatcher
+interface OrderPool: public OrderMatcher
   {
+   int               total() const;
+   bool              select(int i) const;
+  };
+//+------------------------------------------------------------------+
+//| The pool of orders with supplied predefined matcher              |
+//+------------------------------------------------------------------+
+class OrderPoolMatcher: public OrderPool
+  {
+private:
+   const OrderMatcher *m_om;
 public:
-   virtual int       total() const=0;
-   virtual bool      select(int i) const=0;
-   virtual bool      matches() const=0;
+                     OrderPoolMatcher(const OrderMatcher *m):m_om(m){}
+   virtual bool      matches() const {return m_om?m_om.matches():true;}
   };
 //+------------------------------------------------------------------+
 //| The pool of orders from the Terminal order history tab           |
 //+------------------------------------------------------------------+
-class HistoryPool: public OrderPool
+class HistoryPool: public OrderPoolMatcher
   {
 public:
+                     HistoryPool():OrderPoolMatcher(NULL){}
+                     HistoryPool(const OrderMatcher *m):OrderPoolMatcher(m){}
    int               total() const final {return OrdersHistoryTotal();}
    bool              select(int i) const final {return OrderSelect(i,SELECT_BY_POS,MODE_HISTORY);}
-   virtual bool      matches() const {return true;}
   };
 //+------------------------------------------------------------------+
 //| Currently active orders                                          |
 //+------------------------------------------------------------------+
-class TradingPool: public OrderPool
+class TradingPool: public OrderPoolMatcher
   {
 public:
+                     TradingPool():OrderPoolMatcher(NULL){}
+                     TradingPool(const OrderMatcher *m):OrderPoolMatcher(m){}
    int               total() const final {return OrdersTotal();}
    bool              select(int i) const final {return OrderSelect(i,SELECT_BY_POS,MODE_TRADES);}
-   virtual bool      matches() const {return true;}
   };
 //+------------------------------------------------------------------+
 //| For internal use: iterate through an OrderPool                   |
