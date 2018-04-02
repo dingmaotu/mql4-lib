@@ -21,6 +21,9 @@
 #property strict
 //+------------------------------------------------------------------+
 //| Generic array insert                                             |
+//| Inserts value at index into array.                               |
+//| Array expands to contain new element but only in case no holes   |
+//| appear in new array.                                             |
 //+------------------------------------------------------------------+
 template<typename T>
 void ArrayInsert(T &array[],int index,T value,int extraBuffer=10)
@@ -200,6 +203,7 @@ public:
    void              insertAt(int index,T value) {ArrayInsert(m_array,index,value,m_extraBuffer);}
    void              removeAt(int index) {ArrayDelete(m_array,index);}
    int               removeAll(const T value) {return ArrayDeleteAll(m_array,value);}
+   int               removeBatch(const int &removed[]) {return ArrayBatchRemove(m_array,removed);}
 
    int               index(const T value) const;
   };
