@@ -369,6 +369,7 @@ void RespStreamParser::discardProcessed()
       m_buf[i]=m_buf[j];
    ArrayResize(m_buf,m_size-m_pos,RESERVE_SIZE);
    m_size=ArraySize(m_buf);
+   m_pos=0;
   }
 //+------------------------------------------------------------------+
 //| a giant state machine that do parsing based on current task      |
