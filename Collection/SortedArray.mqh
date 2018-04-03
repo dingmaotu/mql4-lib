@@ -39,11 +39,11 @@ public:
    // owned: flag restricts destructor to delete array elements
    // unique: flag allows add()-ing of identical elements
    // sorter: array sorting implementation
-                     SortedArray(bool owned=true,bool unique=true,SortComparer<T>*sorter=NULL):
+                     SortedArray(SortComparer<T>*sorter,bool owned=true,bool unique=true):
                                                               Collection(owned,sorter),
    m_unique(unique),
-   m_sorter(sorter==NULL?new GenericSortComparer<T>():sorter){}
-                    ~SortedArray() {SafeDelete(m_sorter);}
+   m_sorter(sorter){}
+                    ~SortedArray() {clear();}
 
    // ConstIterator interface
    ConstIterator<T>*constIterator() const {return new ConstSortedArrayIterator<T>(GetPointer(this));}
@@ -51,7 +51,7 @@ public:
    Iterator<T>*iterator() {return new SortedArrayIterator<T>(GetPointer(this),m_owned);}
 
    // Collection interface
-   void              clear() {m_array.clear();}
+   void              clear() {if(m_owned) m_array.clear(); else m_array.resize(0);}
    bool              add(T value);
    bool              remove(const T value);
    int               size() const {return m_array.size();}
