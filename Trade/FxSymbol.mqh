@@ -1,4 +1,4 @@
-﻿//+------------------------------------------------------------------+
+//+------------------------------------------------------------------+
 //| Module: Trade/FxSymbol.mqh                                       |
 //| This file is part of the mql4-lib project:                       |
 //|     https://github.com/dingmaotu/mql4-lib                        |
@@ -61,6 +61,13 @@ public:
    static bool       isTradeShortOnly(string symbol) {return getTradeMode(symbol)==SYMBOL_TRADE_MODE_SHORTONLY;}
    static bool       isTradeLongOnly(string symbol) {return getTradeMode(symbol)==SYMBOL_TRADE_MODE_LONGONLY;}
    static bool       isTradeCloseOnly(string symbol) {return getTradeMode(symbol)==SYMBOL_TRADE_MODE_CLOSEONLY;}
+
+   //-- execution mode
+   static ENUM_SYMBOL_TRADE_EXECUTION getTradeExeMode(string symbol) {return(ENUM_SYMBOL_TRADE_EXECUTION)SymbolInfoInteger(symbol,SYMBOL_TRADE_EXEMODE);}
+   static bool       isTradeExeMarket(string symbol) {return getTradeExeMode(symbol)==SYMBOL_TRADE_EXECUTION_MARKET;}
+   static bool       isTradeExeInstant(string symbol) {return getTradeExeMode(symbol)==SYMBOL_TRADE_EXECUTION_INSTANT;}
+   static bool       isTradeExeRequest(string symbol) {return getTradeExeMode(symbol)==SYMBOL_TRADE_EXECUTION_REQUEST;}
+   static bool       isTradeExeExchange(string symbol) {return getTradeExeMode(symbol)==SYMBOL_TRADE_EXECUTION_EXCHANGE;}
 
    static double     getInitialMargin(string symbol) {return SymbolInfoDouble(symbol,SYMBOL_MARGIN_INITIAL);}
    static double     getMaintenanceMargin(string symbol) {return SymbolInfoDouble(symbol,SYMBOL_MARGIN_MAINTENANCE);}
@@ -148,6 +155,13 @@ public:
    bool              isTradeShortOnly() const {return isTradeShortOnly(m_symbol);}
    bool              isTradeLongOnly() const {return isTradeLongOnly(m_symbol);}
    bool              isTradeCloseOnly() const {return isTradeCloseOnly(m_symbol);}
+
+   //-- execution mode
+   ENUM_SYMBOL_TRADE_EXECUTION getTradeExeMode() const {return getTradeExeMode(m_symbol);}
+   bool              isTradeExeMarket() const {return isTradeExeMarket(m_symbol);}
+   bool              isTradeExeInstant() const {return isTradeExeInstant(m_symbol);}
+   bool              isTradeExeRequest() const {return isTradeExeRequest(m_symbol);}
+   bool              isTradeExeExchange() const {return isTradeExeExchange(m_symbol);}
 
    double            getInitialMargin() const {return getInitialMargin(m_symbol);}
    double            getMaintenanceMargin() const {return getMaintenanceMargin(m_symbol);}
