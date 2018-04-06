@@ -1,4 +1,4 @@
-﻿//+------------------------------------------------------------------+
+//+------------------------------------------------------------------+
 //| Module: Trade/FxSymbol.mqh                                       |
 //| This file is part of the mql4-lib project:                       |
 //|     https://github.com/dingmaotu/mql4-lib                        |
@@ -61,6 +61,13 @@ public:
    static bool       isTradeShortOnly(string symbol) {return getTradeMode(symbol)==SYMBOL_TRADE_MODE_SHORTONLY;}
    static bool       isTradeLongOnly(string symbol) {return getTradeMode(symbol)==SYMBOL_TRADE_MODE_LONGONLY;}
    static bool       isTradeCloseOnly(string symbol) {return getTradeMode(symbol)==SYMBOL_TRADE_MODE_CLOSEONLY;}
+
+   //-- execution mode
+   static ENUM_SYMBOL_TRADE_EXECUTION getTradeExeMode(string symbol) {return(ENUM_SYMBOL_TRADE_EXECUTION)SymbolInfoInteger(symbol,SYMBOL_TRADE_EXEMODE);}
+   static bool       isTradeExeMarket(string symbol) {return getTradeExeMode(symbol)==SYMBOL_TRADE_EXECUTION_MARKET;}
+   static bool       isTradeExeInstant(string symbol) {return getTradeExeMode(symbol)==SYMBOL_TRADE_EXECUTION_INSTANT;}
+   static bool       isTradeExeRequest(string symbol) {return getTradeExeMode(symbol)==SYMBOL_TRADE_EXECUTION_REQUEST;}
+   static bool       isTradeExeExchange(string symbol) {return getTradeExeMode(symbol)==SYMBOL_TRADE_EXECUTION_EXCHANGE;}
 
    static double     getInitialMargin(string symbol) {return SymbolInfoDouble(symbol,SYMBOL_MARGIN_INITIAL);}
    static double     getMaintenanceMargin(string symbol) {return SymbolInfoDouble(symbol,SYMBOL_MARGIN_MAINTENANCE);}
