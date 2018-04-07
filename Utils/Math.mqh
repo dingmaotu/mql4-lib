@@ -51,14 +51,32 @@ public:
    //--- round value up to a multiple of min
    static double roundUpToMultiple(double value,double min)
      {
-      double r=MathMod(value,min);
-      return Mql::isEqual(r,0.0) ? value : (value-r+min);
+      int n=(int)MathRound(value/min);
+      return Mql::isEqual(n*min,value) ? n*min : ((int)(value/min)+1)*min;
      }
    //--- round value down to a multiple of min
    static double roundDownToMultiple(double value,double min)
      {
-      double r=MathMod(value,min);
-      return Mql::isEqual(r,0.0) ? value : (value-r);
+      int n=(int)MathRound(value/min);
+      return Mql::isEqual(n*min,value) ? n*min : (int)(value/min)*min;
+     }
+
+   //--- round value up to a min+multiple*step
+   static double roundUpToStep(double value,double min,double step)
+     {
+      value-=min;
+      int n=(int)MathRound(value/step);
+      if(!Mql::isEqual(n*step,value)) n=(int)(value/step)+1;
+      return n*step+min;
+     }
+
+   //--- round value down to a min+multiple*step
+   static double roundDownToStep(double value,double min,double step)
+     {
+      value-=min;
+      int n=(int)MathRound(value/step);
+      if(!Mql::isEqual(n*step,value)) n=(int)(value/step);
+      return n*step+min;
      }
 
    static double linearInterpolate(double x1,double x2,double y1,double y2,double x)
@@ -68,3 +86,4 @@ public:
      }
   };
 //+------------------------------------------------------------------+
+
