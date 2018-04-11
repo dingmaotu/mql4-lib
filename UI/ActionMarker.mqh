@@ -5,7 +5,7 @@
 #property strict
 
 #include "Mouse.mqh"
-#include "../Collection/Set.mqh"
+#include "../Collection/HashSet.mqh"
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
@@ -30,7 +30,7 @@ protected:
    void              ensureCreated();
    double            calcDistance() const;
 
-   Set<ActionEventHandler*>ActionEvent;
+   HashSet<ActionEventHandler*>ActionEvent;
 public:
                      ActionMarker(string id,string label,int x,int y,long chart=0):m_chart(chart==0?ChartID():chart),m_id(id),m_label(label),m_ox(x),m_oy(y),m_actived(false)
      {
