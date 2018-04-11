@@ -109,10 +109,15 @@ public:
             if(i!=j) { m_array[i]=m_array[j]; }
             i++;
            }
-         // in this case, it is no point to check m_owned and SafeDelete value
         }
-      if(i<s) ArrayResize(m_array,i);
-      return ((s-i)> 0);
+      if(i<s)
+        {
+         ArrayResize(m_array,i);
+         // to conform to Collection semantics, a removed value should be deleted if it is owned
+         if(m_owned) SafeDelete(value);
+         return true;
+        }
+      return false;
      }
 
    // Sequence interface

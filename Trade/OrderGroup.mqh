@@ -125,6 +125,6 @@ void OrderGroup::clearClosed(void)
          set(i,0);
         }
      }
-   removeAll(0);
+   remove(0);
   }
 //+------------------------------------------------------------------+
