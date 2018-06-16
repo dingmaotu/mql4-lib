@@ -53,16 +53,51 @@ bool ParseTimeRange(string s,long &time)
    return true;        // accept: all digits
   }
 //+------------------------------------------------------------------+
-//|                                                                  |
+//| Convert a string representation of boolean to the real value     |
+//| Y y 1 T t are true                                               |
+//| all other values are false                                       |
 //+------------------------------------------------------------------+
-bool ParseToPositiveIntegers(string s,int &target[])
+bool StringToBoolean(const string s)
+  {
+   if(StringLen(s)!=1) return false;
+   ushort c= s[0];
+   return c=='Y' || c=='y' || c=='1' || c=='T' || c=='t';
+  }
+//+------------------------------------------------------------------+
+//| Parse a (default comma separated) list of booleans               |
+//+------------------------------------------------------------------+
+bool ParseBooleans(const string s,bool &target[],short sep=',')
   {
    string t[];
-   StringSplit(s,StringGetCharacter(",",0),t);
+   StringSplit(s,sep,t);
    int size=ArraySize(t);
    if(ArraySize(t)<=0)
      {
-      Print(s+" is not a list (comma separated) of integers!");
+      PrintFormat(">>> Error: %s is not a list of booleans!",s);
+      return false;
+     }
+   bool isSeries=ArrayGetAsSeries(target);
+   ArraySetAsSeries(target,false);
+
+   ArrayResize(target,size);
+   for(int i=0; i<size; i++)
+     {
+      target[i]=StringToBoolean(t[i]);
+     }
+   ArraySetAsSeries(target,isSeries);
+   return true;
+  }
+//+------------------------------------------------------------------+
+//| Parse a (default comma separated) list of integers               |
+//+------------------------------------------------------------------+
+bool ParseIntegers(const string s,int &target[],short sep=',')
+  {
+   string t[];
+   StringSplit(s,sep,t);
+   int size=ArraySize(t);
+   if(ArraySize(t)<=0)
+     {
+      Print(s+" is not a list of integers!");
       return false;
      }
    bool isSeries=ArrayGetAsSeries(target);
@@ -72,26 +107,21 @@ bool ParseToPositiveIntegers(string s,int &target[])
    for(int i=0; i<size; i++)
      {
       target[i]=(int)StringToInteger(t[i]);
-      if(target[i]<=0)
-        {
-         Print(t[i]+" is not positive!");
-         return false;
-        }
      }
    ArraySetAsSeries(target,isSeries);
    return true;
   }
 //+------------------------------------------------------------------+
-//|                                                                  |
+//| Parse a (default comma separated) list of doubles                |
 //+------------------------------------------------------------------+
-bool ParseToPositiveDoubles(string s,double &target[])
+bool ParseDoubles(string s,double &target[],short sep=',')
   {
    string t[];
-   StringSplit(s,StringGetCharacter(",",0),t);
+   StringSplit(s,sep,t);
    int size=ArraySize(t);
    if(ArraySize(t)<=0)
      {
-      Print(s+" is not a list (comma separated) of doubles!");
+      Print(s+" is not a list of doubles!");
       return false;
      }
    bool isSeries=ArrayGetAsSeries(target);
@@ -100,14 +130,44 @@ bool ParseToPositiveDoubles(string s,double &target[])
    ArrayResize(target,size);
    for(int i=0; i<size; i++)
      {
-      target[i]=NormalizeDouble(StringToDouble(t[i]),2);
+      target[i]=StringToDouble(t[i]);
+     }
+   ArraySetAsSeries(target,isSeries);
+   return true;
+  }
+//+------------------------------------------------------------------+
+//| Parse a list of positive integers                                |
+//+------------------------------------------------------------------+
+bool ParseToPositiveIntegers(string s,int &target[])
+  {
+   if(!ParseIntegers(s,target)) return false;
+
+   for(int i=0; i<ArraySize(target); i++)
+     {
       if(target[i]<=0)
         {
-         Print(t[i]+" is not positive!");
+         PrintFormat("Error: %d is not positive!",target[i]);
          return false;
         }
      }
-   ArraySetAsSeries(target,isSeries);
+
+   return true;
+  }
+//+------------------------------------------------------------------+
+//| Parse a list of negative integers                                |
+//+------------------------------------------------------------------+
+bool ParseToPositiveDoubles(string s,double &target[])
+  {
+   if(!ParseDoubles(s,target)) return false;
+
+   for(int i=0; i<ArraySize(target); i++)
+     {
+      if(target[i]<=0)
+        {
+         PrintFormat("Error: %d is not positive!",target[i]);
+         return false;
+        }
+     }
    return true;
   }
 //+------------------------------------------------------------------+
