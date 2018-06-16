@@ -33,6 +33,8 @@ class OrderManager
    ObjectAttr(int,magic,Magic);
    ObjectAttr(int,slippage,Slippage);
    ObjectAttr(color,closeColor,CloseColor);
+   // number of retries when price change/requote happens
+   ObjectAttr(int,retry,Retry);
 
    // last error implementation
 private:
@@ -116,7 +118,19 @@ public:
    template<typename T>
    int               market(int op,double lots,T stoploss,T takeprofit,string comment=NULL)
      {
-      return send(op,lots,OrderBase::S(s,op),stoploss,takeprofit,comment);
+      int retry=0;
+      int ticket=0;
+      while((ticket=send(op,lots,OrderBase::S(s,op),stoploss,takeprofit,comment))<0)
+        {
+         if((m_lastError==ERR_REQUOTE || m_lastError==ERR_PRICE_CHANGED || m_lastError==ERR_OFF_QUOTES) && retry<m_retry)
+           {
+            retry++;
+            Alert(">>> Reopen order");
+            RefreshRates();
+           }
+         else break;
+        }
+      return ticket;
      }
    // pending order T=double|int op=OP_BUY|OP_SELL
    template<typename T>
@@ -193,7 +207,6 @@ int OrderManager::send(int cmd,double lots,double price,double stoploss,double t
                         OrderBase::N(s,stoploss),
                         OrderBase::N(s,takeprofit),
                         comment,m_magic,0,m_color[cmd&1]);
-
    if(ticket<0)
      {
       int err=Mql::getLastError();
@@ -268,12 +281,19 @@ bool OrderManager::closeCurrent(void)
      }
    else
      {
-      if(!OrderClose(Order::Ticket(),Order::Lots(),Order::E(),m_slippage,m_closeColor))
+      int retry=0;
+      while(!OrderClose(Order::Ticket(),Order::Lots(),Order::E(),m_slippage,m_closeColor))
         {
          int err=Mql::getLastError();
          m_lastError=err;
          Alert(">>> Error OrderClose #",Order::Ticket(),": ",Mql::getErrorMessage(err));
-         return false;
+         if((err==ERR_REQUOTE || err==ERR_PRICE_CHANGED || err==ERR_OFF_QUOTES) && retry<m_retry)
+           {
+            retry++;
+            Alert(">>> Retry OrderClose #",Order::Ticket());
+            RefreshRates();
+           }
+         else return false;
         }
      }
    return true;
