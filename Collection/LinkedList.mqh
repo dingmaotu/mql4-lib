@@ -82,16 +82,15 @@ public:
 template<typename T>
 LinkedListBase::~LinkedListBase()
   {
-   if(m_owned)
+   LinkedNode<T>*n=m_head.next();
+   while(n!=m_tail)
      {
-      LinkedNode<T>*n=m_head.next();
-      while(n!=m_tail)
-        {
-         LinkedNode<T>*tempNode=n.next();
-         SafeDelete(n);
-         n=tempNode;
-        }
+      LinkedNode<T>*tempNode=n.next();
+      if(!m_owned) n.release();
+      SafeDelete(n);
+      n=tempNode;
      }
+
    SafeDelete(m_head);
    SafeDelete(m_tail);
   }
