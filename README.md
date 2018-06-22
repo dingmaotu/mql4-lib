@@ -543,11 +543,12 @@ Here is a simple example:
 // for simplicity, I will not use the Lang/Script class
 void OnStart()
   {
-   OrderList<Order*> list;
-   int total= TradingPool::total();
+   TradingPool pool;
+   LinkedList<Order*> list;
+   int total= pool.total();
    for(int i=0; i<total; i++)
      {
-      if(TradingPool::select(i))
+      if(Order::Select(i))
         {
          OrderPrint(); // to compare with Order.toString
          list.push(new Order());
