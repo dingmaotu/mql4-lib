@@ -543,16 +543,12 @@ Here is a simple example:
 // for simplicity, I will not use the Lang/Script class
 void OnStart()
   {
-   TradingPool pool;
    LinkedList<Order*> list;
-   int total= pool.total();
-   for(int i=0; i<total; i++)
+   TradingPool pool;
+   foreachorder(pool)
      {
-      if(Order::Select(i))
-        {
          OrderPrint(); // to compare with Order.toString
          list.push(new Order());
-        }
      }
 
    PrintFormat("There are %d orders. ",list.size());
@@ -574,7 +570,6 @@ void OnStart()
    //--- foreachv macro: declare element varaible o in the second parameter
    foreachv(Order*,o,list)
      Print(o.toString());
-
   }
 //+------------------------------------------------------------------+
 ```

@@ -44,6 +44,21 @@ private:
 public:
                      OrderPoolMatcher(const OrderMatcher *m):m_om(m){}
    virtual bool      matches() const {return m_om?m_om.matches():true;}
+
+   //--- count the number of orders that satisfies the matcher condition
+   //--- generally you don't want to use this method unless all you want is the number of satisfying orders
+   //--- use foreachorder for iteration. The select(int) method does not work with count()
+   int               count() const
+     {
+      int total=total();
+      int c=0;
+      for(int i=0; i<total; i++)
+        {
+         // we use matches here instead of m_om.matches because the matches method may be overidden by child classes
+         if(select(i) && matches()) c++;
+        }
+      return c;
+     }
   };
 //+------------------------------------------------------------------+
 //| The pool of orders from the Terminal order history tab           |
