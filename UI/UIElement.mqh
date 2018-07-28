@@ -6,18 +6,18 @@
 #property strict
 
 #include "../Lang/String.mqh"
-#include "../Collection/Set.mqh"
+#include "../Collection/HashSet.mqh"
 //+------------------------------------------------------------------+
 //| Form a heirarchy for elements                                    |
 //+------------------------------------------------------------------+
-class UIElement: public Set<UIElement*>
+class UIElement: public HashSet<UIElement*>
   {
 private:
    UIElement        *m_parent;
    string            m_name;
 public:
                      UIElement(UIElement *parent,string name)
-   :m_parent(parent),m_name(m_parent==NULL?name:m_parent.getName()+"."+name){}
+   :HashSet<UIElement*>(NULL,true),m_parent(parent),m_name(m_parent==NULL?name:m_parent.getName()+"."+name){}
  
    string            getName() const {return m_name;}
    UIElement        *getParent() const {return m_parent;}
