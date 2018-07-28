@@ -22,7 +22,7 @@
 
 #include "HashEntries.mqh"
 #include "HashSlots.mqh"
-#include "Collection.mqh"
+#include "Set.mqh"
 //+------------------------------------------------------------------+
 //| storage for actual entries                                       |
 //+------------------------------------------------------------------+
@@ -61,7 +61,7 @@ public:
 //| Set based on open addressing hash table                          |
 //+------------------------------------------------------------------+
 template<typename T>
-class HashSet: public Collection<T>
+class HashSet: public Set<T>
   {
 private:
    HashSetEntries<T>m_entries;
@@ -72,7 +72,7 @@ public:
    //--- by default the HashSet do not own its elements
    //--- if the hash elements are pointers and the real owner wants to
    //--- transfer the ownership to this collection, then she need to explicitly `new HashSet(NULL,true)`
-                     HashSet(EqualityComparer<T>*comparer=NULL,bool owned=false):Collection<T>(owned,comparer),m_slots(m_comparer,GetPointer(m_entries)) {}
+                     HashSet(EqualityComparer<T>*comparer=NULL,bool owned=false):Set<T>(owned,comparer),m_slots(m_comparer,GetPointer(m_entries)) {}
                     ~HashSet()
      {
       if(m_owned)

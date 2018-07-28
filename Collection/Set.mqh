@@ -3,7 +3,7 @@
 //| This file is part of the mql4-lib project:                       |
 //|     https://github.com/dingmaotu/mql4-lib                        |
 //|                                                                  |
-//| Copyright 2015-2016 Li Ding <dingmaotu@126.com>                  |
+//| Copyright 2015-2018 Li Ding <dingmaotu@126.com>                  |
 //|                                                                  |
 //| Licensed under the Apache License, Version 2.0 (the "License");  |
 //| you may not use this file except in compliance with the License. |
@@ -20,74 +20,71 @@
 //+------------------------------------------------------------------+
 #property strict
 
-#include "../Lang/Array.mqh"
 #include "Collection.mqh"
 //+------------------------------------------------------------------+
-//| Simple Set implementation using an array                         |
+//| The Set interface                                                |
+//| A set does not allow duplicates                                  |
 //+------------------------------------------------------------------+
 template<typename T>
 class Set: public Collection<T>
   {
-private:
-   Array<T>m_array;
 public:
-   // Iterator interface
-   Iterator<T>*iterator() const {return new SetIterator<T>(m_array);}
-   // for Set initial buffer set to zero
-                     Set(int buffer=0):m_array(buffer){}
-   // Collection interface
-   void              clear() {m_array.clear();}
-   int               size() const {return m_array.size();}
-   bool              add(T value);
-   bool              remove(const T value);
+                     Set(bool owned,EqualityComparer<T>*comparer):Collection<T>(owned,comparer){}
 
-   bool              contains(const T value) {return m_array.index(value)>=0;}
-  };
-//+------------------------------------------------------------------+
-//| Add the element if the element is not in this set                |
-//+------------------------------------------------------------------+
-template<typename T>
-bool Set::add(T value)
-  {
-   int index=m_array.index(value);
-   if(index>=0)
-      return false;
-   else
+   virtual bool      setByIntersection(const Collection<T>&left,const Collection<T>&right)
      {
-      m_array.insertAt(size(),value);
-      return true;
+      if(!isEmpty())
+        {
+         clear();
+        }
+
+      for(ConstIter<T>it(left); !it.end(); it.next())
+        {
+         T value=it.current();
+         if(right.contains(value))
+            // Notice if elements of left or right are owned by their container and they are pointers
+            // and this Set is also owned,
+            // you should deal with the owning problem on your own
+            add(it.current());
+        }
+      return size() > 0;
      }
-  }
-//+------------------------------------------------------------------+
-//| Remove the element that is equal to value                        |
-//+------------------------------------------------------------------+
-template<typename T>
-bool Set::remove(const T value)
-  {
-   int index=m_array.index(value);
-   if(index>=0)
+
+   virtual bool      setByUnion(const Collection<T>&left,const Collection<T>&right)
      {
-      m_array.removeAt(index);
-      return true;
+      if(!isEmpty())
+        {
+         clear();
+        }
+      for(ConstIter<T>it(left); !it.end(); it.next())
+        {
+         add(it.current());
+        }
+
+      for(ConstIter<T>it(right); !it.end(); it.next())
+        {
+         add(it.current());
+        }
+      return size() > 0;
      }
-   else
-      return false;
-  }
-//+------------------------------------------------------------------+
-//| Iterator implementation for Set                                  |
-//+------------------------------------------------------------------+
-template<typename T>
-class SetIterator: public Iterator<T>
-  {
-private:
-   int               m_index;
-   const int         m_size;
-   Array<T>*m_a;
-public:
-                     SetIterator(const Array<T>&v):m_index(0),m_size(v.size()),m_a((Array<T>*)GetPointer(v)) {}
-   bool              end() const {return m_index>=m_size;}
-   void              next() {if(!end()){m_index++;}}
-   T                 current() const {return m_a[m_index];}
-   bool              set(T value) {m_a.set(m_index,value);return true;}
+
+   virtual bool      setByComplement(const Collection<T>&left,const Collection<T>&right)
+     {
+      if(!isEmpty())
+        {
+         clear();
+        }
+
+      if(left.isEmpty()) return false;
+
+      for(ConstIter<T>it(left); !it.end(); it.next())
+        {
+         T value=it.current();
+         if(!right.contains(value))
+            add(it.current());
+        }
+
+      return size() > 0;
+     }
   };
 //+------------------------------------------------------------------+

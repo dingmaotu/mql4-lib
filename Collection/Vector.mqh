@@ -188,7 +188,7 @@ public:
    void              next() {if(!end()){m_index++;}}
    T                 current() const {if(removed()) return NULL; else return m_vector[m_index];}
 
-   bool              set(T value) {if(removed()) return false; m_vector.set(m_index,value);return true;}
+   virtual bool      set(T value) {if(removed()) return false; m_vector.set(m_index,value); return true;}
    bool              remove()
      {
       if(end()) return false;
