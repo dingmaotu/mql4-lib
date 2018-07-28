@@ -469,28 +469,23 @@ Currently there are two list types:
 1. Collection/LinkedList is a Linked List implementation
 2. Collection/Vector is an array based implementation
 
-And there are two `Set` implementations:
-1. Array based `Collection/Set` 
+And there are also two `Set` implementations:
+
+1. Array based `Collection/ArraySet` 
 2. Hash based `Collection/HashSet`
 
 With class templates and inheritance, I implemented a hierarchy:
 
-    Iterable -> Collection -> LinkedList
-                           -> Vector
-                           -> Set
-                           -> HashSet
-                           
-But in the future, the hierarchy might be:
-
-    Iterable -> Collection -> List -> ArrayList
-                                   -> LinkedList
-                           -> Set  -> ArraySet
-                                   -> HashSet
+    ConstIterable -> Iterable -> Collection -> List -> ArrayList
+                                                    -> LinkedList
+                                            -> Set  -> ArraySet
+                                                    -> HashSet
                                    
 `List` adds some important methods such as index based access to elements, and
 `stack` and `queue` like methods (e.g. `push`, `pop`, `shift`, `unshift`, etc.).
-But currently `Set` is basically the same as `Collection`. Maybe some set operations
-(union, intersect, etc.) is necesary.
+
+`Set` is basically the same as `Collection`. Only some set operations (union,
+intersect, etc.) are added.
 
 For simple and short collection, even if you perform frequent insertion and
 deletion, array based implementation may be faster and has smaller overhead.
