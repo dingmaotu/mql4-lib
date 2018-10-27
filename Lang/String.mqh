@@ -20,6 +20,8 @@
 //+------------------------------------------------------------------+
 #property strict
 
+#define unichar uint
+
 #define StringContains(str, substr) (StringFind(str, substr, 0)!=-1)
 //+------------------------------------------------------------------+
 //| Note: if both strings are empty, this function returns true      |
@@ -107,5 +109,33 @@ string StringPairJoin(const string &keys[],const string &values[],
       res+=psep+keys[i]+sep+values[i];
      }
    return res;
+  }
+//+------------------------------------------------------------------+
+//| Get the next Unicode character: string is UTF-16 encoded         |
+//+------------------------------------------------------------------+
+unichar NextChar(const string &s,int &index)
+  {
+   if(index>StringLen(s)-1)
+     {
+      return -1;
+     }
+   ushort c1=s[index];
+   if(c1>0xDFFF || c1<0xD800)
+     {
+      index++;
+      return c1;
+     }
+
+   if(index>StringLen(s)-2)
+     {
+      return -1;
+     }
+   ushort c2=s[index+1];
+   if(c2<0xDC00 || c2>0xDFFF)
+     {
+      return -1;
+     }
+   index+=2;
+   return 0x10000 + ((c1&0x03FF) << 10) + (c2&0x03FF);
   }
 //+------------------------------------------------------------------+
