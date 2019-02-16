@@ -145,6 +145,7 @@ public:
 
    string            readString() const {return FileReadString(m_handle);}
    double            readNumber() const {return FileReadNumber(m_handle);}
+   int               readInteger() const {return int(FileReadNumber(m_handle));}
    datetime          readDateTime() const {return FileReadDatetime(m_handle);}
    bool              readBool() const {return FileReadBool(m_handle);}
 
