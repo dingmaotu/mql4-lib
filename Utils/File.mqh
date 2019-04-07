@@ -87,7 +87,7 @@ public:
                      BinaryFile(string name,int flags):File(name,flags|FILE_BIN){}
    void              reopen(string name,int flags) {reopen(name,flags|FILE_BIN);}
 
-   double            readDouble(int size=DOUBLE_VALUE) const {return FileReadDouble(m_handle,size);}
+   double            readDouble() const {return FileReadDouble(m_handle);}
    float             readFloat() const {return FileReadFloat(m_handle);}
    long              readLong() const {return FileReadLong(m_handle);}
    int               readInteger(int size=INT_VALUE) const {return FileReadInteger(m_handle,size);}
@@ -96,7 +96,7 @@ public:
    template<typename T>
    uint              readStruct(T &value,int size=-1) const {return FileReadStruct(m_handle,value,size);}
 
-   uint              writeDouble(double value,int size=DOUBLE_VALUE) {return FileWriteDouble(m_handle,value,size);}
+   uint              writeDouble(double value) {return FileWriteDouble(m_handle,value);}
    uint              writeFloat(float value) {return FileWriteFloat(m_handle,value);}
    uint              writeInteger(int value,int size=INT_VALUE) {return FileWriteInteger(m_handle,value,size);}
    uint              writeLong(long value) {return FileWriteLong(m_handle,value);}
