@@ -30,9 +30,9 @@ public:
    static bool       isStopped() {return IsStopped();}
    static bool       isConnected() {return IsConnected();}
 
-   static bool       hasCommunityAccount() {return TerminalInfoInteger(TERMINAL_COMMUNITY_ACCOUNT);}
-   static bool       isCommunityConnected() {return TerminalInfoInteger(TERMINAL_COMMUNITY_CONNECTION);}
-   static double     getCommunityBalance() {return TerminalInfoDouble(TERMINAL_COMMUNITY_BALANCE);}
+   static bool       hasCommunityAccount() {return (bool)TerminalInfoInteger(TERMINAL_COMMUNITY_ACCOUNT);}
+   static bool       isCommunityConnected() {return (bool)TerminalInfoInteger(TERMINAL_COMMUNITY_CONNECTION);}
+   static double     getCommunityBalance() {return (bool)TerminalInfoDouble(TERMINAL_COMMUNITY_BALANCE);}
 
    static string     getPath() {return TerminalInfoString(TERMINAL_PATH);}
    static string     getDataPath() {return TerminalInfoString(TERMINAL_DATA_PATH);}
@@ -51,13 +51,13 @@ public:
    static string     getTerminalCompany() {return TerminalInfoString(TERMINAL_COMPANY);}
    static string     getTerminalLanguage() {return TerminalInfoString(TERMINAL_LANGUAGE);}
 
-   static bool       isDllAllowed() {return TerminalInfoInteger(TERMINAL_DLLS_ALLOWED);}
-   static bool       isTradeAllowed() {return TerminalInfoInteger(TERMINAL_TRADE_ALLOWED);}
-   static bool       isEmailEnabled() {return TerminalInfoInteger(TERMINAL_EMAIL_ENABLED);}
-   static bool       isFtpEnabled() {return TerminalInfoInteger(TERMINAL_FTP_ENABLED);}
+   static bool       isDllAllowed() {return (bool)TerminalInfoInteger(TERMINAL_DLLS_ALLOWED);}
+   static bool       isTradeAllowed() {return (bool)TerminalInfoInteger(TERMINAL_TRADE_ALLOWED);}
+   static bool       isEmailEnabled() {return (bool)TerminalInfoInteger(TERMINAL_EMAIL_ENABLED);}
+   static bool       isFtpEnabled() {return (bool)TerminalInfoInteger(TERMINAL_FTP_ENABLED);}
 
-   static bool       isNotificationsEnabled() {return TerminalInfoInteger(TERMINAL_NOTIFICATIONS_ENABLED);}
-   static bool       hasMetaQuotesId() {return TerminalInfoInteger(TERMINAL_MQID);}
+   static bool       isNotificationsEnabled() {return (bool)TerminalInfoInteger(TERMINAL_NOTIFICATIONS_ENABLED);}
+   static bool       hasMetaQuotesId() {return (bool)TerminalInfoInteger(TERMINAL_MQID);}
    static bool       notify(string msg);
    static bool       mail(string subject,string content);
 

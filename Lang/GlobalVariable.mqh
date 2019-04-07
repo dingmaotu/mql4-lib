@@ -34,12 +34,12 @@ public:
 
    static bool       makeTemp(string name) {return GlobalVariableTemp(name);}
    static double     get(string name) {return GlobalVariableGet(name);}
-   static bool       get(string name,double &value) {return GlobalVariableGet(name,value);}
-   static datetime   set(string name,double value) {return GlobalVariableSet(name,value);}
+   static bool       get(string name,double &value) {return (bool)GlobalVariableGet(name,value);}
+   static bool       set(string name,double value) {return (bool)GlobalVariableSet(name,value);}
    static bool       setOn(string name,double value,double check) {return GlobalVariableSetOnCondition(name,value,check);}
 
-   static bool       remove(string name) {return GlobalVariableDel(name);}
-   static bool       removeAll(string prefix=NULL,datetime before=0) {return GlobalVariablesDeleteAll(prefix,before);}
+   static bool       remove(string name) {return (bool)GlobalVariableDel(name);}
+   static bool       removeAll(string prefix=NULL,datetime before=0) {return (bool)GlobalVariablesDeleteAll(prefix,before);}
   };
 //+------------------------------------------------------------------+
 //| TempVar is a variable whose life time is the same as the program |

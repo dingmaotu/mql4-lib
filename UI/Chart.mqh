@@ -90,11 +90,11 @@ public:
    int               getSubwindowHeight(int index=0) const {return(int)ChartGetInteger(m_chartId,CHART_HEIGHT_IN_PIXELS,index);}
    bool              setSubwindowHeight(int index,int height) {return ChartSetInteger(m_chartId,CHART_HEIGHT_IN_PIXELS,index,height);}
 
-   bool              isOffline() const {return ChartGetInteger(m_chartId,CHART_IS_OFFLINE);}
+   bool              isOffline() const {return (bool)ChartGetInteger(m_chartId,CHART_IS_OFFLINE);}
 
 #define BOOL_PROP(PropName,OptionName) \
-   bool              is##PropName() const {return ChartGetInteger(m_chartId,OptionName);}\
-   bool              set##PropName(bool value) {return ChartSetInteger(m_chartId,OptionName,value);}
+   bool              is##PropName() const {return (bool)ChartGetInteger(m_chartId,OptionName);}\
+   bool              set##PropName(bool value) {return (bool)ChartSetInteger(m_chartId,OptionName,value);}
 
    BOOL_PROP(ShowOHLC,CHART_SHOW_OHLC)
    BOOL_PROP(ShowBidLine,CHART_SHOW_BID_LINE)
