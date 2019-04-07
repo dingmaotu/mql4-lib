@@ -13,6 +13,7 @@ private:
    const string      m_id;
    const int         m_ox,m_oy;
    const int         m_color;
+   int               m_currentColor;
 protected:
    void              ensureCreated();
 public:
@@ -21,7 +22,7 @@ public:
       ensureCreated();
      }
                     ~ReadOnlyLabel() {ObjectDelete(m_chart,m_id);}
-   void              render(string content,string tooltip="");
+   void              render(string content,string tooltip="",color optColor=clrNONE);
   };
 //+------------------------------------------------------------------+
 //|                                                                  |
@@ -37,6 +38,7 @@ void ReadOnlyLabel::ensureCreated(void)
    ObjectSetInteger(m_chart,m_id,OBJPROP_YDISTANCE,m_oy);
 
    ObjectSetInteger(m_chart,m_id,OBJPROP_COLOR,m_color);
+   m_currentColor=m_color;
    ObjectSetInteger(m_chart,m_id,OBJPROP_FONTSIZE,12);
    ObjectSetString(m_chart,m_id,OBJPROP_FONT,"Monospace");
 
@@ -47,12 +49,28 @@ void ReadOnlyLabel::ensureCreated(void)
 //+------------------------------------------------------------------+
 //|                                                                  |
 //+------------------------------------------------------------------+
-void ReadOnlyLabel::render(string content,string tooltip)
+void ReadOnlyLabel::render(string content,string tooltip,color optColor)
   {
    ensureCreated();
    ObjectSetString(m_chart,m_id,OBJPROP_TEXT,content);
    if(tooltip!="")
       ObjectSetString(m_chart,m_id,OBJPROP_TOOLTIP,tooltip);
+   if(optColor!=clrNONE)
+     {
+      if(optColor!=m_currentColor)
+        {
+         ObjectSetInteger(m_chart,m_id,OBJPROP_COLOR,optColor);
+         m_currentColor=optColor;
+        }
+     }
+   else
+     {
+      if(m_color!=m_currentColor)
+        {
+         ObjectSetInteger(m_chart,m_id,OBJPROP_COLOR,m_color);
+         m_currentColor=m_color;
+        }
+     }
 //--- no need to force redraw as the chart will redraw itself on next tick
 //--- ChartRedraw(m_chart);
   }
