@@ -185,7 +185,7 @@ public:
 //| Remove all elements of the LinkedList                            |
 //+------------------------------------------------------------------+
 template<typename T>
-LinkedList::clear(void)
+void LinkedList::clear(void)
   {
    LinkedNode<T>*node=m_base.m_head.next();
    while(node!=m_base.m_tail)
