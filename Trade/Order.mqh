@@ -31,7 +31,7 @@ interface OrderMatcher
 //+------------------------------------------------------------------+
 //| Some contant strings                                             |
 //+------------------------------------------------------------------+
-const string OrderTypeString[]={"buy","sell","buy limit","sell simit","buy stop","sell stop","balance"};
+const string OrderTypeString[]={"buy","sell","buy limit","sell limit","buy stop","sell stop","balance"};
 const string ORDER_FROM_STR="from #";
 const string ORDER_PARTIAL_CLOSE_STR="partial close";
 const string ORDER_CLOSE_HEDGE_BY_STR="close hedge by #";
