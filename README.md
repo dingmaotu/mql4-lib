@@ -476,7 +476,7 @@ And there are also two `Set` implementations:
 
 With class templates and inheritance, I implemented a hierarchy:
 
-    ConstIterable -> Iterable -> Collection -> List -> ArrayList
+    ConstIterable -> Iterable -> Collection -> List -> Vector(like ArrayList in Java)
                                                     -> LinkedList
                                             -> Set  -> ArraySet
                                                     -> HashSet
