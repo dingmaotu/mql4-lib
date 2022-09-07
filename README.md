@@ -516,7 +516,7 @@ Vector<int> intVector;
 To iterate through a collection, use its iterator, as iterators know what is the
 most efficient way to iterating.
 
-Threre are alao two macros for iteration: `foreach` and `foreachv`. You can
+There are also two macros for iteration: `foreach` and `foreachv`. You can
 `break` and `return` in the loop without worrying about resource leaks because
 we use `Iter` RAII class to wrap the iterator pointer.
 
