@@ -425,10 +425,10 @@ short    GetAsyncKeyState(int nVirtKey);
 #define MB_ICONEXCLAMATION          	0x00000030
 #define MB_ICONASTERISK             	0x00000040
 #define MB_USERICON                 	0x00000080
-#define MB_ICONWARNING              	MB_ICONEXCLAMATION
-#define MB_ICONERROR                	MB_ICONHAND
-#define MB_ICONINFORMATION          	MB_ICONASTERISK
-#define MB_ICONSTOP                 	MB_ICONHAND
+#define MB_ICONWARNING              	0x00000030 // MB_ICONEXCLAMATION
+#define MB_ICONERROR                	0x00000010 // MB_ICONSTOP, MB_ICONHAND
+#define MB_ICONINFORMATION          	0x00000040 // MB_ICONASTERISK
+#define MB_ICONSTOP                 	0x00000010 // MB_ICONERROR, MB_ICONHAND
 #define MB_DEFBUTTON1               	0x00000000
 #define MB_DEFBUTTON2               	0x00000100
 #define MB_DEFBUTTON3               	0x00000200
