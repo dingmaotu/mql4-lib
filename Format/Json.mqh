@@ -465,7 +465,7 @@ public:
      {
       double value;
       int sign,intValue;
-      bool r=parseInt(sign,intValue);
+      bool r=parseIntPart(sign,intValue);
       if(!r)
         {
          m_error="error parsing number: invalid integer part";
@@ -489,7 +489,7 @@ public:
       return new JsonNumber(value);
      }
 
-   bool              parseInt(int &sign,int &value)
+   bool              parseIntPart(int &sign,int &value)
      {
       sign=1;
       unichar c=m_stream.nextChar();
@@ -501,7 +501,7 @@ public:
       value=0;
       if(c=='0') // 0
         {
-         sign=1;
+         // sign=1;  // No need to change the `sign` as it will be used in parseNumber
          return true;
         }
       else if(c<='9' && c>='1') // onenine 0..9
