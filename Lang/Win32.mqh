@@ -18,8 +18,69 @@
 //| See the License for the specific language governing permissions  |
 //| and limitations under the License.                               |
 //+------------------------------------------------------------------+
+/*
+Windows type mapping. Native.mqh selects the existing pointer width.
+Type(s)                   Purpose                  Win32 Win64 MQL4   MQL5
+HWND,HANDLE               Window/generic handles     32    64   int    long
+HDC,HBITMAP,HICON,HMENU    Graphics/menu handles      32    64   int    long
+LONG_PTR,LPARAM,LRESULT    Signed pointer values      32    64   int    long
+ULONG_PTR,WPARAM          Unsigned pointer values    32    64   uint   ulong
+UINT,DWORD                Unsigned integers          32    32   uint   uint
+BOOL                      Windows Boolean            32    32   int    int
+WORD                      Unsigned word              16    16   ushort ushort
+BYTE                      Unsigned byte               8     8   uchar  uchar
+*/
 #property strict
 #include "Native.mqh"
+
+#ifndef LONG_PTR
+#define LONG_PTR intptr_t
+#endif
+#ifndef ULONG_PTR
+#define ULONG_PTR uintptr_t
+#endif
+#ifndef HWND
+#define HWND LONG_PTR
+#endif
+#ifndef HANDLE
+#define HANDLE LONG_PTR
+#endif
+#ifndef HDC
+#define HDC LONG_PTR
+#endif
+#ifndef HBITMAP
+#define HBITMAP LONG_PTR
+#endif
+#ifndef HICON
+#define HICON LONG_PTR
+#endif
+#ifndef HMENU
+#define HMENU LONG_PTR
+#endif
+#ifndef LPARAM
+#define LPARAM LONG_PTR
+#endif
+#ifndef WPARAM
+#define WPARAM ULONG_PTR
+#endif
+#ifndef LRESULT
+#define LRESULT LONG_PTR
+#endif
+#ifndef UINT
+#define UINT uint
+#endif
+#ifndef DWORD
+#define DWORD uint
+#endif
+#ifndef WORD
+#define WORD ushort
+#endif
+#ifndef BYTE
+#define BYTE uchar
+#endif
+#ifndef BOOL
+#define BOOL int
+#endif
 
 //+------------------------------------------------------------------+
 //| Win32 specific                                                   |
@@ -48,15 +109,16 @@
 #define FORMAT_MESSAGE_IGNORE_INSERTS 0x00000200
 
 #import "kernel32.dll"
+DWORD GetLastError(void);
 // close any kernel object handle
-bool CloseHandle(intptr_t hObject);
-uint FormatMessageW(uint dwFlags,
-                    intptr_t lpSource,
-                    uint dwMessageId,
-                    uint dwLanguageId,
-                    ushort &buffer[],
-                    uint nSize,
-                    intptr_t Arguments
+BOOL CloseHandle(HANDLE hObject);
+DWORD FormatMessageW(DWORD dwFlags,
+                    LONG_PTR lpSource,
+                    DWORD dwMessageId,
+                    DWORD dwLanguageId,
+                    WORD &buffer[],
+                    DWORD nSize,
+                    LONG_PTR Arguments
                     );
 #import
 
@@ -64,52 +126,52 @@ uint FormatMessageW(uint dwFlags,
 //--- we directly include the content here as MetaTrader5 does not come with the header
 #import "user32.dll"
 //---- messages
-int      SendMessageA(int hWnd,int Msg,int wParam,int lParam);
-int      SendMessageW(int hWnd,int Msg,int wParam,int lParam);
-int      SendNotifyMessageA(int hWnd,int Msg,int wParam,int lParam);
-int      SendNotifyMessageW(int hWnd,int Msg,int wParam,int lParam);
-int      PostMessageA(int hWnd,int Msg,int wParam,int lParam);
-int      PostMessageW(int hWnd,int Msg,int wParam,int lParam);
-void     keybd_event(int bVk,int bScan,int dwFlags,int dwExtraInfo);
-void     mouse_event(int dwFlags,int dx,int dy,int dwData,int dwExtraInfo);
+LRESULT  SendMessageA(HWND hWnd,UINT Msg,WPARAM wParam,LPARAM lParam);
+LRESULT  SendMessageW(HWND hWnd,UINT Msg,WPARAM wParam,LPARAM lParam);
+BOOL     SendNotifyMessageA(HWND hWnd,UINT Msg,WPARAM wParam,LPARAM lParam);
+BOOL     SendNotifyMessageW(HWND hWnd,UINT Msg,WPARAM wParam,LPARAM lParam);
+BOOL     PostMessageA(HWND hWnd,UINT Msg,WPARAM wParam,LPARAM lParam);
+BOOL     PostMessageW(HWND hWnd,UINT Msg,WPARAM wParam,LPARAM lParam);
+void     keybd_event(BYTE bVk,BYTE bScan,DWORD dwFlags,ULONG_PTR dwExtraInfo);
+void     mouse_event(DWORD dwFlags,DWORD dx,DWORD dy,DWORD dwData,ULONG_PTR dwExtraInfo);
 //---- windows
-int      FindWindowA(char &lpClassName[],char &lpWindowName[]);
-int      FindWindowW(string lpClassName,string lpWindowName);
-int      SetWindowTextA(int hWnd,char &lpString[]);
-int      SetWindowTextW(int hWnd,string lpString);
-int      GetWindowTextA(int hWnd,char &lpString[],int nMaxCount);
-int      GetWindowTextW(int hWnd,string lpString,int nMaxCount);
-int      GetWindowTextLengthA(int hWnd);
-int      GetWindowTextLengthW(int hWnd);
-int      GetWindow(int hWnd,int uCmd);
-int      GetParent(int hWnd);
+HWND     FindWindowA(char &lpClassName[],char &lpWindowName[]);
+HWND     FindWindowW(string lpClassName,string lpWindowName);
+BOOL     SetWindowTextA(HWND hWnd,char &lpString[]);
+BOOL     SetWindowTextW(HWND hWnd,string lpString);
+int      GetWindowTextA(HWND hWnd,char &lpString[],int nMaxCount);
+int      GetWindowTextW(HWND hWnd,string lpString,int nMaxCount);
+int      GetWindowTextLengthA(HWND hWnd);
+int      GetWindowTextLengthW(HWND hWnd);
+HWND     GetWindow(HWND hWnd,UINT uCmd);
+HWND     GetParent(HWND hWnd);
 
-int      UpdateWindow(int hWnd);
-int      EnableWindow(int hWnd,int bEnable);
-int      DestroyWindow(int hWnd);
-int      ShowWindow(int hWnd,int nCmdShow);
-int      SetActiveWindow(int hWnd);
-int      AnimateWindow(int hWnd,int dwTime,int dwFlags);
-int      FlashWindow(int hWnd,int dwFlags /*bInvert*/);
-int      CloseWindow(int hWnd);
-int      MoveWindow(int hWnd,int X,int Y,int nWidth,int nHeight,int bRepaint);
-int      SetWindowPos(int hWnd,int hWndInsertAfter,int X,int Y,int cx,int cy,int uFlags);
-int      IsWindowVisible(int hWnd);
-int      IsIconic(int hWnd);
-int      IsZoomed(int hWnd);
-int      SetFocus(int hWnd);
-int      GetFocus();
-int      GetActiveWindow();
-int      IsWindowEnabled(int hWnd);
+BOOL     UpdateWindow(HWND hWnd);
+BOOL     EnableWindow(HWND hWnd,BOOL bEnable);
+BOOL     DestroyWindow(HWND hWnd);
+BOOL     ShowWindow(HWND hWnd,int nCmdShow);
+HWND     SetActiveWindow(HWND hWnd);
+BOOL     AnimateWindow(HWND hWnd,DWORD dwTime,DWORD dwFlags);
+BOOL     FlashWindow(HWND hWnd,BOOL dwFlags /*bInvert*/);
+BOOL     CloseWindow(HWND hWnd);
+BOOL     MoveWindow(HWND hWnd,int X,int Y,int nWidth,int nHeight,BOOL bRepaint);
+BOOL     SetWindowPos(HWND hWnd,HWND hWndInsertAfter,int X,int Y,int cx,int cy,UINT uFlags);
+BOOL     IsWindowVisible(HWND hWnd);
+BOOL     IsIconic(HWND hWnd);
+BOOL     IsZoomed(HWND hWnd);
+HWND     SetFocus(HWND hWnd);
+HWND     GetFocus();
+HWND     GetActiveWindow();
+BOOL     IsWindowEnabled(HWND hWnd);
 //---- miscelaneouse
-int      MessageBoxA(int hWnd,char &lpText[],char &lpCaption[],int uType);
-int      MessageBoxW(int hWnd,string lpText,string lpCaption,int uType);
-int      MessageBoxExA(int hWnd,char &lpText[],char &lpCaption[],int uType,int wLanguageId);
-int      MessageBoxExW(int hWnd,string lpText,string lpCaption,int uType,int wLanguageId);
-int      MessageBeep(int uType);
+int      MessageBoxA(HWND hWnd,char &lpText[],char &lpCaption[],UINT uType);
+int      MessageBoxW(HWND hWnd,string lpText,string lpCaption,UINT uType);
+int      MessageBoxExA(HWND hWnd,char &lpText[],char &lpCaption[],UINT uType,WORD wLanguageId);
+int      MessageBoxExW(HWND hWnd,string lpText,string lpCaption,UINT uType,WORD wLanguageId);
+BOOL     MessageBeep(UINT uType);
 int      GetSystemMetrics(int nIndex);
-int      ExitWindowsEx(int uFlags,int dwReserved);
-int      SwapMouseButton(int fSwap);
+BOOL     ExitWindowsEx(UINT uFlags,DWORD dwReserved);
+BOOL     SwapMouseButton(BOOL fSwap);
 //--- added by mql4-lib
 short    GetAsyncKeyState(int nVirtKey);
 #import
@@ -462,7 +524,7 @@ short    GetAsyncKeyState(int nVirtKey);
 //+------------------------------------------------------------------+
 //| Get system defined error code message                            |
 //+------------------------------------------------------------------+
-string GetErrorMessage(int errorCode)
+string GetErrorMessage(DWORD errorCode)
   {
    static ushort buffer[64*1024];
    FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM|FORMAT_MESSAGE_IGNORE_INSERTS,

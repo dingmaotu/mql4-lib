@@ -75,6 +75,8 @@ public:
    bool              disableObjectDeleteEvent() {return ChartSetInteger(m_chartId,CHART_EVENT_OBJECT_DELETE,0);}
 
    int               getChartWidth() const {return(int)ChartGetInteger(m_chartId,CHART_WIDTH_IN_PIXELS);}
+   bool              setChartForeground(const bool value) {return ChartSetInteger(m_chartId,CHART_FOREGROUND,0,value);}
+   int               getChartHeight() const {return(int)ChartGetInteger(m_chartId,CHART_HEIGHT_IN_PIXELS);}
 
    intptr_t          getNativeHandle() const
      {

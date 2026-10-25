@@ -32,14 +32,14 @@ protected:
 
                      File(string name,int flags,int delimiter=0,int codepage=CP_ACP):m_handle(INVALID_HANDLE)
      {
-      m_handle=FileOpen(name,flags,delimiter,codepage);
+      m_handle=FileOpen(name,flags,(ushort)delimiter,codepage);
      }
    void              reopen(string name,int flags,int delimiter=0,int codepage=CP_ACP)
      {
       close();
-      m_handle=FileOpen(name,flags,delimiter,codepage);
+      m_handle=FileOpen(name,flags,(ushort)delimiter,codepage);
      }
-   void              close() {if(m_handle!=INVALID_HANDLE)FileClose(m_handle);}
+   void              close() {if(m_handle!=INVALID_HANDLE){FileClose(m_handle);m_handle=INVALID_HANDLE;}}
 public:
                     ~File() {close();}
 
